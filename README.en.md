@@ -2,10 +2,18 @@
 
 A desktop application focused on Markdown reading, with the core philosophy: **ultimate rendering beauty + silky smooth reading experience**.
 
+![GitHub stars](https://img.shields.io/github/stars/ErgeAIA/ergeMD?style=flat-square)
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-cyan)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-cyan)
+![License](https://img.shields.io/github/license/ErgeAIA/ergeMD?style=flat-square)
+![Release](https://img.shields.io/github/v/release/ErgeAIA/ergeMD?style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/ErgeAIA/ergeMD/total?style=flat-square)
+![Rust](https://img.shields.io/badge/Rust-stable-orange?style=flat-square)
+[![Bilibili](https://img.shields.io/badge/Bilibili-主页-blue?style=flat-square&logo=bilibili)](https://space.bilibili.com/67221461)
+
+[中文 README](./README.md)
 
 ## Core Features
 
