@@ -44,7 +44,8 @@
   "bundle": {
     "active": true,
     "targets": [
-      "nsis"
+      "nsis",
+      "msi"
     ],
     "icon": [
       "icons/32x32.png",
