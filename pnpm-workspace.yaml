@@ -1,3 +1,5 @@
+packages:
+  - "."
 allowBuilds:
   esbuild: false
   sharp: false
