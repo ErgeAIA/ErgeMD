@@ -49,3 +49,24 @@ jobs:
           prerelease: false
           includeRelease: true
           includeUpdaterJson: true
+
+      - name: Create portable package
+        shell: pwsh
+        run: |
+          $src = "src-tauri/target/release"
+          $dst = "ErgeMD-portable"
+          New-Item -ItemType Directory -Force -Path $dst
+          Copy-Item "$src/ErgeMD.exe" $dst/
+          Copy-Item "$src/*.dll" $dst/ -ErrorAction SilentlyContinue
+          if (Test-Path "$src/WebView2Loader.dll") {
+            Copy-Item "$src/WebView2Loader.dll" $dst/
+          }
+          Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ github.ref_name }}-portable.zip" -Force
+
+      - name: Upload portable package to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ErgeMD-${{ github.ref_name }}-portable.zip
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
