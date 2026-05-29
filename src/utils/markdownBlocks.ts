@@ -146,7 +146,7 @@ export function parseMarkdownBlocks(markdown: string): {
     }
     if (closeIdx > 0) {
       const fmLines = lines.slice(0, closeIdx + 1);
-      const fmBlock = {
+      const fmBlock: MarkdownBlock = {
         id: `frontmatter-0`,
         type: "frontmatter",
         raw: fmLines.join("\n"),
@@ -563,13 +563,14 @@ function parseChunk(
     }
     if (closeIdx > 0) {
       const fmLines = lines.slice(0, closeIdx + 1);
-      blocks.push({
+      const fmBlock: MarkdownBlock = {
         id: `frontmatter-0`,
         type: "frontmatter",
         raw: fmLines.join("\n"),
         startLine: 0,
         endLine: closeIdx,
-      });
+      };
+      blocks.push(fmBlock);
       i = closeIdx + 1;
     }
   }
