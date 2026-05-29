@@ -124,4 +124,19 @@ monochrome 主题 - 2026-05-08
   --chart-series-6: #707070;
   --chart-series-7: #E0E0E0;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #8888aa;
+  --obsidian-callout-abstract: #7777aa;
+  --obsidian-callout-info: #7777aa;
+  --obsidian-callout-todo: #7777aa;
+  --obsidian-callout-tip: #8888aa;
+  --obsidian-callout-success: #8888aa;
+  --obsidian-callout-question: #8888aa;
+  --obsidian-callout-warning: #aa8877;
+  --obsidian-callout-failure: #aa7777;
+  --obsidian-callout-danger: #aa6666;
+  --obsidian-callout-bug: #aa6688;
+  --obsidian-callout-example: #8877aa;
+  --obsidian-callout-quote: #777777;
+
 }

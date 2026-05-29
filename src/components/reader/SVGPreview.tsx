@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 interface SVGPreviewProps {
   svgHtml: string;
@@ -9,7 +8,6 @@ interface SVGPreviewProps {
 }
 
 const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
-  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const svgWrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -20,14 +18,6 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const lastContextMenuTime = useRef(0);
-
-  // 滚轮缩放
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const delta = e.deltaY > 0 ? -0.15 : 0.15;
-    setScale((prev) => Math.max(0.2, Math.min(5, prev + delta)));
-  }, []);
 
   // 拖拽平移
   const handleMouseDown = useCallback(
@@ -55,20 +45,6 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
     isDragging.current = false;
   }, []);
 
-  // 双击重置
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const svgElement = container.querySelector("svg");
-    if (!svgElement) return;
-
-    calculateAndSetScale(svgElement, container);
-  }, []);
-
   // 计算并设置缩放
   const calculateAndSetScale = useCallback(
     (svgElement: SVGElement, container: HTMLElement) => {
@@ -80,25 +56,13 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
       let svgWidth = rect.width;
       let svgHeight = rect.height;
 
-      // 如果渲染尺寸不可用，尝试从属性获取
-      if (svgWidth <= 0 || svgHeight <= 0) {
-        svgWidth = parseFloat(svgElement.getAttribute("width") || "") || 100;
-        svgHeight = parseFloat(svgElement.getAttribute("height") || "") || 100;
+      // 如果获取不到尺寸，尝试从SVG属性获取
+      if (svgWidth === 0 || svgHeight === 0) {
+        svgWidth = parseFloat(svgElement.getAttribute("width") || "800");
+        svgHeight = parseFloat(svgElement.getAttribute("height") || "600");
       }
 
-      // 如果还是不行，尝试从viewBox获取
-      if (svgWidth <= 0 || svgHeight <= 0) {
-        const viewBox = svgElement.getAttribute("viewBox");
-        if (viewBox) {
-          const parts = viewBox.split(/\s+/).map(parseFloat);
-          if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
-            svgWidth = parts[2];
-            svgHeight = parts[3];
-          }
-        }
-      }
-
-      // 计算缩放比例：确保图表完全适应视口
+      // 计算缩放比例：确保SVG完全适应视口
       const scaleX = containerWidth / svgWidth;
       const scaleY = containerHeight / svgHeight;
       const initialScale = Math.min(scaleX, scaleY);
@@ -107,6 +71,23 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
       setPosition({ x: 0, y: 0 });
     },
     [],
+  );
+
+  // 双击重置
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      const svgElement = container.querySelector("svg");
+      if (!svgElement) return;
+
+      calculateAndSetScale(svgElement, container);
+    },
+    [calculateAndSetScale],
   );
 
   // 右键菜单
@@ -118,21 +99,24 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
     setShowContextMenu(true);
   }, []);
 
-  // 保存 SVG
+  // 保存SVG
   const handleSaveSvg = useCallback(async () => {
     try {
       const filePath = await save({
-        defaultPath: "chart.svg",
-        filters: [{ name: "SVG Image", extensions: ["svg"] }],
+        defaultPath: "diagram.svg",
+        filters: [{ name: "SVG Files", extensions: ["svg"] }],
       });
       if (!filePath) {
         setShowContextMenu(false);
         return;
       }
-      await invoke("write_file", { path: filePath, content: svgHtml });
+
+      await invoke("write_file", {
+        path: filePath,
+        content: svgHtml,
+      });
     } catch (err) {
       console.error("Failed to save SVG:", err);
-      alert(t("svg.saveFailed"));
     }
     setShowContextMenu(false);
   }, [svgHtml]);
@@ -150,18 +134,14 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
     [showContextMenu],
   );
 
-  // 自动计算初始缩放比例
+  // 初始化时计算缩放
   useEffect(() => {
-    const calculateScale = () => {
+    const initScale = () => {
       const container = containerRef.current;
-      if (!container) {
-        setTimeout(calculateScale, 50);
-        return;
-      }
+      const svgElement = container?.querySelector("svg");
 
-      const svgElement = container.querySelector("svg");
-      if (!svgElement) {
-        setTimeout(calculateScale, 50);
+      if (!container || !svgElement) {
+        setTimeout(initScale, 50);
         return;
       }
 
@@ -169,11 +149,11 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
     };
 
     requestAnimationFrame(() => {
-      setTimeout(calculateScale, 100);
+      setTimeout(initScale, 100);
     });
-  }, [svgHtml, calculateAndSetScale]);
+  }, [calculateAndSetScale]);
 
-  // Esc 关闭
+  // Esc关闭
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -184,6 +164,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
         }
       }
     };
+
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleClickOutsideContextMenu);
     return () => {
@@ -192,21 +173,15 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
     };
   }, [onClose, showContextMenu, handleClickOutsideContextMenu]);
 
-  // 绑定/解绑全局事件
+  // 绑定全局鼠标事件
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener("wheel", handleWheel, { passive: false });
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-
     return () => {
-      container.removeEventListener("wheel", handleWheel);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleWheel, handleMouseMove, handleMouseUp]);
+  }, [handleMouseMove, handleMouseUp]);
 
   return (
     <div
@@ -234,7 +209,6 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
             color: "var(--text-secondary)",
             fontSize: "16px",
           }}
-          aria-label={t("zoom.zoomOut")}
         >
           −
         </button>
@@ -256,7 +230,6 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
             color: "var(--text-secondary)",
             fontSize: "16px",
           }}
-          aria-label={t("zoom.zoomIn")}
         >
           +
         </button>
@@ -269,7 +242,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
             fontSize: "11px",
           }}
         >
-          {t("zoom.reset")}
+          重置
         </button>
         <div className="w-px h-5 bg-[var(--divider)]" />
         <button
@@ -281,7 +254,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
             fontSize: "11px",
           }}
         >
-          <span>SVG</span>
+          <span>保存</span>
         </button>
         <button
           onClick={onClose}
@@ -290,13 +263,23 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
             background: "var(--hover-bg-medium)",
             color: "var(--text-secondary)",
           }}
-          aria-label={t("zoom.close")}
+          aria-label="关闭预览"
         >
-          ✕
+          <svg
+            aria-hidden="true"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
+            <line x1="0" y1="0" x2="14" y2="14" />
+            <line x1="14" y1="0" x2="0" y2="14" />
+          </svg>
         </button>
       </div>
 
-      {/* SVG 容器 */}
+      {/* SVG容器 */}
       <div
         ref={containerRef}
         className="absolute inset-0"
@@ -305,27 +288,26 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
         onMouseDown={handleMouseDown}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
+        onWheel={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const delta = e.deltaY > 0 ? -0.15 : 0.15;
+          setScale((prev) => Math.max(0.2, Math.min(5, prev + delta)));
+        }}
       >
-        {/* 使用绝对定位实现精确居中 */}
         <div
           ref={svgWrapperRef}
           className="absolute inset-0 flex items-center justify-center"
-          style={{ userSelect: "none" }}
-        >
-          <div
-            dangerouslySetInnerHTML={{ __html: svgHtml }}
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: `translate(-50%, -50%) translate(${position.x}px, ${position.y}px) scale(${scale})`,
-              transformOrigin: "center center",
-              transition: isDragging.current
-                ? "none"
-                : "transform 0.15s ease-out",
-            }}
-          />
-        </div>
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+            transformOrigin: "center center",
+            userSelect: "none",
+            transition: isDragging.current
+              ? "none"
+              : "transform 0.15s ease-out",
+          }}
+          dangerouslySetInnerHTML={{ __html: svgHtml }}
+        />
       </div>
 
       {/* 右键菜单 */}
@@ -356,7 +338,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
               e.currentTarget.style.background = "transparent";
             }}
           >
-            {t("svg.saveAs")}
+            另存为SVG
           </button>
         </div>
       )}
@@ -377,7 +359,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
           opacity: 0.9,
         }}
       >
-        {t("svg.hint")}
+        滚轮缩放，拖拽平移，双击重置，右键保存
       </div>
     </div>
   );

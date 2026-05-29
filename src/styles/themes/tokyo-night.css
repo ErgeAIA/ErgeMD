@@ -122,4 +122,19 @@ tokyo-night 主题 - 2026-05-08
   --chart-series-6: #FF9E64;
   --chart-series-7: #C586C0;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #7070d0;
+  --obsidian-callout-abstract: #6060d0;
+  --obsidian-callout-info: #6070c0;
+  --obsidian-callout-todo: #6070c0;
+  --obsidian-callout-tip: #6080b0;
+  --obsidian-callout-success: #60a090;
+  --obsidian-callout-question: #70a070;
+  --obsidian-callout-warning: #d09050;
+  --obsidian-callout-failure: #d06060;
+  --obsidian-callout-danger: #d04050;
+  --obsidian-callout-bug: #c05070;
+  --obsidian-callout-example: #9060c0;
+  --obsidian-callout-quote: #808080;
+
 }

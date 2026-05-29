@@ -139,4 +139,19 @@ cherry-blossom 主题配色
   /* === Logo === */
   --logo-bg: linear-gradient(135deg, rgba(248, 187, 217, 0.15), rgba(206, 147, 216, 0.10));
   --logo-border: rgba(248, 187, 217, 0.15);
+
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #d070a0;
+  --obsidian-callout-abstract: #c070b0;
+  --obsidian-callout-info: #b070c0;
+  --obsidian-callout-todo: #b070c0;
+  --obsidian-callout-tip: #c080a0;
+  --obsidian-callout-success: #a0c080;
+  --obsidian-callout-question: #90c070;
+  --obsidian-callout-warning: #d0a060;
+  --obsidian-callout-failure: #d07070;
+  --obsidian-callout-danger: #d05050;
+  --obsidian-callout-bug: #c06080;
+  --obsidian-callout-example: #a070d0;
+  --obsidian-callout-quote: #a0a0a0;
 }

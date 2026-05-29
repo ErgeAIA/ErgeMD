@@ -9,7 +9,8 @@ export type MarkdownBlockType =
   | "html"
   | "thematicBreak"
   | "blank"
-  | "math";
+  | "math"
+  | "frontmatter";
 
 export interface MarkdownBlock {
   id: string;

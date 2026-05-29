@@ -242,4 +242,19 @@ dark 主题视觉特色：VSCode Dark+ 风格，蓝紫色调
     /* oklch(0.70 0.18 260 / 0.20) */
     --pulse-glow-bright: 0 0 20px rgba(86, 156, 214, 0.4);
     /* oklch(0.70 0.18 260 / 0.40) */
+
+    /* === Obsidian Callout 类型颜色 === */
+    --obsidian-callout-note: #6c9bff;
+    --obsidian-callout-abstract: #40c8ff;
+    --obsidian-callout-info: #40d4e8;
+    --obsidian-callout-todo: #40d4e8;
+    --obsidian-callout-tip: #40d9b5;
+    --obsidian-callout-success: #40d863;
+    --obsidian-callout-question: #80e830;
+    --obsidian-callout-warning: #ffa840;
+    --obsidian-callout-failure: #ff6c6c;
+    --obsidian-callout-danger: #ff4060;
+    --obsidian-callout-bug: #ff4080;
+    --obsidian-callout-example: #9c70ff;
+    --obsidian-callout-quote: #b0b0b0;
 }

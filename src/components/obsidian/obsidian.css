@@ -1,0 +1,275 @@
+.obsidian-callout {
+  border-left: 4px solid var(--callout-color, var(--accent-cyan));
+  background-color: rgba(100, 200, 255, 0.08);
+  background-color: color-mix(in srgb, var(--callout-color, var(--accent-cyan)) 8%, transparent);
+  padding: 0.75em 1em;
+  margin: 1em 0;
+  border-radius: 0 6px 6px 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.obsidian-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.3em;
+  font-weight: 600;
+  color: var(--callout-color, var(--accent-cyan));
+}
+
+.obsidian-callout-title-text {
+  flex: 1;
+}
+
+.obsidian-callout-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.obsidian-icon-pencil::before { content: "\270E"; }
+.obsidian-icon-clipboard-list::before { content: "\2630"; }
+.obsidian-icon-info::before { content: "\2139"; }
+.obsidian-icon-check-circle-2::before { content: "\2611"; }
+.obsidian-icon-flame::before { content: "\2728"; }
+.obsidian-icon-check::before { content: "\2713"; }
+.obsidian-icon-help-circle::before { content: "\2753"; }
+.obsidian-icon-alert-triangle::before { content: "\26A0"; }
+.obsidian-icon-x::before { content: "\2717"; }
+.obsidian-icon-zap::before { content: "\26A1"; }
+.obsidian-icon-bug::before { content: "\1F41B"; }
+.obsidian-icon-list::before { content: "\1F4CB"; }
+.obsidian-icon-quote::before { content: "\275D"; }
+
+.obsidian-callout-fold {
+  font-size: 0.7em;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+  transform: rotate(90deg);
+}
+
+.obsidian-callout-fold-collapsed {
+  transform: rotate(0deg);
+}
+
+.obsidian-callout-body {
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+.obsidian-callout-body p {
+  margin: 0.3em 0;
+}
+
+.obsidian-callout .obsidian-callout {
+  margin: 0.5em 0;
+}
+
+.obsidian-wikilink {
+  color: var(--accent-cyan);
+  background-color: rgba(0, 200, 255, 0.1);
+  background-color: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
+  padding: 1px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.obsidian-wikilink:hover {
+  background-color: rgba(0, 200, 255, 0.2);
+  background-color: color-mix(in srgb, var(--accent-cyan) 20%, transparent);
+  text-decoration: underline;
+}
+
+.obsidian-wikilink-invalid {
+  color: var(--text-muted);
+  background: none;
+  cursor: default;
+}
+
+.obsidian-embed {
+  display: inline;
+}
+
+.obsidian-embed-image {
+  display: block;
+  margin: 0.5em 0;
+}
+
+.obsidian-embed-image img {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.obsidian-embed-ref {
+  display: inline-block;
+  color: var(--accent-purple);
+  background-color: rgba(160, 100, 255, 0.08);
+  background-color: color-mix(in srgb, var(--accent-purple) 8%, transparent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.obsidian-embed-ref:hover {
+  background-color: rgba(160, 100, 255, 0.15);
+  background-color: color-mix(in srgb, var(--accent-purple) 15%, transparent);
+}
+
+.obsidian-embed-fallback {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.obsidian-embed-invalid {
+  color: var(--text-muted);
+}
+
+.obsidian-highlight {
+  background-color: var(--accent-yellow, #f9e74a);
+  color: var(--bg-page, #1a1a2e);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+.obsidian-block-id {
+  display: none;
+}
+
+.obsidian-frontmatter {
+  margin: 1em 0;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  background-color: rgba(128, 128, 128, 0.04);
+  background-color: color-mix(in srgb, var(--text-muted, #888) 4%, transparent);
+  overflow: hidden;
+}
+
+.obsidian-fm-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background-color: rgba(128, 128, 128, 0.04);
+  background-color: color-mix(in srgb, var(--text-muted, #888) 4%, transparent);
+}
+
+.obsidian-fm-header-icon {
+  font-size: 0.85em;
+  opacity: 0.5;
+}
+
+.obsidian-fm-header-title {
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.obsidian-fm-body {
+  padding: 0;
+}
+
+.obsidian-fm-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.5em 1em;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+}
+
+.obsidian-fm-row:last-child {
+  border-bottom: none;
+}
+
+.obsidian-fm-key {
+  flex: 0 0 120px;
+  min-width: 80px;
+  max-width: 180px;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding-right: 0.75em;
+  word-break: break-word;
+}
+
+.obsidian-fm-value {
+  flex: 1;
+  font-size: 0.85em;
+  color: var(--text-primary);
+  word-break: break-word;
+  min-width: 0;
+}
+
+.obsidian-fm-string {
+  color: var(--text-primary);
+}
+
+.obsidian-fm-number {
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.obsidian-fm-boolean {
+  font-weight: 500;
+}
+
+.obsidian-fm-true {
+  color: var(--obsidian-callout-success, #00c853);
+}
+
+.obsidian-fm-false {
+  color: var(--obsidian-callout-failure, #ff5252);
+}
+
+.obsidian-fm-null {
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.obsidian-fm-array {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+}
+
+.obsidian-fm-tag {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  background-color: rgba(0, 200, 255, 0.1);
+  background-color: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 200, 255, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 15%, transparent);
+  white-space: nowrap;
+}
+
+.obsidian-fm-object {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding-left: 0.5em;
+  border-left: 2px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.obsidian-fm-object-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+
+.obsidian-fm-object-key {
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}

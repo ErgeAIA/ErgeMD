@@ -122,4 +122,19 @@ cyberpunk 主题 - 2026-05-08
   --chart-series-6: #FF0040;
   --chart-series-7: #BB9AF7;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #00d4ff;
+  --obsidian-callout-abstract: #00e5ff;
+  --obsidian-callout-info: #00e5d0;
+  --obsidian-callout-todo: #00e5d0;
+  --obsidian-callout-tip: #00ffb3;
+  --obsidian-callout-success: #00ff88;
+  --obsidian-callout-question: #88ff00;
+  --obsidian-callout-warning: #ffaa00;
+  --obsidian-callout-failure: #ff4466;
+  --obsidian-callout-danger: #ff0044;
+  --obsidian-callout-bug: #ff0080;
+  --obsidian-callout-example: #aa66ff;
+  --obsidian-callout-quote: #aaaaaa;
+
 }

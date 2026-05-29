@@ -139,4 +139,19 @@ aurora 主题配色
   /* === Logo === */
   --logo-bg: linear-gradient(135deg, rgba(79, 195, 247, 0.15), rgba(197, 133, 192, 0.10));
   --logo-border: rgba(79, 195, 247, 0.15);
+
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #5ec4c4;
+  --obsidian-callout-abstract: #4dd8c0;
+  --obsidian-callout-info: #4dd8b8;
+  --obsidian-callout-todo: #4dd8b8;
+  --obsidian-callout-tip: #50d8a0;
+  --obsidian-callout-success: #50d890;
+  --obsidian-callout-question: #80d850;
+  --obsidian-callout-warning: #d8a050;
+  --obsidian-callout-failure: #d86060;
+  --obsidian-callout-danger: #d84040;
+  --obsidian-callout-bug: #d85080;
+  --obsidian-callout-example: #9070d8;
+  --obsidian-callout-quote: #909090;
 }

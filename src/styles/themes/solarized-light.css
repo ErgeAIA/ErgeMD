@@ -170,4 +170,19 @@ Solarized 色系：
 
   /* === Title Bar === */
   --titlebar-gradient: linear-gradient(90deg, transparent 0%, rgba(38, 139, 210, 0.25) 15%, rgba(42, 161, 152, 0.15) 50%, rgba(181, 137, 0, 0.1) 85%, transparent 100%);
+
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #448aff;
+  --obsidian-callout-abstract: #00b0ff;
+  --obsidian-callout-info: #00b8d4;
+  --obsidian-callout-todo: #00b8d4;
+  --obsidian-callout-tip: #00bfa5;
+  --obsidian-callout-success: #00c853;
+  --obsidian-callout-question: #64dd17;
+  --obsidian-callout-warning: #ff9100;
+  --obsidian-callout-failure: #ff5252;
+  --obsidian-callout-danger: #ff1744;
+  --obsidian-callout-bug: #f50057;
+  --obsidian-callout-example: #7c4dff;
+  --obsidian-callout-quote: #9e9e9e;
 }

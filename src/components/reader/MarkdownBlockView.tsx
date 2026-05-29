@@ -13,6 +13,11 @@ import CodeBlock from "./CodeBlock";
 import ContextMenuImage from "./ContextMenuImage";
 import ContextMenuLink from "./ContextMenuLink";
 import LazyMermaidBlock from "./LazyMermaidBlock";
+import {
+  useObsidianModule,
+  preprocessObsidianSyntax,
+  ObsidianFrontmatter,
+} from "@/components/obsidian";
 
 import remarkAbbr from "@syenchuk/remark-abbr";
 import remarkSupersub from "remark-supersub";
@@ -29,67 +34,6 @@ const REMARK_PLUGINS = [
   typeof import("react-markdown").default
 >[0]["remarkPlugins"];
 const REHYPE_PLUGINS = [rehypeRaw, rehypeSlug, rehypeKatex];
-
-// ── Admonition 辅助函数 ──────────────────────────────────
-
-const ADMONITION_TYPES: Record<
-  string,
-  { title: string; color: string; icon: string }
-> = {
-  NOTE: { title: "Note", color: "var(--admonition-note, #60A5FA)", icon: "📝" },
-  TIP: { title: "Tip", color: "var(--admonition-tip, #34D399)", icon: "💡" },
-  WARNING: {
-    title: "Warning",
-    color: "var(--admonition-warning, #FBBF24)",
-    icon: "⚠️",
-  },
-  CAUTION: {
-    title: "Caution",
-    color: "var(--admonition-caution, #F87171)",
-    icon: "🚨",
-  },
-  IMPORTANT: {
-    title: "Important",
-    color: "var(--admonition-important, #A78BFA)",
-    icon: "📌",
-  },
-  INFO: { title: "Info", color: "var(--admonition-info, #06B6D4)", icon: "ℹ️" },
-  SUCCESS: {
-    title: "Success",
-    color: "var(--admonition-success, #10B981)",
-    icon: "✅",
-  },
-  ERROR: {
-    title: "Error",
-    color: "var(--admonition-error, #EF4444)",
-    icon: "❌",
-  },
-  DANGER: {
-    title: "Danger",
-    color: "var(--admonition-danger, #DC2626)",
-    icon: "🔥",
-  },
-};
-
-function getTextContent(element: React.ReactNode): string {
-  let text = "";
-  React.Children.forEach(element, (child) => {
-    if (typeof child === "string") {
-      text += child;
-    } else if (React.isValidElement(child)) {
-      const childProps = child.props as { children?: React.ReactNode };
-      text += getTextContent(childProps.children);
-    }
-  });
-  return text;
-}
-
-function cloneElementWithText(
-  element: React.ReactElement,
-  newText: string,
-): React.ReactElement {
-  return React.cloneElement(element, {}, newText || "\u00A0");
-}
 
 // ── 组件 ──────────────────────────────────────────────
 
@@ -167,6 +111,23 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       return <div data-block-type="blank" style={{ height: "0.5em" }} />;
     }
 
+    // ── Frontmatter block ──
+    if (block.type === "frontmatter") {
+      return (
+        <div
+          data-block-type="frontmatter"
+          data-raw={encodeURIComponent(block.raw)}
+          onDoubleClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest("a, button, input, select, textarea")) return;
+            startEdit(target);
+          }}
+        >
+          <ObsidianFrontmatter raw={block.raw} />
+        </div>
+      );
+    }
+
     // ── Thematic break ──
     if (block.type === "thematicBreak") {
       return (
@@ -194,7 +155,13 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
     }
 
     // ── 其他 block：使用 ReactMarkdown 渲染 ──
-    const components = useMemo(
+    const obsidianComponents = useObsidianModule(block.raw, block.raw);
+    const processedRaw = useMemo(
+      () => preprocessObsidianSyntax(block.raw),
+      [block.raw],
+    );
+
+    const baseComponents = useMemo(
       () => ({
         h1(props: React.HTMLAttributes<HTMLHeadingElement>) {
           const { children, ...rest } = props;
@@ -256,6 +223,8 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 color: "var(--text-primary)",
                 paddingLeft: "1.5em",
                 marginBottom: "1em",
+                listStyleType: "disc",
+                listStylePosition: "outside",
                 ...incomingStyle,
               }}
             >
@@ -273,6 +242,8 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 color: "var(--text-primary)",
                 paddingLeft: "1.5em",
                 marginBottom: "1em",
+                listStyleType: "decimal",
+                listStylePosition: "outside",
                 ...incomingStyle,
               }}
             >
@@ -307,97 +278,6 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
         ) {
           const { children, style, ...rest } = props;
           const incomingStyle = style as React.CSSProperties | undefined;
-
-          // 检测是否是 Admonition 并解析
-          let isAdmonition = false;
-          let admonitionType = "NOTE";
-          let filteredChildren = children;
-
-          const childrenArray = React.Children.toArray(children);
-          if (childrenArray.length > 0) {
-            // 遍历所有子元素，查找 Admonition 标记
-            let foundAdmonitionIndex = -1;
-            let foundAdmonitionType = "";
-
-            for (let i = 0; i < childrenArray.length; i++) {
-              const child = childrenArray[i];
-              if (React.isValidElement(child)) {
-                const childText = getTextContent(child);
-                const admonitionMatch = childText.match(
-                  /^\[!(NOTE|TIP|WARNING|CAUTION|IMPORTANT|INFO|SUCCESS|ERROR|DANGER)\]/,
-                );
-                if (admonitionMatch) {
-                  foundAdmonitionIndex = i;
-                  foundAdmonitionType = admonitionMatch[1];
-                  break;
-                }
-              }
-            }
-
-            if (foundAdmonitionType) {
-              isAdmonition = true;
-              admonitionType = foundAdmonitionType;
-              // 移除 [!TYPE] 标记
-              filteredChildren = React.Children.map(
-                childrenArray,
-                (child, idx) => {
-                  if (
-                    idx === foundAdmonitionIndex &&
-                    React.isValidElement(child)
-                  ) {
-                    const text = getTextContent(child);
-                    const newText = text.replace(
-                      /^\[!(NOTE|TIP|WARNING|CAUTION|IMPORTANT|INFO|SUCCESS|ERROR|DANGER)\]\s*/,
-                      "",
-                    );
-                    return cloneElementWithText(child, newText);
-                  }
-                  return child;
-                },
-              );
-            }
-          }
-
-          if (isAdmonition) {
-            const { title, color, icon } = ADMONITION_TYPES[admonitionType];
-            return (
-              <div
-                style={{
-                  borderLeft: `4px solid ${color}`,
-                  paddingLeft: "1em",
-                  paddingRight: "1em",
-                  paddingTop: "0.5em",
-                  paddingBottom: "0.5em",
-                  marginLeft: 0,
-                  marginRight: 0,
-                  marginBottom: "1em",
-                  backgroundColor: `${color}15`,
-                  borderRadius: "0 6px 6px 0",
-                  ...incomingStyle,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5em",
-                    marginBottom: "0.3em",
-                    fontWeight: 600,
-                  }}
-                >
-                  <span style={{ fontSize: "1.2em" }}>{icon}</span>
-                  <span style={{ color }}>{title}</span>
-                </div>
-                <div
-                  style={{ color: "var(--text-primary)", fontStyle: "normal" }}
-                >
-                  {filteredChildren}
-                </div>
-              </div>
-            );
-          }
-
-          // 普通 blockquote
           return (
             <blockquote
               {...rest}
@@ -759,6 +639,14 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       [paragraphSpacing, block.raw],
     );
 
+    const components = useMemo(
+      () => ({
+        ...baseComponents,
+        ...obsidianComponents,
+      }),
+      [baseComponents, obsidianComponents],
+    );
+
     return (
       <div
         className="markdown-body"
@@ -789,8 +677,8 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           components={components}
         >
           {referenceDefinitions
-            ? `${block.raw}\n\n${referenceDefinitions}`
-            : block.raw}
+            ? `${processedRaw}\n\n${referenceDefinitions}`
+            : processedRaw}
         </ReactMarkdown>
       </div>
     );

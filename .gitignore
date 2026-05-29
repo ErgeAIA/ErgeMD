@@ -1,3 +1,19 @@
+# Rust build outputs
+src-tauri/target/
+*.pdb
+
+# Database files
+*.db
+*.db-journal
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+Thumbs.db
+
 # Logs
 logs
 *.log

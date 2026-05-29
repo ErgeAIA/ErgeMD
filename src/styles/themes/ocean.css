@@ -122,4 +122,19 @@ ocean 主题 - 2026-05-08
   --chart-series-6: #F48FB1;
   --chart-series-7: #FFEE58;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #4090d0;
+  --obsidian-callout-abstract: #3080d0;
+  --obsidian-callout-info: #3080c0;
+  --obsidian-callout-todo: #3080c0;
+  --obsidian-callout-tip: #3090b0;
+  --obsidian-callout-success: #30a090;
+  --obsidian-callout-question: #50a070;
+  --obsidian-callout-warning: #d09040;
+  --obsidian-callout-failure: #d06060;
+  --obsidian-callout-danger: #d04040;
+  --obsidian-callout-bug: #c05070;
+  --obsidian-callout-example: #7060c0;
+  --obsidian-callout-quote: #708080;
+
 }

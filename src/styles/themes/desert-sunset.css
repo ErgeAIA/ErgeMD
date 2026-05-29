@@ -122,4 +122,19 @@ desert-sunset 主题 - 2026-05-08
   --chart-series-6: #FFD54F;
   --chart-series-7: #F48FB1;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #d09050;
+  --obsidian-callout-abstract: #c08050;
+  --obsidian-callout-info: #b08060;
+  --obsidian-callout-todo: #b08060;
+  --obsidian-callout-tip: #c09050;
+  --obsidian-callout-success: #a0b060;
+  --obsidian-callout-question: #90b050;
+  --obsidian-callout-warning: #d0a040;
+  --obsidian-callout-failure: #d07050;
+  --obsidian-callout-danger: #d05040;
+  --obsidian-callout-bug: #c06060;
+  --obsidian-callout-example: #a070c0;
+  --obsidian-callout-quote: #a09090;
+
 }

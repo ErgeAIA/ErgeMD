@@ -128,7 +128,7 @@ description: ErgeMD Markdown 阅读器的完整语法测试文档，用于验证
 
 带链接的图片：
 
-[![点击图片跳转](https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg)](https://www.baidu.com)
+[![点击图片跳转](https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg)](https://space.bilibili.com/67221461)
 
 ***
 

@@ -2,16 +2,16 @@
 
 A desktop application focused on Markdown reading, with the core philosophy: **ultimate rendering beauty + silky smooth reading experience**.
 
-![GitHub stars](https://img.shields.io/github/stars/ErgeAIA/ergeMD?style=flat-square)
+![GitHub stars](https://img.shields.io/github/stars/ErgeAIA/ergeMD?for-the-badge)
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-cyan)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-cyan)
-![License](https://img.shields.io/github/license/ErgeAIA/ergeMD?style=flat-square)
-![Release](https://img.shields.io/github/v/release/ErgeAIA/ergeMD?style=flat-square)
-![Downloads](https://img.shields.io/github/downloads/ErgeAIA/ergeMD/total?style=flat-square)
-![Rust](https://img.shields.io/badge/Rust-stable-orange?style=flat-square)
-[![Bilibili](https://img.shields.io/badge/Bilibili-主页-blue?style=flat-square&logo=bilibili)](https://space.bilibili.com/67221461)
+![License](https://img.shields.io/github/license/ErgeAIA/ergeMD?for-the-badge)
+![Release](https://img.shields.io/github/v/release/ErgeAIA/ergeMD?for-the-badge)
+![Downloads](https://img.shields.io/github/downloads/ErgeAIA/ergeMD/total?for-the-badge)
+![Rust](https://img.shields.io/badge/Rust-stable-orange?for-the-badge)
+[![Bilibili](https://img.shields.io/badge/Bilibili-主页-blue?for-the-badge&logo=bilibili)](https://space.bilibili.com/67221461)
 
 [中文 README](./README.md)
 
@@ -27,9 +27,9 @@ A desktop application focused on Markdown reading, with the core philosophy: **u
 
 Pre-built installers are available on the Releases page:
 
-| Platform | Format |
-|----------|--------|
-| Windows | `.exe` Portable / NSIS Installer |
+| Platform | Format                           |
+| -------- | -------------------------------- |
+| Windows  | `.exe` Portable / NSIS Installer |
 
 ## Building from Source
 
@@ -64,69 +64,69 @@ pnpm build
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Desktop Framework | Tauri 2 |
-| Frontend | React 19 + TypeScript |
-| Build Tool | Vite 7 |
-| State Management | Zustand 5 |
-| Styling | Tailwind CSS 4 + CSS Variables Theme |
-| Markdown | react-markdown + remark/rehype plugin chain |
-| Math | KaTeX |
-| Diagrams | Mermaid |
-| Code Highlighting | highlight.js |
-| Virtual Scrolling | @tanstack/react-virtual |
-| Database | SQLite (sqlx) |
+| Layer             | Technology                                  |
+| ----------------- | ------------------------------------------- |
+| Desktop Framework | Tauri 2                                     |
+| Frontend          | React 19 + TypeScript                       |
+| Build Tool        | Vite 7                                      |
+| State Management  | Zustand 5                                   |
+| Styling           | Tailwind CSS 4 + CSS Variables Theme        |
+| Markdown          | react-markdown + remark/rehype plugin chain |
+| Math              | KaTeX                                       |
+| Diagrams          | Mermaid                                     |
+| Code Highlighting | highlight.js                                |
+| Virtual Scrolling | @tanstack/react-virtual                     |
+| Database          | SQLite (sqlx)                               |
 
 ## User Guide
 
 ### File Operations
 
-| Action | Shortcut |
-|--------|----------|
-| Open file | `Ctrl + O` |
-| Open folder | `Ctrl + Shift + O` |
-| Close current tab | `Ctrl + W` |
-| Close other tabs | `Ctrl + Shift + W` |
-| Save file | `Ctrl + S` |
-| Save as | `Ctrl + Shift + S` |
-| Refresh current file | `Ctrl + R` |
-| Show in Explorer | `Ctrl + Shift + D` |
-| Copy file path | `Ctrl + Shift + C` |
+| Action               | Shortcut           |
+| -------------------- | ------------------ |
+| Open file            | `Ctrl + O`         |
+| Open folder          | `Ctrl + Shift + O` |
+| Close current tab    | `Ctrl + W`         |
+| Close other tabs     | `Ctrl + Shift + W` |
+| Save file            | `Ctrl + S`         |
+| Save as              | `Ctrl + Shift + S` |
+| Refresh current file | `Ctrl + R`         |
+| Show in Explorer     | `Ctrl + Shift + D` |
+| Copy file path       | `Ctrl + Shift + C` |
 
 ### Tab Navigation
 
-| Action | Shortcut |
-|--------|----------|
-| Next tab | `Ctrl + Tab` / `Ctrl + PageDown` |
-| Previous tab | `Ctrl + Shift + Tab` / `Ctrl + PageUp` |
-| Switch to Nth tab | `Ctrl + 1` ~ `Ctrl + 9` |
-| Pin/Unpin tab | `Ctrl + Shift + P` |
-| Open in new window | `Ctrl + N` |
+| Action             | Shortcut                               |
+| ------------------ | -------------------------------------- |
+| Next tab           | `Ctrl + Tab` / `Ctrl + PageDown`       |
+| Previous tab       | `Ctrl + Shift + Tab` / `Ctrl + PageUp` |
+| Switch to Nth tab  | `Ctrl + 1` ~ `Ctrl + 9`                |
+| Pin/Unpin tab      | `Ctrl + Shift + P`                     |
+| Open in new window | `Ctrl + N`                             |
 
 ### Reading Controls
 
-| Action | Shortcut |
-|--------|----------|
-| Zoom in | `Ctrl + =` / `Ctrl + +` |
-| Zoom out | `Ctrl + -` |
-| Reset zoom | `Ctrl + 0` |
-| Toggle fullscreen | `F11` |
-| Toggle sidebar | `Ctrl + B` |
-| Toggle file tree | `Ctrl + Shift + B` |
-| Toggle focus mode | `Ctrl + Shift + F` |
-| Search content | `Ctrl + F` |
-| Global search | `Ctrl + Shift + F` |
-| Find next | `F3` |
-| Find previous | `Shift + F3` |
-| Print | `Ctrl + Shift + P` |
+| Action            | Shortcut                |
+| ----------------- | ----------------------- |
+| Zoom in           | `Ctrl + =` / `Ctrl + +` |
+| Zoom out          | `Ctrl + -`              |
+| Reset zoom        | `Ctrl + 0`              |
+| Toggle fullscreen | `F11`                   |
+| Toggle sidebar    | `Ctrl + B`              |
+| Toggle file tree  | `Ctrl + Shift + B`      |
+| Toggle focus mode | `Ctrl + Shift + F`      |
+| Search content    | `Ctrl + F`              |
+| Global search     | `Ctrl + Shift + F`      |
+| Find next         | `F3`                    |
+| Find previous     | `Shift + F3`            |
+| Print             | `Ctrl + Shift + P`      |
 
 ### Export
 
-| Action | Shortcut |
-|--------|----------|
-| Export as HTML | `Ctrl + E` |
-| Export as PDF | `Ctrl + P` |
+| Action         | Shortcut           |
+| -------------- | ------------------ |
+| Export as HTML | `Ctrl + E`         |
+| Export as PDF  | `Ctrl + P`         |
 | Export as Word | `Ctrl + Shift + E` |
 
 ### Reading Area Context Menu
@@ -199,11 +199,11 @@ Run the executable directly, no installation needed. Suitable for:
 
 ## Documentation
 
-| Document | Description |
-|----------|------------|
-| [CHANGELOG.md](./CHANGELOG.md) | Version changelog |
-| [TECH-SPEC.md](./TECH-SPEC.md) | Technical specification |
-| [AGENTS.md](./AGENTS.md) | Development guidelines and decision records |
+| Document                       | Description                                 |
+| ------------------------------ | ------------------------------------------- |
+| [CHANGELOG.md](./CHANGELOG.md) | Version changelog                           |
+| [TECH-SPEC.md](./TECH-SPEC.md) | Technical specification                     |
+| [AGENTS.md](./AGENTS.md)       | Development guidelines and decision records |
 
 ## License
 

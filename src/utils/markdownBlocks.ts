@@ -136,6 +136,28 @@ export function parseMarkdownBlocks(markdown: string): {
 
   let i = 0;
 
+  if (lines.length > 0 && lines[0].trim() === "---") {
+    let closeIdx = -1;
+    for (let fi = 1; fi < lines.length; fi++) {
+      if (lines[fi].trim() === "---") {
+        closeIdx = fi;
+        break;
+      }
+    }
+    if (closeIdx > 0) {
+      const fmLines = lines.slice(0, closeIdx + 1);
+      const fmBlock = {
+        id: `frontmatter-0`,
+        type: "frontmatter",
+        raw: fmLines.join("\n"),
+        startLine: 0,
+        endLine: closeIdx,
+      };
+      blocks.push(fmBlock);
+      i = closeIdx + 1;
+    }
+  }
+
   while (i < lines.length) {
     const rawLine = lines[i];
 
@@ -530,6 +552,27 @@ function parseChunk(
   const refDefs: string[] = [];
 
   let i = startLine;
+
+  if (startLine === 0 && lines.length > 0 && lines[0].trim() === "---") {
+    let closeIdx = -1;
+    for (let fi = 1; fi <= endLine && fi < lines.length; fi++) {
+      if (lines[fi].trim() === "---") {
+        closeIdx = fi;
+        break;
+      }
+    }
+    if (closeIdx > 0) {
+      const fmLines = lines.slice(0, closeIdx + 1);
+      blocks.push({
+        id: `frontmatter-0`,
+        type: "frontmatter",
+        raw: fmLines.join("\n"),
+        startLine: 0,
+        endLine: closeIdx,
+      });
+      i = closeIdx + 1;
+    }
+  }
 
   while (i <= endLine && i < lines.length) {
     const rawLine = lines[i];

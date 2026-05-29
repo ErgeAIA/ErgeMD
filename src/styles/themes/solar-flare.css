@@ -144,4 +144,19 @@ solar-flare 主题配色
 
   /* === Title Bar === */
   --titlebar-gradient: linear-gradient(90deg, #4DD0E1, #B388FF, #FF80AB);
+
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #d07050;
+  --obsidian-callout-abstract: #c06050;
+  --obsidian-callout-info: #b06060;
+  --obsidian-callout-todo: #b06060;
+  --obsidian-callout-tip: #c07050;
+  --obsidian-callout-success: #a0b050;
+  --obsidian-callout-question: #90b040;
+  --obsidian-callout-warning: #d0a030;
+  --obsidian-callout-failure: #d06050;
+  --obsidian-callout-danger: #d03030;
+  --obsidian-callout-bug: #c05060;
+  --obsidian-callout-example: #9060c0;
+  --obsidian-callout-quote: #908080;
 }

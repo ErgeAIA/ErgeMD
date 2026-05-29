@@ -144,4 +144,19 @@ neon-cyberpunk 主题配色
 
     /* === Title Bar === */
     --titlebar-gradient: linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.6) 15%, rgba(255, 0, 255, 0.4) 50%, rgba(255, 0, 64, 0.3) 85%, transparent 100%);
+
+    /* === Obsidian Callout 类型颜色 === */
+    --obsidian-callout-note: #00ccff;
+    --obsidian-callout-abstract: #00ddff;
+    --obsidian-callout-info: #00ddcc;
+    --obsidian-callout-todo: #00ddcc;
+    --obsidian-callout-tip: #00ffaa;
+    --obsidian-callout-success: #00ff77;
+    --obsidian-callout-question: #77ff00;
+    --obsidian-callout-warning: #ff9900;
+    --obsidian-callout-failure: #ff3355;
+    --obsidian-callout-danger: #ff0033;
+    --obsidian-callout-bug: #ff0070;
+    --obsidian-callout-example: #9955ff;
+    --obsidian-callout-quote: #999999;
 }

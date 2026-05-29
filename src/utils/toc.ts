@@ -125,8 +125,23 @@ export function extractTOC(markdown: string): {
 
   let inFence = false;
   let inMathBlock = false;
+  let frontmatterEndIndex = -1;
+
+  // 跳过 frontmatter 区域
+  if (lines.length > 0 && lines[0].trim() === "---") {
+    for (let fi = 1; fi < lines.length; fi++) {
+      if (lines[fi].trim() === "---") {
+        frontmatterEndIndex = fi;
+        break;
+      }
+    }
+  }
 
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    // 跳过 frontmatter 区域
+    if (frontmatterEndIndex > 0 && lineIndex <= frontmatterEndIndex) {
+      continue;
+    }
     const rawLine = lines[lineIndex];
 
     if (isFenceStart(rawLine)) {
@@ -203,6 +218,11 @@ export function extractTOC(markdown: string): {
     let fallbackInMathBlock = false;
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+      // 跳过 frontmatter 区域
+      if (frontmatterEndIndex > 0 && lineIndex <= frontmatterEndIndex) {
+        continue;
+      }
+      
       const rawLine = lines[lineIndex];
 
       if (isFenceStart(rawLine)) {

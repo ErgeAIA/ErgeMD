@@ -310,16 +310,16 @@ function App() {
   const handleReaderContextMenu = useCallback(
     (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // 检查是否在Mermaid图表区域内，如果是则不处理，让MermaidDiagram组件自己处理
       const isMermaidArea = !!(
         target.closest('[data-block-type="mermaid"]') ||
-        target.closest('.mermaid')
+        target.closest(".mermaid")
       );
       if (isMermaidArea) {
         return; // 完全不处理Mermaid区域的右键菜单
       }
-      
+
       const selection = window.getSelection();
       const hasSelection =
         selection !== null && selection.toString().length > 0;

@@ -2,10 +2,11 @@ import ContextMenu from "@/components/context-menu/ContextMenu";
 import { getImageContextMenuItems } from "@/components/context-menu/ImageContextMenu";
 import Portal from "@/components/Portal";
 import { useContextMenu } from "@/hooks/useContextMenu";
+import { useQuickEdit } from "@/hooks/useQuickEdit";
 import { useFileStore } from "@/stores/fileStore";
 import { useReaderStore } from "@/stores/readerStore";
 import { invoke } from "@tauri-apps/api/core";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ImageEditModal from "./ImageEditModal";
 
@@ -31,6 +32,8 @@ const ContextMenuImage: React.FC<ContextMenuImageProps> = memo((props) => {
     hide: hideContextMenu,
     adjustPosition,
   } = useContextMenu();
+  const { startEdit } = useQuickEdit();
+  const wrapperRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (!src || src.startsWith("http") || src.startsWith("data:")) {
@@ -74,6 +77,11 @@ const ContextMenuImage: React.FC<ContextMenuImageProps> = memo((props) => {
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // 检测图片是否在链接中，以及是否能找到包含 data-raw 的父元素
+    const isInsideLink = wrapperRef.current?.closest('a') !== null;
+    const hasRawParent = wrapperRef.current?.closest('[data-raw]') !== null;
+    
     const items = getImageContextMenuItems(
       {
         imageUrl: resolvedSrc,
@@ -115,6 +123,22 @@ const ContextMenuImage: React.FC<ContextMenuImageProps> = memo((props) => {
       },
       t,
     );
+    
+    // 如果在链接中且有 data-raw 父元素，添加编辑整段源码选项
+    if (isInsideLink && hasRawParent) {
+      items.push({ id: "sep3", separator: true });
+      items.push({
+        id: "editBlockSource",
+        label: "编辑整段源码",
+        action: () => {
+          hideContextMenu();
+          if (wrapperRef.current) {
+            startEdit(wrapperRef.current);
+          }
+        }
+      });
+    }
+    
     showContextMenu(e, items);
   };
 
@@ -132,6 +156,7 @@ const ContextMenuImage: React.FC<ContextMenuImageProps> = memo((props) => {
   return (
     <>
       <span
+        ref={wrapperRef}
         className="relative my-4"
         style={{
           display: "inline-block",

@@ -122,4 +122,19 @@ falcon 主题 - 2026-05-08
   --chart-series-6: #7DCFFF;
   --chart-series-7: #FF5555;
 
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #7090c0;
+  --obsidian-callout-abstract: #6090c0;
+  --obsidian-callout-info: #6080c0;
+  --obsidian-callout-todo: #6080c0;
+  --obsidian-callout-tip: #6090a0;
+  --obsidian-callout-success: #60a080;
+  --obsidian-callout-question: #70a060;
+  --obsidian-callout-warning: #c09050;
+  --obsidian-callout-failure: #c06060;
+  --obsidian-callout-danger: #c04040;
+  --obsidian-callout-bug: #b05070;
+  --obsidian-callout-example: #8060b0;
+  --obsidian-callout-quote: #808080;
+
 }

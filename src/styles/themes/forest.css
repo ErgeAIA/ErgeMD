@@ -144,4 +144,19 @@ forest 主题配色
 
   /* === Title Bar === */
   --titlebar-gradient: linear-gradient(90deg, #66BB6A, #9575CD, #4DB6AC);
+
+  /* === Obsidian Callout 类型颜色 === */
+  --obsidian-callout-note: #50a070;
+  --obsidian-callout-abstract: #40a080;
+  --obsidian-callout-info: #409080;
+  --obsidian-callout-todo: #409080;
+  --obsidian-callout-tip: #50a070;
+  --obsidian-callout-success: #50b060;
+  --obsidian-callout-question: #70b040;
+  --obsidian-callout-warning: #c0a040;
+  --obsidian-callout-failure: #c06050;
+  --obsidian-callout-danger: #c04040;
+  --obsidian-callout-bug: #b05060;
+  --obsidian-callout-example: #7060b0;
+  --obsidian-callout-quote: #707070;
 }

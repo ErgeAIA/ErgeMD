@@ -71,6 +71,9 @@
 @import "./themes/core/mermaid/mermaid-wardley.css";
 @import "./themes/core/mermaid/mermaid-treeview.css";
 
+/* --- Obsidian 兼容模块样式 --- */
+@import "../components/obsidian/obsidian.css";
+
 /*
  * 兜底默认值：仅在 <html> 没有 data-theme 属性时生效。
  * 正常情况下 useTheme Hook 会在初始化时设置 data-theme，
@@ -112,6 +115,21 @@ html:not([data-theme]) {
   --admonition-success: #10B981;
   --admonition-error: #EF4444;
   --admonition-danger: #DC2626;
+
+  /* Obsidian Callout 类型颜色 */
+  --obsidian-callout-note: #6c9bff;
+  --obsidian-callout-abstract: #40c8ff;
+  --obsidian-callout-info: #40d4e8;
+  --obsidian-callout-todo: #40d4e8;
+  --obsidian-callout-tip: #40d9b5;
+  --obsidian-callout-success: #40d863;
+  --obsidian-callout-question: #80e830;
+  --obsidian-callout-warning: #ffa840;
+  --obsidian-callout-failure: #ff6c6c;
+  --obsidian-callout-danger: #ff4060;
+  --obsidian-callout-bug: #ff4080;
+  --obsidian-callout-example: #9c70ff;
+  --obsidian-callout-quote: #b0b0b0;
 
   --scrollbar-track: transparent;
   --scrollbar-thumb: #1A1A2E;
