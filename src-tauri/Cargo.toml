@@ -1,6 +1,6 @@
 [package]
 name = "ergemd"
-version = "0.2.1"
+version = "0.2.2"
 description = "ErgeMD - A Markdown Reader"
 authors = ["ErgeAIA"]
 edition = "2021"

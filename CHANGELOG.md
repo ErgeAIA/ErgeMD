@@ -4,6 +4,10 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [0.2.2] - 2026-05-29
+
+### 细节优化
+
 ## [0.2.1] - 2026-05-29
 
 ### 修复
