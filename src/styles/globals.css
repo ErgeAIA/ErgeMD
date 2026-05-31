@@ -71,6 +71,9 @@
 @import "./themes/core/mermaid/mermaid-wardley.css";
 @import "./themes/core/mermaid/mermaid-treeview.css";
 
+/* --- PlantUML 容器样式 --- */
+@import "./themes/core/plantuml.css";
+
 /* --- Obsidian 兼容模块样式 --- */
 @import "../components/obsidian/obsidian.css";
 
@@ -503,13 +506,11 @@ select:focus-visible {
 
 @media print {
 
-  /* 启用背景色和颜色打印（浏览器默认不打印背景色以省墨） */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* 隐藏非内容 UI 元素 */
   .title-bar,
   .left-panel,
   .right-panel,
@@ -519,18 +520,32 @@ select:focus-visible {
   .toast-container,
   .image-preview,
   .tab-bar,
-  .drag-overlay {
+  .drag-overlay,
+  .floating-toc {
     display: none !important;
   }
 
-  /* 让所有固定高度容器展开全部内容 */
+  .reading-scroll-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .reading-scroll-container > div {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   * {
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
   }
 
-  /* 恢复内联元素的正常高度 */
   img,
   svg,
   video {
@@ -538,16 +553,14 @@ select:focus-visible {
     max-width: 100% !important;
   }
 
-  /* markdown-body 占满页面 */
   .markdown-body {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 15mm 20mm !important;
+    padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
   }
 
-  /* 避免分页断裂 */
   h1,
   h2,
   h3,

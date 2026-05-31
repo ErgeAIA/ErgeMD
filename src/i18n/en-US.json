@@ -1,6 +1,10 @@
 {
   "common": {
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "preview": "Preview",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "welcome": {
     "title": "ErgeMD",
@@ -149,7 +153,10 @@
     "saveSuccess": "Saved successfully",
     "saveFailed": "Save failed",
     "filePathLost": "File disconnected. Please reopen it.",
-    "linkUpdated": "Link updated (current session only)"
+    "linkUpdated": "Link updated (current session only)",
+    "unsavedWarning": "You have unsaved changes. Are you sure you want to close?",
+    "unsaved": "Unsaved",
+    "synced": "Synced"
   },
   "image": {
     "copyImage": "Copy Image",
@@ -173,7 +180,11 @@
     "selectAll": "Select All",
     "editParagraph": "Edit Paragraph",
     "doubleClick": "Double-click",
-    "openInNewWindow": "Open in New Window"
+    "openInNewWindow": "Open in New Window",
+    "rendering": "Rendering...",
+    "renderError": "Render Error",
+    "plantumlError": "PlantUML syntax may be incorrect, please check the code",
+    "preview": "Live Preview"
   },
   "code": {
     "copy": "Copy Code",
@@ -214,5 +225,13 @@
     "easterEggTitle": "🔍 You found the hidden entrance!",
     "easterEggDesc": "Feel free to enjoy, tip if you like 🍵",
     "easterEggClose": "Pretend I saw nothing"
+  },
+  "update": {
+    "newVersionAvailable": "New version v{{version}} available, download now",
+    "download": "Download",
+    "checkNow": "Check Now",
+    "checking": "Checking for updates...",
+    "upToDate": "You're up to date",
+    "checkFailed": "Update check failed"
   }
 }

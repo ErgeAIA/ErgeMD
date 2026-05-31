@@ -22,22 +22,22 @@
 
 ## 核心功能
 
-- **Markdown 渲染**：支持 GFM、数学公式（KaTeX）、代码高亮、Mermaid 图表、任务列表
+- **Markdown 渲染**：支持 GFM、数学公式（KaTeX）、代码高亮、Mermaid/PlantUML 图表、任务列表
 - **阅读体验**：虚拟滚动、进度追踪、14 种主题、自动生成浮动章节
 - **Obsidian 语法兼容**：支持 Callout、Wiki 链接、嵌入引用、高亮标记、注释隐藏、块 ID 等 Obsidian 专属语法
 - **工作区管理**：多标签页、文件树、书签；快速打开原文件位置
-- **导出**：文档可导出 HTML、DOCX、PDF；Mermaid 图表一键保存为 SVG 图
+- **导出**：文档可导出 HTML、Word（DOCX）、PDF；Mermaid/PlantUML 图表一键保存为 SVG 图
 - **轻量高效**：Rust 后端 + React 前端，原生桌面体验
 
 ## 下载
 
-最新版本 **v0.2.2**：
+最新版本 **v0.3.0**：
 
-| 类型 | 下载链接 |
-|------|----------|
-| 便携版（免安装） | [ErgeMD-v0.2.2-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD-v0.2.2-portable.zip) |
-| NSIS 安装包 | [ErgeMD_0.2.2_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD_0.2.2_x64-setup.exe) |
-| MSI 安装包 | [ErgeMD_0.2.2_x64_en-US.msi](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD_0.2.2_x64_en-US.msi) |
+| 类型             | 下载链接                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 便携版（免安装） | [ErgeMD-v0.3.0-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.0/ErgeMD-v0.3.0-portable.zip) |
+| NSIS 安装包      | [ErgeMD_0.3.0_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.0/ErgeMD_0.3.0_x64-setup.exe) |
+| MSI 安装包       | [ErgeMD_0.3.0_x64_en-US.msi](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.0/ErgeMD_0.3.0_x64_en-US.msi) |
 
 更多历史版本请访问 [Releases 页面](https://github.com/ErgeAIA/ErgeMD/releases)。
 
@@ -215,6 +215,11 @@ pnpm build
 | [TECH-SPEC.md](./TECH-SPEC.md) | 技术规格文档       |
 | [AGENTS.md](./AGENTS.md)       | 开发规范与决策记录 |
 
+## TODO / 路线图
+
+- [ ] **PDF 导出水印**：支持在导出的 PDF 中添加水印
+- [ ] **PDF 页面加载优化**：从固定 3 秒延迟改为事件驱动，等待 DOM ready
+- [ ] **macOS PDF 优化**：macOS 平台使用 WKWebView `createPDF` 替代 `window.print()` 回退方案
 
 ## 许可证
 

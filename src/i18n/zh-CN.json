@@ -1,6 +1,10 @@
 {
   "common": {
-    "confirm": "确定"
+    "confirm": "确定",
+    "preview": "预览",
+    "edit": "编辑",
+    "cancel": "取消",
+    "save": "保存"
   },
   "welcome": {
     "title": "ErgeMD",
@@ -149,7 +153,10 @@
     "saveSuccess": "保存成功",
     "saveFailed": "保存失败",
     "filePathLost": "文件已失联,请重新打开",
-    "linkUpdated": "链接已更新（仅当前会话）"
+    "linkUpdated": "链接已更新（仅当前会话）",
+    "unsavedWarning": "有未保存的修改，确定要关闭吗？",
+    "unsaved": "未保存",
+    "synced": "已同步"
   },
   "image": {
     "copyImage": "复制图片",
@@ -173,7 +180,11 @@
     "selectAll": "全选",
     "editParagraph": "编辑此段落",
     "doubleClick": "双击",
-    "openInNewWindow": "在新窗口中打开"
+    "openInNewWindow": "在新窗口中打开",
+    "rendering": "渲染中...",
+    "renderError": "渲染失败",
+    "plantumlError": "PlantUML 语法可能有误，请检查代码",
+    "preview": "实时预览"
   },
   "code": {
     "copy": "复制代码",
@@ -214,5 +225,13 @@
     "easterEggTitle": "🔍 你发现了隐藏入口！",
     "easterEggDesc": "二哥分享放心白嫖，随喜投喂 🍵",
     "easterEggClose": "假装没看到"
+  },
+  "update": {
+    "newVersionAvailable": "发现新版本 v{{version}}，前往下载",
+    "download": "下载",
+    "checkNow": "立即检查",
+    "checking": "正在检查更新...",
+    "upToDate": "已是最新版本",
+    "checkFailed": "检查更新失败"
   }
 }

@@ -27,6 +27,11 @@ urlencoding = "2"
 tokio = { version = "1", features = ["sync"] }
 base64 = "0.22.1"
 font-enumeration = "0.9"
+reqwest = { version = "0.12", features = ["json"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+webview2-com = "0.38"
+windows-core = "0.61"
 
 [profile.release]
 opt-level = "z"

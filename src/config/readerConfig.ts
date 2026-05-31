@@ -59,6 +59,8 @@ export interface ReaderVirtualSizesConfig {
   thematicBreak: number;
   /** Mermaid 图表估算高度（px） */
   mermaid: number;
+  /** PlantUML 图表估算高度（px） */
+  plantuml: number;
   /** 代码块每行估算高度（px） */
   codeLine: number;
   /** 代码块基础高度（px） */
@@ -176,6 +178,7 @@ export const PresetConfigs: Record<ConfigLevel, ReaderConfig> = {
       blank: 14,
       thematicBreak: 40,
       mermaid: 180,
+      plantuml: 180,
       codeLine: 20,
       codeBase: 35,
       tableLine: 28,
@@ -216,6 +219,7 @@ export const PresetConfigs: Record<ConfigLevel, ReaderConfig> = {
       blank: 16,
       thematicBreak: 48,
       mermaid: 200,
+      plantuml: 200,
       codeLine: 22,
       codeBase: 40,
       tableLine: 32,
@@ -256,6 +260,7 @@ export const PresetConfigs: Record<ConfigLevel, ReaderConfig> = {
       blank: 18,
       thematicBreak: 56,
       mermaid: 240,
+      plantuml: 240,
       codeLine: 24,
       codeBase: 45,
       tableLine: 36,

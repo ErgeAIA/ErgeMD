@@ -1,7 +1,7 @@
 {
   "name": "ergemd",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "lint": "eslint src/",
@@ -13,6 +13,7 @@
     "tauri:build": "pnpm sync-version && pnpm tauri build && node scripts/rename-bundle.js"
   },
   "dependencies": {
+    "@plantuml/core": "^1.2026.5",
     "@syenchuk/remark-abbr": "^1.0.1",
     "@tanstack/react-virtual": "^3.13.24",
     "@tauri-apps/api": "^2",

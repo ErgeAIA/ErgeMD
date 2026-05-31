@@ -115,6 +115,8 @@ const VirtualMarkdownView = React.forwardRef<
           );
         case "mermaid":
           return virtualSizes.mermaid;
+        case "plantuml":
+          return virtualSizes.plantuml;
         case "code":
           return Math.max(
             virtualSizes.codeBase,

@@ -215,6 +215,12 @@ Run the executable directly, no installation needed. Suitable for:
 | [TECH-SPEC.md](./TECH-SPEC.md) | Technical specification                     |
 | [AGENTS.md](./AGENTS.md)       | Development guidelines and decision records |
 
+## TODO / Roadmap
+
+- [ ] **PDF Export Watermark**: Add watermark support for exported PDF files
+- [ ] **PDF Page Load Optimization**: Change from fixed 3-second delay to event-driven, waiting for DOM ready
+- [ ] **macOS PDF Optimization**: Use WKWebView `createPDF` instead of `window.print()` fallback for macOS
+
 ## License
 
 Licensed under the [AGPL-3.0 License](./LICENSE).

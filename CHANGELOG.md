@@ -4,6 +4,42 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [Unreleased]
+
+## [0.3.0] - 2026-05-31
+
+### 新增
+
+- PlantUML 图表支持：新增 `@plantuml/core` 渲染库，支持 16+ 图表类型（序列图、类图、活动图、组件图、状态图、对象图、用例图、部署图、时序图、网络图、ER 图、思维导图、WBS 工作分解结构、JSON/YAML 可视化）
+- PlantUML 右键菜单：支持 SVG 预览、编辑图表功能
+- PlantUML 串行渲染队列：解决 `@plantuml/core` 全局变量导致的并发冲突
+- Word 导出功能：支持将 Markdown 文档导出为 `.docx` 格式
+- PDF 导出优化：重构导出逻辑，使用 HTML 中转 + WebView2 PrintToPdf API 替代 `window.print()`，支持带样式/黑白双模式，支持分页和颜色保护
+- 自动更新检查器：新增 `UpdateChecker` 组件，支持检查应用更新
+  - 双平台检测：同时查询 GitHub 和 Gitee 最新 Release，取版本号更高者
+  - 每天一次：启动时检查距上次检测是否超过 24 小时
+  - 一键下载：点击「下载」按钮直接打开 Release 页面
+
+### 修复
+
+- PlantUML 暗黑主题适配：通过 `injectThemeStyles()` 函数向 SVG 内部注入主题样式，解决外部 CSS 无法覆盖内联样式的问题
+- PlantUML 时序图/网络图/甘特图/Wireframe 渲染失败：确认 `@plantuml/core` 支持的图表类型，替换不支持的图表为替代方案（WBS 图、用例图）
+- PlantUML 并发渲染问题：实现串行渲染队列，确保同一时间只处理一个渲染任务
+- PlantUML `viz-global.js` 加载失败：通过动态创建 `<script>` 标签加载 UMD 模块
+- Word 导出失败：修复 `exportDocx.ts` 中的兼容性问题
+- i18n 翻译 key 缺失：补充 `common.preview`、`common.edit`、`common.cancel`、`common.save`、`quickEdit.unsavedWarning`、`quickEdit.unsaved`、`quickEdit.synced`、`reader.preview` 等翻译
+
+### 变更
+
+- Markdown 解析逻辑：`parseMarkdownBlocks()` 新增 PlantUML 代码块识别（`plantuml`/`puml`）
+- 导出模块重构：`export.ts` 重构导出逻辑，统一处理流程
+- i18n 国际化：更新中英文语言文件
+
+### 细节优化
+
+- 状态栏优化：显示当前编辑状态
+- 阅读体验优化：MarkdownBlockView 组件增强
+
 ## [0.2.2] - 2026-05-29
 
 ### 细节优化

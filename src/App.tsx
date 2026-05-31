@@ -4,6 +4,7 @@ import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import React, { useCallback, useEffect, useState } from "react";
 import ToastContainer from "./components/common/Toast";
+import UpdateChecker from "./components/common/UpdateChecker";
 import ContextMenu from "./components/context-menu/ContextMenu";
 import { getReaderContextMenuItems } from "./components/context-menu/ReaderContextMenu";
 import AppLayout from "./components/layout/AppLayout";
@@ -394,7 +395,8 @@ function App() {
           });
         },
         onExportDocx: () => {
-          exportDocx(currentContent).catch(() => {
+          const content = useFileStore.getState().currentContent;
+          exportDocx(content || "").catch(() => {
             useReaderStore
               .getState()
               .addToast({ type: "error", message: "导出失败" });
@@ -494,16 +496,16 @@ function App() {
   );
 
   // F12 打开彩蛋页面
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "F12") {
-        e.preventDefault();
-        setShowEasterEgg((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === "F12") {
+  //       e.preventDefault();
+  //       setShowEasterEgg((v) => !v);
+  //     }
+  //   };
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, []);
 
   const handleFileSelect = useCallback(
     async (filePath: string, fileName: string) => {
@@ -619,7 +621,7 @@ function App() {
       exportDocx(currentContent || "").catch(() => {});
     },
     onExportPdf: () => {
-      window.print();
+      exportPdf().catch(() => {});
     },
     onToggleSidebar: () => setLeftPanelOpen((v) => !v),
   });
@@ -790,6 +792,9 @@ function App() {
 
       {/* Toast 通知 */}
       <ToastContainer />
+
+      {/* 版本更新检测 */}
+      <UpdateChecker />
 
       {/* 关于页面 */}
       {showAbout && <AboutPage onClose={() => setShowAbout(false)} />}

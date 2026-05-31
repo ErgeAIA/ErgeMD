@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use std::process::Command;
 
 pub mod fonts;
+pub mod pdf;
+pub mod update;
 pub mod window;
 
 #[derive(Debug, Serialize, Clone)]

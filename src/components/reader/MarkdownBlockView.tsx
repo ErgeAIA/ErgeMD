@@ -13,6 +13,7 @@ import CodeBlock from "./CodeBlock";
 import ContextMenuImage from "./ContextMenuImage";
 import ContextMenuLink from "./ContextMenuLink";
 import LazyMermaidBlock from "./LazyMermaidBlock";
+import LazyPlantUMLBlock from "./LazyPlantUMLBlock";
 import {
   useObsidianModule,
   preprocessObsidianSyntax,
@@ -84,6 +85,18 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       return (
         <div data-block-type="mermaid" data-raw={encodeURIComponent(block.raw)}>
           <LazyMermaidBlock code={code} raw={block.raw} />
+        </div>
+      );
+    }
+
+    // ── PlantUML block：使用 LazyPlantUMLBlock 懒渲染 ─
+    if (block.type === "plantuml") {
+      const codeLines = block.raw.split("\n");
+      const code = codeLines.slice(1, -1).join("\n").trim();
+
+      return (
+        <div data-block-type="plantuml" data-raw={encodeURIComponent(block.raw)}>
+          <LazyPlantUMLBlock code={code} raw={block.raw} />
         </div>
       );
     }

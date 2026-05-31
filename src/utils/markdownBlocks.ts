@@ -214,10 +214,14 @@ export function parseMarkdownBlocks(markdown: string): {
 
       const raw = contentLines.join("\n");
       const isMermaid = lang === "mermaid" || lang === "mmd";
+      const isPlantUML = lang === "plantuml" || lang === "puml";
+      let blockType: MarkdownBlock["type"] = "code";
+      if (isMermaid) blockType = "mermaid";
+      else if (isPlantUML) blockType = "plantuml";
 
       blocks.push({
         id: `code-${startLine}`,
-        type: isMermaid ? "mermaid" : "code",
+        type: blockType,
         raw,
         startLine,
         endLine: i,
@@ -631,10 +635,14 @@ function parseChunk(
 
       const raw = contentLines.join("\n");
       const isMermaid = lang === "mermaid" || lang === "mmd";
+      const isPlantUML = lang === "plantuml" || lang === "puml";
+      let blockType: MarkdownBlock["type"] = "code";
+      if (isMermaid) blockType = "mermaid";
+      else if (isPlantUML) blockType = "plantuml";
 
       blocks.push({
         id: `code-${start}`,
-        type: isMermaid ? "mermaid" : "code",
+        type: blockType,
         raw,
         startLine: start,
         endLine: i,

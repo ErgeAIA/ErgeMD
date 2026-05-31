@@ -1,23 +1,34 @@
+import { invoke } from "@tauri-apps/api/core";
+import { save } from "@tauri-apps/plugin-dialog";
+import { generatePdfHtml } from "./export";
 import { useReaderStore } from "@/stores/readerStore";
 
-/**
- * 导出为 PDF 文件。
- *
- * 使用浏览器原生打印引擎（window.print()），配合 @media print CSS。
- *
- * CSS 层面处理：
- * - 隐藏 UI 元素（标题栏/侧边栏/状态栏/标签栏）
- * - 取消所有固定高度容器（height: auto + overflow: visible）
- * - 启用 print-color-adjust: exact（保留主题背景色和文字颜色）
- * - 避免分页断裂（page-break-inside: avoid）
- *
- * 用户在打印对话框中选择"另存为 PDF"即可。
- */
-export async function exportPdf(): Promise<void> {
+export interface ExportPdfOptions {
+  grayscale?: boolean;
+}
+
+export async function exportPdf(options: ExportPdfOptions = {}): Promise<void> {
+  const { grayscale = false } = options;
+
+  const htmlContent = generatePdfHtml(".markdown-body", {
+    inlineCss: true,
+    grayscale,
+  });
+
+  const filePath = await save({
+    filters: [{ name: "PDF", extensions: ["pdf"] }],
+    defaultPath: "export.pdf",
+  });
+
+  if (!filePath) return;
+
   try {
-    window.print();
+    await invoke("export_pdf", {
+      htmlContent,
+      filePath,
+    });
   } catch (err) {
-    console.error("Print failed:", err);
-    useReaderStore.getState().addToast({ type: "error", message: "导出失败" });
+    console.error("PDF export failed:", err);
+    useReaderStore.getState().addToast({ type: "error", message: "导出 PDF 失败" });
   }
 }

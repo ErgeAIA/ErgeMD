@@ -5,6 +5,7 @@ export type MarkdownBlockType =
   | "list"
   | "code"
   | "mermaid"
+  | "plantuml"
   | "table"
   | "html"
   | "thematicBreak"

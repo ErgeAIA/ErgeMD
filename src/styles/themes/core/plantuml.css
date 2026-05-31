@@ -1,0 +1,57 @@
+/*
+================================================================================
+ErgeMD 主题系统 - plantuml.css
+================================================================================
+
+职责：PlantUML 图表容器样式
+暗色主题适配通过 SVG 内部 <style> 注入实现（injectThemeStyles 函数）
+这里只提供容器布局样式
+
+================================================================================
+*/
+
+[data-theme] {
+  .plantuml-diagram-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .plantuml-container {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  .plantuml-svg-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .plantuml-svg-wrapper svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+[data-theme="dark"],
+[data-theme="cyberpunk"],
+[data-theme="falcon"],
+[data-theme="aurora"],
+[data-theme="cherry-blossom"],
+[data-theme="desert-sunset"],
+[data-theme="forest"],
+[data-theme="monochrome"],
+[data-theme="ocean"],
+[data-theme="solar-flare"],
+[data-theme="tokyo-night"],
+[data-theme="neon-cyberpunk"] {
+  .plantuml-container {
+    background: var(--chart-surface-1, var(--bg-secondary));
+  }
+}

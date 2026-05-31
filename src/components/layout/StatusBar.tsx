@@ -32,7 +32,7 @@ const StatusBar: React.FC<StatusBarProps> = memo(
 
     return (
       <div
-        className="fixed inset-x-0 bottom-0 z-50"
+        className="status-bar fixed inset-x-0 bottom-0 z-50"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >

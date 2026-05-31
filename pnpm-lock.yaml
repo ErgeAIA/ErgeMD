@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@plantuml/core':
+        specifier: ^1.2026.5
+        version: 1.2026.5
       '@syenchuk/remark-abbr':
         specifier: ^1.0.1
         version: 1.0.1
@@ -644,6 +647,9 @@ packages:
 
   '@nodable/entities@2.1.0':
     resolution: {integrity: sha512-nyT7T3nbMyBI/lvr6L5TyWbFJAI9FTgVRakNoBqCD+PmID8DzFrrNdLLtHMwMszOtqZa8PAOV24ZqDnQrhQINA==}
+
+  '@plantuml/core@1.2026.5':
+    resolution: {integrity: sha512-by5VPPQJ5W69NogR3zzQs31MyTeVWeQCTUmgg9YaS7iPMMekFV5gfLuFOGSQ1zmD9lniyZL568X/iynGo/AwcA==}
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -3112,6 +3118,8 @@ snapshots:
       langium: 4.2.2
 
   '@nodable/entities@2.1.0': {}
+
+  '@plantuml/core@1.2026.5': {}
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
