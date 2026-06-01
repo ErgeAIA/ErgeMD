@@ -76,11 +76,11 @@ function renderInlineMarkdown(text: string): string {
 
   html = html.replace(/\\(\[!\w+\])/g, "$1");
 
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, src) => {
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, src) => {
     return `<img alt="${escapeForHtml(unescapeHtml(alt))}" src="${escapeForHtml(unescapeHtml(src))}">`;
   });
 
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, linkText, href) => {
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, linkText, href) => {
     return `<a href="${escapeForHtml(unescapeHtml(href))}">${escapeForHtml(unescapeHtml(linkText))}</a>`;
   });
 
