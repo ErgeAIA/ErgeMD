@@ -2,6 +2,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import React, { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import packageJson from "../../../package.json";
+import { forceCheckUpdate } from "../common/UpdateChecker";
+import { useReaderStore } from "../../stores/readerStore";
 import AppIcon from "./AppIcon";
 
 // 静态资源路径
@@ -63,6 +65,32 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
   const [hoveredQr, setHoveredQr] = useState<
     "tip" | "friend" | "bilibili" | null
   >(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const addToast = useReaderStore((s) => s.addToast);
+
+  const handleVersionClick = async () => {
+    if (checkingUpdate) return;
+    setCheckingUpdate(true);
+    try {
+      const { hasUpdate, latestVersion } = await forceCheckUpdate();
+      if (!hasUpdate) {
+        addToast({
+          type: "info",
+          message: t("about.noUpdate", { version: latestVersion }),
+          duration: 3000,
+        });
+      }
+      // 有更新时由 UpdateChecker 组件自动弹窗提示，无需额外处理
+    } catch {
+      addToast({
+        type: "error",
+        message: t("about.updateCheckFailed"),
+        duration: 3000,
+      });
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
 
   // 弹窗数据映射
   const qrMap: Record<string, { src: string; label: string }> = {
@@ -173,10 +201,44 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                     color: "var(--accent-cyan)",
                     border: "1px solid var(--active-border)",
                     flexShrink: 0,
+                    transition: "opacity 0.2s",
                   }}
                 >
                   v{packageJson.version}
                 </span>
+                <button
+                  onClick={handleVersionClick}
+                  disabled={checkingUpdate}
+                  title={t("about.checkUpdateHint")}
+                  className="flex items-center justify-center"
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "transparent",
+                    border: "1px solid var(--active-border)",
+                    color: "var(--accent-cyan)",
+                    cursor: checkingUpdate ? "wait" : "pointer",
+                    opacity: checkingUpdate ? 0.5 : 1,
+                    flexShrink: 0,
+                    padding: 0,
+                    fontSize: "12px",
+                    lineHeight: 1,
+                    transition: "background 0.2s, opacity 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!checkingUpdate) {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "var(--hover-bg)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background =
+                      "transparent";
+                  }}
+                >
+                  {checkingUpdate ? "…" : "↻"}
+                </button>
               </div>
               <p
                 style={{

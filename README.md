@@ -31,13 +31,13 @@
 
 ## 下载
 
-最新版本 **v0.3.2**：
+最新版本 **v0.3.3**：
 
 | 类型             | 下载链接                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 便携版（免安装） | [ErgeMD-v0.3.2-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.2/ErgeMD-v0.3.2-portable.zip) |
-| NSIS 安装包      | [ErgeMD_0.3.2_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.2/ErgeMD_0.3.2_x64-setup.exe) |
-| MSI 安装包       | [ErgeMD_0.3.2_x64_en-US.msi](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.2/ErgeMD_0.3.2_x64_en-US.msi) |
+| 便携版（免安装） | [ErgeMD-v0.3.3-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.3/ErgeMD-v0.3.3-portable.zip) |
+| NSIS 安装包      | [ErgeMD_0.3.3_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.3/ErgeMD_0.3.3_x64-setup.exe) |
+| MSI 安装包       | [ErgeMD_0.3.3_x64_en-US.msi](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.3.3/ErgeMD_0.3.3_x64_en-US.msi) |
 
 更多历史版本请访问 [Releases 页面](https://github.com/ErgeAIA/ErgeMD/releases)。
 
@@ -74,19 +74,35 @@ pnpm build
 
 ## 技术栈
 
-| 层级     | 技术                                  |
-| -------- | ------------------------------------- |
-| 桌面框架 | Tauri 2                               |
-| 前端     | React 19 + TypeScript                 |
-| 构建     | Vite 7                                |
-| 状态管理 | Zustand 5                             |
-| 样式     | Tailwind CSS 4 + CSS 变量主题         |
-| Markdown | react-markdown + remark/rehype 插件链 |
-| 数学公式 | KaTeX                                 |
-| 图表     | Mermaid                               |
-| 代码高亮 | highlight.js                          |
-| 虚拟滚动 | @tanstack/react-virtual               |
-| 数据库   | SQLite (sqlx)                         |
+| 层级     | 技术                                  | 版本约束             |
+| -------- | ------------------------------------- | -------------------- |
+| 桌面框架 | Tauri 2                               | >= 2.0               |
+| 前端     | React 19 + TypeScript                 | React >= 19, TS ~5.8 |
+| 构建     | Vite 7                                | >= 7.0               |
+| 状态管理 | Zustand 5                             | >= 5.0               |
+| 样式     | Tailwind CSS 4 + CSS 变量主题         | Tailwind >= 4.0      |
+| Markdown | react-markdown + remark/rehype 插件链 | 最新                 |
+| 数学公式 | KaTeX                                 | ^0.16.44             |
+| 图表     | Mermaid / @plantuml/core              | 11.14.0 / ^1.2026.5  |
+| 代码高亮 | highlight.js                          | ^11.11.1             |
+| 虚拟滚动 | @tanstack/react-virtual               | ^3.13.24             |
+| 国际化   | i18next + react-i18next               | i18next >= 26        |
+| Word 导出 | markdown-docx                        | ^1.6.0               |
+| 数据库   | SQLite (sqlx)                         | 0.8.6                |
+| 后端语言 | Rust                                  | edition 2021         |
+| 包管理器 | pnpm                                  | >= 8                 |
+
+## 关键架构决策
+
+| 决策                         | 原因                                              |
+| ---------------------------- | ------------------------------------------------- |
+| 选择 Tauri 2 而非 Electron   | 更小的安装包、更好的性能、Rust 安全性             |
+| 选择 Zustand 而非 Redux      | 更轻量、API 简洁、基于选择器的订阅机制            |
+| 选择 CSS 变量主题系统        | 主题切换零重渲染、支持动态主题                    |
+| 选择 @tanstack/react-virtual | 更现代的 API、更好的 TypeScript 支持              |
+| 前后端严格分离               | 确保 Rust 处理所有 IO、前端专注 UI                |
+| 阅读进度存入 SQLite          | 持久化、跨窗口同步、支持历史记录                  |
+| 三种性能模式预设             | 满足不同设备配置和阅读场景需求                    |
 
 ## 使用指南
 

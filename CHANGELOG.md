@@ -6,6 +6,18 @@
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-06-04
+
+### 新增
+
+- 关于页版本号旁新增「↻」手动检查更新按钮：点击立即触发 `check_update` 后端命令，绕过 24h 缓存限制，解决客户端因缓存窗口内不重新检查而错过新版本提示的问题
+- 新增 `forceCheckUpdate` 工具函数：从 `UpdateChecker` 模块导出，可被任意组件复用触发一次强制更新检查
+
+### 修复
+
+- Toast 通知不可见：移除 `ToastItem` 内联样式中覆盖动画终态的 `opacity: 0` / `transform: translateX(20px)`，让 `toast-enter` 关键帧的 `forwards` 模式正常生效
+- Toast 被关于页遮罩遮挡：Toast 容器 z-index 由 `z-50` 提升到 `z-[400]`，确保能盖过 `AboutPage` 的背景遮罩（z-100）和二维码弹窗（z-300）
+
 ## [0.3.2] - 2026-06-04
 
 ### 修复

@@ -225,7 +225,9 @@
     "qrFriendLabel": "👉 Add friend, let's chat 👋",
     "easterEggTitle": "🔍 You found the hidden entrance!",
     "easterEggDesc": "Feel free to enjoy, tip if you like 🍵",
-    "easterEggClose": "Pretend I saw nothing"
+    "checkUpdateHint": "Click to check for updates",
+    "noUpdate": "You're on the latest version v{{version}}",
+    "updateCheckFailed": "Update check failed, please retry with a stable network"
   },
   "update": {
     "newVersionAvailable": "New version v{{version}} available, download now",

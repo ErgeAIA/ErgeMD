@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-06-04
+
+### Added
+
+- Manual update check button next to version number in About page: clicking the `↻` button immediately triggers the `check_update` backend command, bypassing the 24-hour cache limit. This resolves the issue where clients miss new version prompts because the cache window prevents re-checking
+- New `forceCheckUpdate` utility function: exported from the `UpdateChecker` module, can be reused by any component to trigger a one-time forced update check
+
+### Fixed
+
+- Toast notifications not visible: removed `opacity: 0` / `transform: translateX(20px)` from the `ToastItem` inline style that was overriding the animation's terminal state, allowing the `toast-enter` keyframe's `forwards` mode to function correctly
+- Toast occluded by About page overlay: Toast container z-index raised from `z-50` to `z-[400]` to ensure it covers the `AboutPage` background overlay (z-100) and QR code modal (z-300)
+
 ## [0.3.2] - 2026-06-04
 
 ### Fixed

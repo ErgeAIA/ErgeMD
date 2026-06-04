@@ -225,7 +225,9 @@
     "qrFriendLabel": "👉 加个好友，常来唠嗑 👋",
     "easterEggTitle": "🔍 你发现了隐藏入口！",
     "easterEggDesc": "二哥分享放心白嫖，随喜投喂 🍵",
-    "easterEggClose": "假装没看到"
+    "checkUpdateHint": "点击检查更新",
+    "noUpdate": "已是最新版本 v{{version}}",
+    "updateCheckFailed": "检查更新失败，请检查网络后重试"
   },
   "update": {
     "newVersionAvailable": "发现新版本 v{{version}}，前往下载",

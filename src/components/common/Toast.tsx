@@ -44,8 +44,6 @@ const ToastItem: React.FC<{
         border: `1px solid ${colors.border}`,
         color: colors.text,
         backdropFilter: "blur(8px)",
-        opacity: 0,
-        transform: "translateX(20px)",
       }}
     >
       <span className="flex-1">{toast.message}</span>
@@ -84,7 +82,7 @@ const ToastContainer: React.FC = memo(() => {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed z-50 top-12 right-4 max-w-[360px] flex flex-col gap-2 pointer-events-none">
+    <div className="fixed z-[400] top-12 right-4 max-w-[360px] flex flex-col gap-2 pointer-events-none">
       {toasts.map((toast) => (
         <div key={toast.id} className="pointer-events-auto">
           <ToastItem toast={toast} onClose={() => removeToast(toast.id)} />

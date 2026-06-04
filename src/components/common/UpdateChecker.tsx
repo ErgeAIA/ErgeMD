@@ -7,6 +7,43 @@ import { useSettingsStore } from "../../stores/settingsStore";
 
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
+/** 手动触发一次更新检查，绕过 24h 间隔限制 */
+export const forceCheckUpdate = async (): Promise<{
+  hasUpdate: boolean;
+  latestVersion: string;
+  downloadUrl: string;
+}> => {
+  const result = await invoke<{
+    has_update: boolean;
+    current_version: string;
+    latest_version: string;
+    download_url: string;
+    release_notes: string;
+  }>("check_update", { currentVersion: packageJson.version });
+
+  const setLastCheckUpdateTime = useSettingsStore.getState().setLastCheckUpdateTime;
+  const setUpdateInfo = useSettingsStore.getState().setUpdateInfo;
+  setLastCheckUpdateTime(Date.now());
+
+  if (result.has_update) {
+    setUpdateInfo({
+      hasUpdate: result.has_update,
+      currentVersion: result.current_version,
+      latestVersion: result.latest_version,
+      downloadUrl: result.download_url,
+      releaseNotes: result.release_notes,
+    });
+  } else {
+    setUpdateInfo(null);
+  }
+
+  return {
+    hasUpdate: result.has_update,
+    latestVersion: result.latest_version,
+    downloadUrl: result.download_url,
+  };
+};
+
 const UpdateChecker: React.FC = memo(() => {
   const { t } = useTranslation();
   const checkUpdateEnabled = useSettingsStore((s) => s.checkUpdateEnabled);
