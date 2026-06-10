@@ -6,6 +6,20 @@
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-06-10
+
+### 新增
+
+- Mermaid 集成 ZenUML 外部插件：新增 `@mermaid-js/mermaid-zenuml@0.2.3` 依赖，实现 6.15 节 ZenUML 序列图的原生渲染；`MermaidDiagram` 通过 `ensureZenumlRegistered()` 在 `mermaid.initialize()` 之前幂等注册插件，仅检测到 `zenuml` 关键字时按需懒加载 `@zenuml/core`
+- Mermaid 升级至 11.15.0：内置 Event Modeling 事件建模图支持，6.23 节 `eventmodeling` 关键字可直接渲染（无需外部插件）
+- MermaidDiagram 主题类型扩展：补全 `ChartColors.zenuml`（text / border / bg）与 `getMermaidColors()` 的 CSS 变量透传；同步透传基础 fontColor / fontFamily，确保 ZenUML 与全局主题风格一致
+
+### 变更
+
+- `vite.config.ts` 的 `chunkSizeWarningLimit` 由 600 提升至 6500：ZenUML 外部插件引入的 `@zenuml/core@^3.47.0` 依赖较大，mermaid chunk 从 ~1MB 膨胀至 ~6MB；仅消除构建警告，产物体积实际未变
+- `UNSUPPORTED_DIAGRAM_TYPES` 清空：移除 `zenuml` 与 `eventmodeling` 标记，对应图表均已支持
+- `MarkdownSyntaxExample.md`：6.15 节 ZenUML 与 6.23 节事件建模图说明由「暂不支持」更新为「支持说明」
+
 ## [0.3.5] - 2026-06-06
 
 ### 新增
