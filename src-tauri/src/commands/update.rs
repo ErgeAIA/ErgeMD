@@ -33,29 +33,47 @@ struct ReleaseInfo {
     release_notes: String,
 }
 
-/// 优先匹配 NSIS 安装包链接（`-setup.exe` 或 `_x64-setup.exe`），跳过 MSI；
-/// 若 assets 中无匹配项，回退到 release html_url
-fn pick_nsis_download_url(assets: &serde_json::Value, html_url: &str) -> String {
-    if let Some(arr) = assets.as_array() {
-        // 1) 优先匹配包含 "setup.exe" 的 NSIS 安装包
-        for asset in arr {
-            let name = asset["name"].as_str().unwrap_or("").to_lowercase();
-            if name.ends_with(".exe") && name.contains("setup") {
-                if let Some(url) = asset["browser_download_url"].as_str() {
-                    return url.to_string();
-                }
-            }
-        }
-        // 2) 其次匹配 portable zip（重命名为 -portable.zip 的产物）
-        for asset in arr {
-            let name = asset["name"].as_str().unwrap_or("").to_lowercase();
-            if name.ends_with(".zip") && name.contains("portable") {
+/// 按 `target_os` 关键字从 assets 列表中选择下载链接。
+/// `target_os` 接受 "windows" | "macos" | "linux" | 其他（回退到 html_url）。
+pub fn pick_platform_download_url(
+    target_os: &str,
+    assets: &serde_json::Value,
+    html_url: &str,
+) -> String {
+    let arr = match assets.as_array() {
+        Some(a) => a,
+        None => return html_url.to_string(),
+    };
+
+    let (primary_ext, fallback_ext) = match target_os {
+        "windows" => (Some("setup.exe"), Some("portable.zip")),
+        "macos" => (Some("dmg"), Some("app.tar.gz")),
+        "linux" => (Some("appimage"), Some("deb")),
+        _ => return html_url.to_string(),
+    };
+
+    for asset in arr {
+        let name = asset["name"].as_str().unwrap_or("").to_lowercase();
+        if let Some(ext) = primary_ext {
+            if name.ends_with(ext) {
                 if let Some(url) = asset["browser_download_url"].as_str() {
                     return url.to_string();
                 }
             }
         }
     }
+
+    if let Some(fb) = fallback_ext {
+        for asset in arr {
+            let name = asset["name"].as_str().unwrap_or("").to_lowercase();
+            if name.ends_with(fb) {
+                if let Some(url) = asset["browser_download_url"].as_str() {
+                    return url.to_string();
+                }
+            }
+        }
+    }
+
     html_url.to_string()
 }
 
@@ -96,7 +114,7 @@ async fn fetch_github_latest() -> Result<ReleaseInfo, String> {
         .unwrap_or("https://github.com/ErgeAIA/ErgeMD/releases")
         .to_string();
 
-    let download_url = pick_nsis_download_url(&json["assets"], &html_url);
+    let download_url = pick_platform_download_url(std::env::consts::OS, &json["assets"], &html_url);
 
     let release_notes = json["body"]
         .as_str()
@@ -144,7 +162,7 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
         .to_string();
 
     // Gitee API 返回的 assets 结构为 [{ "name": "...", "browser_download_url": "..." }]
-    let download_url = pick_nsis_download_url(&json["assets"], &html_url);
+    let download_url = pick_platform_download_url(std::env::consts::OS, &json["assets"], &html_url);
 
     let release_notes = json["body"]
         .as_str()
@@ -179,7 +197,7 @@ fn pick_latest(
     }
 }
 
-fn is_newer_version(current: &str, latest: &str) -> bool {
+pub fn is_newer_version(current: &str, latest: &str) -> bool {
     let cur_parts: Vec<u32> = current
         .split('.')
         .filter_map(|s| s.parse().ok())

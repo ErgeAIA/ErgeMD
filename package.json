@@ -8,6 +8,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:rust": "cd src-tauri && cargo test",
     "tauri": "tauri",
     "sync-version": "node scripts/sync-version.js",
     "tauri:build": "pnpm sync-version && pnpm tauri build && node scripts/rename-bundle.js"
@@ -51,6 +56,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^10.2.0",
     "globals": "^17.5.0",
+    "jsdom": "^25.0.1",
     "playwright": "^1.59.1",
     "sharp": "^0.34.5",
     "svgo": "^4.0.1",
@@ -58,6 +64,10 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^7.0.4",
-    "vite-plugin-image-optimizer": "^2.0.3"
+    "vite-plugin-image-optimizer": "^2.0.3",
+    "vitest": "^2.1.9",
+    "@vitest/ui": "^2.1.9",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/dom": "^10.4.0"
   }
 }

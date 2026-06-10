@@ -36,7 +36,7 @@ pub async fn read_file(path: String) -> Result<ReadFileResult, String> {
     })
 }
 
-fn validate_path(path: &str) -> Result<(), String> {
+pub fn validate_path(path: &str) -> Result<(), String> {
     let path_buf = PathBuf::from(path);
     if path_buf.components().any(|c| c.as_os_str() == "..") {
         return Err("Path traversal not allowed".to_string());
@@ -143,7 +143,7 @@ fn sort_file_tree(node: &mut FileNode) {
     }
 }
 
-fn count_words(content: &str) -> usize {
+pub fn count_words(content: &str) -> usize {
     // Count CJK characters + English words
     let cjk_count = content.chars().filter(|c| is_cjk(*c)).count();
     let ascii_words = content
@@ -153,7 +153,7 @@ fn count_words(content: &str) -> usize {
     cjk_count + ascii_words
 }
 
-fn is_cjk(c: char) -> bool {
+pub fn is_cjk(c: char) -> bool {
     matches!(
         c,
         '\u{4E00}'..='\u{9FFF}' |   // CJK Unified Ideographs
@@ -286,6 +286,36 @@ pub async fn fetch_remote_image_as_data_url(url: String) -> Result<String, Strin
     Ok(format!("data:{};base64,{}", mime_type, base64_data))
 }
 
+/// 根据平台构造"在文件管理器中显示"的命令。
+/// 返回 (program, args)。该函数是纯函数，便于测试。
+pub fn build_reveal_command(
+    target_os: &str,
+    file_path: &std::path::Path,
+) -> (String, Vec<String>) {
+    match target_os {
+        "windows" => (
+            "explorer".to_string(),
+            vec!["/select,".to_string(), file_path.to_string_lossy().to_string()],
+        ),
+        "macos" => (
+            "open".to_string(),
+            vec!["-R".to_string(), file_path.to_string_lossy().to_string()],
+        ),
+        // Linux / 其他 Unix
+        _ => {
+            let dir = file_path
+                .parent()
+                .filter(|p| !p.as_os_str().is_empty())
+                .map(|p| p.to_path_buf())
+                .unwrap_or_else(|| std::path::PathBuf::from("/"));
+            (
+                "xdg-open".to_string(),
+                vec![dir.to_string_lossy().to_string()],
+            )
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn reveal_in_explorer(file_path: String) -> Result<(), String> {
     let path = PathBuf::from(&file_path);
@@ -293,22 +323,11 @@ pub async fn reveal_in_explorer(file_path: String) -> Result<(), String> {
         return Err("File does not exist".to_string());
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        Command::new("explorer")
-            .args(["/select,", &file_path])
-            .spawn()
-            .map_err(|e| format!("Failed to open explorer: {}", e))?;
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        let dir = path.parent().unwrap_or(&path);
-        Command::new("xdg-open")
-            .arg(dir)
-            .spawn()
-            .map_err(|e| format!("Failed to open file manager: {}", e))?;
-    }
+    let (program, args) = build_reveal_command(std::env::consts::OS, &path);
+    Command::new(&program)
+        .args(&args)
+        .spawn()
+        .map_err(|e| format!("Failed to open file manager: {}", e))?;
 
     Ok(())
 }

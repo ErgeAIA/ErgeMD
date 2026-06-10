@@ -1,4 +1,4 @@
-mod commands;
+pub mod commands;
 mod db;
 
 use db::models::{ReadingProgress, RecentFile};
