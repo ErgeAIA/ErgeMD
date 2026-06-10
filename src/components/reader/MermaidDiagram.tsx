@@ -728,7 +728,7 @@ function normalizeChartType(chart: string): string {
     c4context: "c4",
     // Quadrant
     quadrantchart: "quadrant",
-    // ZenUML // TODO: 需外部插件 @mermaid-js/mermaid-zenuml，未来 mermaid 支持后再启用
+    // ZenUML (通过外部插件 @mermaid-js/mermaid-zenuml 注册)
     zenuml: "zenuml",
     // Block
     "block-beta": "block",
@@ -741,7 +741,7 @@ function normalizeChartType(chart: string): string {
     "architecture-beta": "architecture",
     // Radar
     "radar-beta": "radar",
-    // Event Modeling // TODO: 需外部插件，未来 mermaid 支持后再启用
+    // Event Modeling (Mermaid 11.15.0 内置支持)
     eventmodeling: "eventmodeling",
     // Treemap
     "treemap-beta": "treemap",
@@ -1044,7 +1044,7 @@ ${selector} .packetTitle {
   return svg.replace("</style>", `</style>${packetPatchStyle}`);
 }
 
-const UNSUPPORTED_DIAGRAM_TYPES = new Set(["eventmodeling"]);
+const UNSUPPORTED_DIAGRAM_TYPES = new Set<string>([]);
 
 const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
   ({ chart, onEdit }) => {

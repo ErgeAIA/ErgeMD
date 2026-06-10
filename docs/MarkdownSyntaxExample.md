@@ -1141,7 +1141,7 @@ radar-beta
 
 ### 6.23 [事件建模图](https://mermaid.nodejs.cn/syntax/eventModelling.html)
 
-> **暂不支持说明**：Event Modeling 不是当前 Mermaid 11.14.0 内置 diagram，当前 `eventmodeling` 关键字会触发 UnknownDiagramError。**不计入 Mermaid 主题系统测试失败**。如未来需要支持，应单独调研外部插件 `@howarddierking/mermaid-event-model` 或正确语法关键字。
+> **支持说明**：Mermaid 11.15.0 已内置 Event Modeling（关键字 `eventmodeling`），无需外部插件。
 
 ```mermaid
 eventmodeling
