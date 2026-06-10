@@ -1795,7 +1795,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
                 fill: ${zenumlColors.text} !important;
               }
               ${scope} .fragment-border {
-                fill: ${zenumlColors.bg} !important;
+                fill: none !important;
                 stroke: ${zenumlColors.border} !important;
               }
               ${scope} .fragment-header {

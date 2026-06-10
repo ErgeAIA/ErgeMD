@@ -14,12 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mermaid ZenUML external plugin integration: added `@mermaid-js/mermaid-zenuml@0.2.3` dependency, enabling native rendering of the ZenUML sequence diagram (section 6.15). `MermaidDiagram` uses `ensureZenumlRegistered()` to idempotently register the plugin before `mermaid.initialize()`, with on-demand lazy loading of `@zenuml/core` triggered only when the `zenuml` keyword is detected
 - Mermaid upgraded to 11.15.0: built-in Event Modeling support, the `eventmodeling` keyword (section 6.23) renders directly without external plugins
 - MermaidDiagram theme type extensions: completed `ChartColors.zenuml` (text / border / bg) and the corresponding CSS variable passthrough in `getMermaidColors()`; also passes through base `fontColor` / `fontFamily` to keep ZenUML consistent with the global theme
+- MermaidDiagram theme adaptation: added ZenUML and Event Modeling theme variable mappings (`mermaid-zenuml.css` / `mermaid-eventmodeling.css`); SVG post-processing injects `!important` rules to override the ZenUML plugin's hardcoded inline colors
+- Theme CSS variable additions: `--mermaid-zenuml-lifeline` / `--mermaid-zenuml-message` for ZenUML; 15 `em*` series variables (5 box types: ui / processor / readmodel / command / event, plus relation / swimlane / arrowhead) for Event Modeling
 
 ### Changed
 
 - `vite.config.ts` `chunkSizeWarningLimit` raised from 600 to 6500: the ZenUML plugin's `@zenuml/core@^3.47.0` dependency is large, expanding the mermaid chunk from ~1MB to ~6MB; this only silences the build warning — the actual artifact size is unchanged
 - `UNSUPPORTED_DIAGRAM_TYPES` cleared: removed `zenuml` and `eventmodeling` entries; both diagram types are now supported
 - `MarkdownSyntaxExample.md`: sections 6.15 (ZenUML) and 6.23 (Event Modeling) notes updated from "not supported" to "supported"
+
+### Fixed
+
+- ZenUML message lines invisible after theme adaptation: the original `.fragment-border` CSS is `fill: none` (transparent), but the theme adaptation erroneously changed it to an opaque background color, which occluded the message lines. Restored `fill: none` while keeping the `stroke` theme adaptation
 
 ## [0.3.5] - 2026-06-06
 
