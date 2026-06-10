@@ -41,6 +41,9 @@ dist-ssr
 # Trae IDE
 .trae/
 
+# Worktrees (using-git-worktrees skill)
+.worktrees/
+
 # Console logs
 docs/consolo-logs/*.txt
 
