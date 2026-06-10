@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **macOS support**: ErgeMD now runs on macOS 11+, with a universal `.dmg` installer covering both Apple Silicon and Intel
+- **Linux support**: ErgeMD now runs on Ubuntu 22.04+ / Debian 12+, with `.AppImage` and `.deb` packages
+- **Platform detection utility**: `src/utils/platform.ts` provides a unified `detectPlatform()` and `getPlatformLabel()` helper
+- **Cross-platform update check**: `update.rs` matches assets by `target_os` keyword (Windows NSIS, macOS DMG, Linux AppImage)
+- **Cross-platform reveal_in_explorer**: macOS uses `open -R`, Linux uses `xdg-open`, Windows keeps `explorer /select,`
+- **Unit test infrastructure**: Vitest (frontend) + cargo test (Rust) two-layer test suite, enforced in CI
+
+### Changed
+
+- **PDF export**: macOS / Linux now use the system print dialog (users manually choose "Save as PDF"); Windows still uses WebView2 PrintToPdf
+- **TitleBar**: hides the custom minimize / maximize / close buttons on macOS to avoid conflict with the system traffic lights
+- **tauri.conf.json**: `bundle.targets` extended to `["nsis", "app", "dmg", "appimage", "deb"]` to enable all three platform bundles
+- **release.yml**: expanded from single-platform Windows to a 4-platform matrix (Windows x64 / macOS arm64 / macOS x64 / Linux x64)
+- **rename-bundle.js**: branches by `process.platform` / `BUILD_PLATFORM` env to handle `.app` / `.dmg` / `.AppImage` / `.deb`
+
+### Notes
+
+- The first cross-platform release **does not enable** macOS code signing (free-software strategy); users need to right-click → Open to bypass Gatekeeper
+
 ## [0.3.7] - 2026-06-10
 
 ### Changed

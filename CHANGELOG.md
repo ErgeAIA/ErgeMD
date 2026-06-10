@@ -6,6 +6,27 @@
 
 ## [Unreleased]
 
+### 新增
+
+- **macOS 支持**：ErgeMD 现可在 macOS 11+ 上运行，提供 Apple Silicon 与 Intel 通用 .dmg
+- **Linux 支持**：ErgeMD 现可在 Ubuntu 22.04+ / Debian 12+ 上运行，提供 .AppImage 与 .deb
+- **平台检测工具**：`src/utils/platform.ts` 提供统一平台判断；`detectPlatform()` 与 `getPlatformLabel()`
+- **更新检查跨平台化**：`update.rs` 按 `target_os` 关键字匹配对应平台资产（Windows NSIS、macOS DMG、Linux AppImage）
+- **reveal_in_explorer 跨平台化**：macOS 走 `open -R`，Linux 走 `xdg-open`，Windows 保持 `explorer /select,`
+- **单元测试基础设施**：Vitest（前端） + cargo test（Rust）双层测试套件，CI 强制跑测试
+
+### 变更
+
+- **PDF 导出**：macOS / Linux 走系统打印对话框（用户需手动选择「存储为 PDF」）；Windows 仍走 WebView2 PrintToPdf
+- **TitleBar**：macOS 上隐藏自绘最小化 / 最大化 / 关闭按钮，避免与系统红绿灯冲突
+- **tauri.conf.json**：`bundle.targets` 扩展为 `["nsis", "app", "dmg", "appimage", "deb"]`，启用三大平台打包
+- **release.yml**：从单平台 Windows 扩展为 4 平台矩阵（Windows x64 / macOS arm64 / macOS x64 / Linux x64）
+- **rename-bundle.js**：按 `process.platform` / `BUILD_PLATFORM` 环境变量分流，支持 .app / .dmg / .AppImage / .deb
+
+### 备注
+
+- 跨平台首版 **不启用** macOS 代码签名（免费软件策略），用户需右键 → 打开绕过 Gatekeeper
+
 ## [0.3.7] - 2026-06-10
 
 ### 变更
