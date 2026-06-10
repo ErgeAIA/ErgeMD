@@ -9,48 +9,92 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: windows-latest
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache Rust
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm test
+      - name: cargo test
+        run: cd src-tauri && cargo test
 
-      - name: Install dependencies
-        run: pnpm install
-
+  build:
+    name: Build ${{ matrix.platform }} (${{ matrix.suffix }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: windows-x64
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-arm64
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            suffix: macos-x64
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            suffix: linux-x64
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+      - name: Install Linux deps
+        if: matrix.suffix == 'linux-x64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+      - run: pnpm install
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0.5
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'ErgeMD ${{ github.ref_name }}'
           releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: false
-          prerelease: false
           includeRelease: true
           includeUpdaterJson: true
-
-      - name: Create portable package
+      - name: Rename bundles
+        env:
+          BUILD_PLATFORM: ${{ matrix.suffix }}
+        run: node scripts/rename-bundle.js
+      - name: Create portable package (Windows)
+        if: matrix.suffix == 'windows-x64'
         shell: pwsh
         run: |
           $src = "src-tauri/target/release"
@@ -61,12 +105,13 @@ jobs:
           if (Test-Path "$src/WebView2Loader.dll") {
             Copy-Item "$src/WebView2Loader.dll" $dst/
           }
-          Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ github.ref_name }}-portable.zip" -Force
-
-      - name: Upload portable package to release
+          Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ github.ref_name }}-windows-x64-portable.zip" -Force
+      - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
-          files: ErgeMD-${{ github.ref_name }}-portable.zip
+          files: |
+            ErgeMD-v${{ github.ref_name }}-*
+            ErgeMD-${{ github.ref_name }}-windows-x64-portable.zip
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
