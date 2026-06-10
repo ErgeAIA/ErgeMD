@@ -6,6 +6,13 @@
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-06-10
+
+### 变更
+
+- Windows 安装包构建移除 MSI 产物：`tauri.conf.json` 的 `bundle.targets` 由 `["nsis", "msi"]` 改为 `["nsis"]`，CI 仅产出 NSIS 安装包与便携 zip；降低构建时间与发布体积（MSI 用户群体极少，且企业批量部署场景未启用）
+- 更新检查默认下载链接改为 NSIS 安装包：Rust 端 `pick_msi_download_url` 重命名为 `pick_nsis_download_url`，优先匹配 `*setup.exe` 资产（NSIS 安装包），其次回退到 `*-portable.zip`（便携版），最后回退到 release html_url；不再解析 `.msi` 资产
+
 ## [0.3.6] - 2026-06-10
 
 ### 新增

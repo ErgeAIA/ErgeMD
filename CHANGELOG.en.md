@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-06-10
+
+### Changed
+
+- Removed MSI artifact from Windows installer builds: `tauri.conf.json` `bundle.targets` changed from `["nsis", "msi"]` to `["nsis"]`; CI now produces only the NSIS installer and portable zip. Reduces build time and release size (MSI has minimal end-user adoption; enterprise deployment is not enabled)
+- Default update-check download URL switched to the NSIS installer: renamed Rust `pick_msi_download_url` to `pick_nsis_download_url`; it now prefers `*setup.exe` assets (NSIS installer), then falls back to `*-portable.zip` (portable build), then to the release html_url; `.msi` assets are no longer parsed
+
 ## [0.3.6] - 2026-06-10
 
 ### Added

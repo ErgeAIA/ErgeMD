@@ -39,7 +39,6 @@ Latest version **v0.2.2**:
 |------|---------------|
 | Portable (no install) | [ErgeMD-v0.2.2-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD-v0.2.2-portable.zip) |
 | NSIS Installer | [ErgeMD_0.2.2_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD_0.2.2_x64-setup.exe) |
-| MSI Installer | [ErgeMD_0.2.2_x64_en-US.msi](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD_0.2.2_x64_en-US.msi) |
 
 For older versions, visit the [Releases page](https://github.com/ErgeAIA/ErgeMD/releases).
 
