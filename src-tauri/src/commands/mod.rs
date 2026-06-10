@@ -36,7 +36,7 @@ pub async fn read_file(path: String) -> Result<ReadFileResult, String> {
     })
 }
 
-fn validate_path(path: &str) -> Result<(), String> {
+pub fn validate_path(path: &str) -> Result<(), String> {
     let path_buf = PathBuf::from(path);
     if path_buf.components().any(|c| c.as_os_str() == "..") {
         return Err("Path traversal not allowed".to_string());
@@ -143,7 +143,7 @@ fn sort_file_tree(node: &mut FileNode) {
     }
 }
 
-fn count_words(content: &str) -> usize {
+pub fn count_words(content: &str) -> usize {
     // Count CJK characters + English words
     let cjk_count = content.chars().filter(|c| is_cjk(*c)).count();
     let ascii_words = content
@@ -153,7 +153,7 @@ fn count_words(content: &str) -> usize {
     cjk_count + ascii_words
 }
 
-fn is_cjk(c: char) -> bool {
+pub fn is_cjk(c: char) -> bool {
     matches!(
         c,
         '\u{4E00}'..='\u{9FFF}' |   // CJK Unified Ideographs
