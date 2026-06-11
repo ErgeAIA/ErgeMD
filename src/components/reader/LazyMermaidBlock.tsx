@@ -3,11 +3,14 @@ import { useReaderStore } from "@/stores/readerStore";
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { encodeBlockDataRaw, replaceLinesByRange } from "@/utils/quickEditLines";
 import MermaidDiagram from "./MermaidDiagram";
 
 interface LazyMermaidBlockProps {
   code: string;
   raw?: string;
+  startLine?: number;
+  endLine?: number;
 }
 
 const activeMermaidEditRef = { current: "" as string };
@@ -15,7 +18,7 @@ const activeMermaidEditRef = { current: "" as string };
 let mermaidIdCounter = 0;
 
 const LazyMermaidBlock: React.FC<LazyMermaidBlockProps> = memo(
-  ({ code, raw }) => {
+  ({ code, raw, startLine, endLine }) => {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [editCode, setEditCode] = useState(code);
@@ -71,7 +74,20 @@ const LazyMermaidBlock: React.FC<LazyMermaidBlockProps> = memo(
         const lastLine = codeLines[codeLines.length - 1];
         const newRaw = `${firstLine}\n${editCode}\n${lastLine}`;
 
-        const newContent = currentContent.replace(raw, newRaw);
+        // 优先按行号精确定位（处理 mermaid fence 周围可能被规范化的问题）
+        let newContent: string;
+        if (
+          typeof startLine === "number" &&
+          typeof endLine === "number"
+        ) {
+          newContent = replaceLinesByRange(
+            currentContent,
+            { startLine, endLine },
+            newRaw,
+          );
+        } else {
+          newContent = currentContent.replace(raw, newRaw);
+        }
 
         if (newContent === currentContent) {
           addToast({
@@ -101,7 +117,7 @@ const LazyMermaidBlock: React.FC<LazyMermaidBlockProps> = memo(
       }
 
       cleanup();
-    }, [cleanup, code, editCode, raw]);
+    }, [cleanup, code, editCode, raw, startLine, endLine]);
 
     const handleCancel = useCallback(() => {
       cleanup();
@@ -294,7 +310,7 @@ const LazyMermaidBlock: React.FC<LazyMermaidBlockProps> = memo(
         ref={containerRef}
         className="my-4"
         data-block-type="mermaid"
-        data-raw={encodeURIComponent(raw ?? code)}
+        data-raw={encodeBlockDataRaw(raw ?? code, startLine, endLine)}
       >
         <MermaidDiagram chart={code} onEdit={handleEditRequest} />
       </div>

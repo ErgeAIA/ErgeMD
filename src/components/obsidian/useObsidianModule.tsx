@@ -25,7 +25,12 @@ function cloneElementWithText(
   return React.cloneElement(element, {}, newText || "\u00A0");
 }
 
-export function useObsidianModule(content: string, blockRaw?: string): Components | null {
+export function useObsidianModule(
+  content: string,
+  blockRaw?: string,
+  startLine?: number,
+  endLine?: number,
+): Components | null {
   const syntaxes = useMemo(() => detectObsidianSyntax(content), [content]);
 
   return useMemo(() => {
@@ -87,6 +92,9 @@ export function useObsidianModule(content: string, blockRaw?: string): Component
               type={calloutType}
               fold={calloutFold}
               customTitle={calloutCustomTitle}
+              raw={blockRaw}
+              startLine={startLine}
+              endLine={endLine}
             >
               {filteredChildren}
             </ObsidianCallout>
@@ -96,7 +104,6 @@ export function useObsidianModule(content: string, blockRaw?: string): Component
         return (
           <blockquote
             {...rest}
-            data-raw={blockRaw ? encodeURIComponent(blockRaw) : undefined}
             style={{
               borderLeft: "3px solid var(--accent-purple)",
               paddingLeft: "1em",
@@ -115,7 +122,7 @@ export function useObsidianModule(content: string, blockRaw?: string): Component
     }
 
     return components;
-  }, [syntaxes, blockRaw]);
+  }, [syntaxes, blockRaw, startLine, endLine]);
 }
 
 export function preprocessObsidianSyntax(content: string): string {

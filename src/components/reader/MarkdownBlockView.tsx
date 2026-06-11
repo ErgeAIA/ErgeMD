@@ -22,6 +22,7 @@ import {
 
 import remarkAbbr from "@syenchuk/remark-abbr";
 import remarkSupersub from "remark-supersub";
+import { encodeBlockDataRaw } from "@/utils/quickEditLines";
 
 // ── 共享的 remarkPlugins / rehypePlugins ──────────────
 
@@ -83,8 +84,16 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       const code = codeLines.slice(1, -1).join("\n").trim();
 
       return (
-        <div data-block-type="mermaid" data-raw={encodeURIComponent(block.raw)}>
-          <LazyMermaidBlock code={code} raw={block.raw} />
+        <div
+          data-block-type="mermaid"
+          data-raw={encodeBlockDataRaw(block.raw, block.startLine, block.endLine)}
+        >
+          <LazyMermaidBlock
+            code={code}
+            raw={block.raw}
+            startLine={block.startLine}
+            endLine={block.endLine}
+          />
         </div>
       );
     }
@@ -95,8 +104,16 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       const code = codeLines.slice(1, -1).join("\n").trim();
 
       return (
-        <div data-block-type="plantuml" data-raw={encodeURIComponent(block.raw)}>
-          <LazyPlantUMLBlock code={code} raw={block.raw} />
+        <div
+          data-block-type="plantuml"
+          data-raw={encodeBlockDataRaw(block.raw, block.startLine, block.endLine)}
+        >
+          <LazyPlantUMLBlock
+            code={code}
+            raw={block.raw}
+            startLine={block.startLine}
+            endLine={block.endLine}
+          />
         </div>
       );
     }
@@ -129,7 +146,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       return (
         <div
           data-block-type="frontmatter"
-          data-raw={encodeURIComponent(block.raw)}
+          data-raw={encodeBlockDataRaw(block.raw, block.startLine, block.endLine)}
           onDoubleClick={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest("a, button, input, select, textarea")) return;
@@ -146,7 +163,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       return (
         <div
           style={{ margin: "2em 0" }}
-          data-raw={encodeURIComponent(block.raw)}
+          data-raw={encodeBlockDataRaw(block.raw, block.startLine, block.endLine)}
         >
           <svg
             width="100%"
@@ -168,7 +185,12 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
     }
 
     // ── 其他 block：使用 ReactMarkdown 渲染 ──
-    const obsidianComponents = useObsidianModule(block.raw, block.raw);
+    const obsidianComponents = useObsidianModule(
+      block.raw,
+      block.raw,
+      block.startLine,
+      block.endLine,
+    );
     const processedRaw = useMemo(
       () => preprocessObsidianSyntax(block.raw),
       [block.raw],
@@ -178,35 +200,19 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       () => ({
         h1(props: React.HTMLAttributes<HTMLHeadingElement>) {
           const { children, ...rest } = props;
-          return (
-            <h1 {...rest} data-raw={encodeURIComponent(block.raw)}>
-              {children}
-            </h1>
-          );
+          return <h1 {...rest}>{children}</h1>;
         },
         h2(props: React.HTMLAttributes<HTMLHeadingElement>) {
           const { children, ...rest } = props;
-          return (
-            <h2 {...rest} data-raw={encodeURIComponent(block.raw)}>
-              {children}
-            </h2>
-          );
+          return <h2 {...rest}>{children}</h2>;
         },
         h3(props: React.HTMLAttributes<HTMLHeadingElement>) {
           const { children, ...rest } = props;
-          return (
-            <h3 {...rest} data-raw={encodeURIComponent(block.raw)}>
-              {children}
-            </h3>
-          );
+          return <h3 {...rest}>{children}</h3>;
         },
         h4(props: React.HTMLAttributes<HTMLHeadingElement>) {
           const { children, ...rest } = props;
-          return (
-            <h4 {...rest} data-raw={encodeURIComponent(block.raw)}>
-              {children}
-            </h4>
-          );
+          return <h4 {...rest}>{children}</h4>;
         },
         p(props: React.HTMLAttributes<HTMLParagraphElement>) {
           const { children, style, ...rest } = props;
@@ -214,7 +220,6 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           return (
             <p
               {...rest}
-              data-raw={encodeURIComponent(block.raw)}
               style={{
                 color: "var(--text-primary)",
                 margin: `0 0 ${paragraphSpacing}px 0`,
@@ -270,7 +275,6 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           return (
             <li
               {...rest}
-              data-raw={encodeURIComponent(block.raw)}
               style={{
                 marginBottom: "0.3em",
                 lineHeight: "inherit",
@@ -294,7 +298,6 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           return (
             <blockquote
               {...rest}
-              data-raw={encodeURIComponent(block.raw)}
               style={{
                 borderLeft: "3px solid var(--accent-purple)",
                 paddingLeft: "1em",
@@ -317,7 +320,6 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
             <div className="overflow-x-auto" style={{ marginBottom: "1em" }}>
               <table
                 {...rest}
-                data-raw={encodeURIComponent(block.raw)}
                 style={{
                   width: "100%",
                   borderCollapse: "collapse",
@@ -664,6 +666,11 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
       <div
         className="markdown-body"
         data-block-type={block.type}
+        data-raw={encodeBlockDataRaw(
+          block.raw,
+          block.startLine,
+          block.endLine,
+        )}
         onDoubleClick={(e) => {
           const target = e.target as HTMLElement;
           if (

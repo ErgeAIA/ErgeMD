@@ -3,11 +3,14 @@ import { useReaderStore } from "@/stores/readerStore";
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { encodeBlockDataRaw, replaceLinesByRange } from "@/utils/quickEditLines";
 import PlantUMLDiagram from "./PlantUMLDiagram";
 
 interface LazyPlantUMLBlockProps {
   code: string;
   raw?: string;
+  startLine?: number;
+  endLine?: number;
 }
 
 const activePlantUMLEditRef = { current: "" as string };
@@ -15,7 +18,7 @@ const activePlantUMLEditRef = { current: "" as string };
 let plantumlIdCounter = 0;
 
 const LazyPlantUMLBlock: React.FC<LazyPlantUMLBlockProps> = memo(
-  ({ code, raw }) => {
+  ({ code, raw, startLine, endLine }) => {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [editCode, setEditCode] = useState(code);
@@ -71,7 +74,20 @@ const LazyPlantUMLBlock: React.FC<LazyPlantUMLBlockProps> = memo(
         const lastLine = codeLines[codeLines.length - 1];
         const newRaw = `${firstLine}\n${editCode}\n${lastLine}`;
 
-        const newContent = currentContent.replace(raw, newRaw);
+        // 优先按行号精确定位（处理 plantuml fence 周围可能被规范化的问题）
+        let newContent: string;
+        if (
+          typeof startLine === "number" &&
+          typeof endLine === "number"
+        ) {
+          newContent = replaceLinesByRange(
+            currentContent,
+            { startLine, endLine },
+            newRaw,
+          );
+        } else {
+          newContent = currentContent.replace(raw, newRaw);
+        }
 
         if (newContent === currentContent) {
           addToast({
@@ -101,7 +117,7 @@ const LazyPlantUMLBlock: React.FC<LazyPlantUMLBlockProps> = memo(
       }
 
       cleanup();
-    }, [cleanup, code, editCode, raw]);
+    }, [cleanup, code, editCode, raw, startLine, endLine]);
 
     const handleCancel = useCallback(() => {
       cleanup();
@@ -294,7 +310,7 @@ const LazyPlantUMLBlock: React.FC<LazyPlantUMLBlockProps> = memo(
         ref={containerRef}
         className="my-4"
         data-block-type="plantuml"
-        data-raw={encodeURIComponent(raw ?? code)}
+        data-raw={encodeBlockDataRaw(raw ?? code, startLine, endLine)}
       >
         <PlantUMLDiagram chart={code} onEdit={handleEditRequest} />
       </div>

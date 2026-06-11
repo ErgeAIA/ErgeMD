@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-06-12
+
+### Fixed
+
+- **QuickEdit save failure "No matching text found"**: When double-clicking to edit and save block-level elements (ZenUML / Mermaid / PlantUML / Callout), the string-based `replace` failed to find the original text due to CRLF/LF line ending inconsistencies or whitespace normalization. Added `quickEditLines.ts` utility with line-number-based precise replacement; `LazyMermaidBlock`, `LazyPlantUMLBlock`, and `ObsidianCallout` are now integrated; `useQuickEdit` uses line-number positioning when available, falling back to string replacement otherwise
+
 ## [0.4.0] - 2026-06-10
 
 ### Added

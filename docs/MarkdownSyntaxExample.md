@@ -547,7 +547,7 @@ HAVING COUNT(o.id) > 0;
 
 | 编号 | 姓名 | 年龄 | 城市 | 职业       |
 | ---- | ---- | ---- | ---- | ---------- |
-| 001  | 张三 | 28   | 北京 | 前端工程师 |
+| 001  | 张三 | 28   | 武汉 | 前端工程师 |
 | 002  | 李四 | 32   | 上海 | 后端工程师 |
 | 003  | 王五 | 25   | 深圳 | UI 设计师  |
 | 004  | 赵六 | 30   | 杭州 | 产品经理   |
@@ -911,7 +911,7 @@ timeline
 
 ### 6.15 [ZenUML](https://mermaid.nodejs.cn/syntax/zenuml.html)
 
-> **支持说明**：ZenUML 通过外部插件 `@mermaid-js/mermaid-zenuml@0.2.3` 注册到 Mermaid 11.15.0。依赖包含 `@zenuml/core@^3.47.0`，启动时按需懒加载，仅检测到 `zenuml` 关键字时才加载插件代码。
+> **支持**：ZenUML 通过外部插件 `@mermaid-js/mermaid-zenuml@0.2.3` 注册到 Mermaid 11.15.0。依赖包含 `@zenuml/core@^3.47.0`，启动时按需懒加载，仅检测到 `zenuml` 关键字时才加载插件代码。
 >
 > **主题适配**：ZenUML 插件不接受 mermaid 的 `themeVariables`（源码中无任何 `themeVariables` 引用），且输出 SVG 使用内联 `style="fill:..."` 硬编码颜色，CSS 变量无法生效。本项目通过 `MermaidDiagram.tsx` 中 SVG 后处理注入 `!important` 规则实现主题适配，覆盖以下元素：参与者方块、参与者/构造型文字、生命线、消息线/文字、序号、Fragment 框/标题/分隔符/区段、Return 线/箭头/标签/图标。
 

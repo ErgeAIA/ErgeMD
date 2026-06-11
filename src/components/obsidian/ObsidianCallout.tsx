@@ -64,6 +64,12 @@ interface CalloutProps {
   fold: "+" | "-" | null;
   customTitle: string | null;
   children: React.ReactNode;
+  /** 原始 Markdown 源码（含 `> ` 前缀与嵌套），用于 QuickEdit 等回写场景 */
+  raw?: string;
+  /** 源 markdown 起始行号（含），与 raw 配合用于精确定位 */
+  startLine?: number;
+  /** 源 markdown 结束行号（含），与 raw 配合用于精确定位 */
+  endLine?: number;
 }
 
 const ObsidianCalloutInner: React.FC<CalloutProps> = ({
@@ -71,16 +77,29 @@ const ObsidianCalloutInner: React.FC<CalloutProps> = ({
   fold,
   customTitle,
   children,
+  raw,
+  startLine,
+  endLine,
 }) => {
   const [collapsed, setCollapsed] = useState(fold === "-");
   const typeDef = CALLOUT_TYPE_MAP[type] || CALLOUT_TYPE_MAP["note"]!;
   const displayTitle = customTitle ?? typeDef.title;
   const isFoldable = fold !== null;
 
+  // 把 startLine 和 endLine 编码进 data-raw：格式 `start|end|raw`
+  // 优先用行号精确定位，回退到字符串 replace
+  const dataRaw =
+    raw && typeof startLine === "number" && typeof endLine === "number"
+      ? encodeURIComponent(`${startLine}|${endLine}|${raw}`)
+      : raw
+        ? encodeURIComponent(raw)
+        : undefined;
+
   return (
     <div
       className={`obsidian-callout obsidian-callout-${type}`}
       data-callout={type}
+      data-raw={dataRaw}
       style={
         {
           "--callout-color": typeDef.color,

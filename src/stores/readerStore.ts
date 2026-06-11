@@ -44,7 +44,12 @@ interface ReaderState {
   setFileChanged: (path: string | null) => void;
   triggerQuickEdit: () => void;
   setContextMenuEditTarget: (el: HTMLElement | null) => void;
-  startQuickEdit: (element: HTMLElement, originalText: string) => void;
+  quickEditLineRange: { startLine: number; endLine: number } | null;
+  startQuickEdit: (
+    element: HTMLElement,
+    originalText: string,
+    lineRange?: { startLine: number; endLine: number },
+  ) => void;
   updateQuickEditText: (text: string) => void;
   cancelQuickEdit: () => void;
   finishQuickEdit: () => void;
@@ -67,6 +72,7 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
   quickEditElement: null,
   quickEditOriginalText: "",
   quickEditText: "",
+  quickEditLineRange: null,
 
   setSearchQuery: (query) => {
     set({ searchQuery: query, searchResults: [], currentSearchIndex: -1 });
@@ -170,12 +176,13 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
     set({ contextMenuEditTarget: el });
   },
 
-  startQuickEdit: (element, originalText) => {
+  startQuickEdit: (element, originalText, lineRange) => {
     set({
       isQuickEditing: true,
       quickEditElement: element,
       quickEditOriginalText: originalText,
       quickEditText: originalText,
+      quickEditLineRange: lineRange ?? null,
     });
   },
 
@@ -189,6 +196,7 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
       quickEditElement: null,
       quickEditOriginalText: "",
       quickEditText: "",
+      quickEditLineRange: null,
       contextMenuEditTarget: null,
     });
   },
@@ -199,6 +207,7 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
       quickEditElement: null,
       quickEditOriginalText: "",
       quickEditText: "",
+      quickEditLineRange: null,
       contextMenuEditTarget: null,
     });
   },

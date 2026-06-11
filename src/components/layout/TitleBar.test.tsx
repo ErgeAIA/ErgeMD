@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render } from "@testing-library/react";
-import React from "react";
 
 afterEach(() => {
   vi.resetModules();

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { detectPlatform, type Platform, getPlatformLabel } from "./platform";
+import { describe, it, expect, afterEach } from "vitest";
+import { detectPlatform, getPlatformLabel } from "./platform";
 
 describe("detectPlatform", () => {
   const originalUserAgent = navigator.userAgent;

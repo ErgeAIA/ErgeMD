@@ -4,6 +4,12 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [0.4.1] - 2026-06-12
+
+### 修复
+
+- **QuickEdit 保存失败"未找到匹配文本"**：ZenUML / Mermaid / PlantUML / Callout 等块级元素双击编辑后保存时，行尾 CRLF/LF 混用或空白规范化导致字符串 `replace` 找不到原文。新增 `quickEditLines.ts` 工具函数实现按行号精确定位替换；`LazyMermaidBlock`、`LazyPlantUMLBlock`、`ObsidianCallout` 均已集成；`useQuickEdit` 在行号可用时优先走行号定位，否则降级到字符串替换
+
 ## [0.4.0] - 2026-06-10
 
 ### 新增

@@ -3,6 +3,7 @@ import { useReaderStore } from "@/stores/readerStore";
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { decodeBlockDataRaw, replaceLinesByRange } from "@/utils/quickEditLines";
 
 /**
  * 快速编辑 Hook。
@@ -31,10 +32,22 @@ export function useQuickEdit() {
 
       if (rawElement) {
         const rawAttr = rawElement.getAttribute("data-raw");
-        const originalText = rawAttr
-          ? decodeURIComponent(rawAttr)
-          : (rawElement.textContent ?? "");
-        startQuickEdit(rawElement as HTMLElement, originalText);
+        const decoded = rawAttr ? decodeURIComponent(rawAttr) : "";
+        const parsed = decodeBlockDataRaw(rawAttr ?? "");
+        let originalText: string;
+        let lineRange: { startLine: number; endLine: number } | null = null;
+        if (parsed) {
+          lineRange = { startLine: parsed.startLine, endLine: parsed.endLine };
+          originalText = parsed.raw;
+        } else {
+          originalText = decoded || (rawElement.textContent ?? "");
+        }
+
+        startQuickEdit(
+          rawElement as HTMLElement,
+          originalText,
+          lineRange ?? undefined,
+        );
         return;
       }
 
@@ -65,10 +78,21 @@ export function useQuickEdit() {
       if (!blockElement) return;
 
       const rawAttr = blockElement.getAttribute("data-raw");
-      const originalText = rawAttr
-        ? decodeURIComponent(rawAttr)
-        : (blockElement.textContent ?? "");
-      startQuickEdit(blockElement as HTMLElement, originalText);
+      const decoded = rawAttr ? decodeURIComponent(rawAttr) : "";
+      const parsed = decodeBlockDataRaw(rawAttr ?? "");
+      let originalText: string;
+      let lineRange: { startLine: number; endLine: number } | null = null;
+      if (parsed) {
+        lineRange = { startLine: parsed.startLine, endLine: parsed.endLine };
+        originalText = parsed.raw;
+      } else {
+        originalText = decoded || (blockElement.textContent ?? "");
+      }
+      startQuickEdit(
+        blockElement as HTMLElement,
+        originalText,
+        lineRange ?? undefined,
+      );
     },
     [startQuickEdit],
   );
@@ -87,6 +111,7 @@ export function useQuickEdit() {
       addToast,
       finishQuickEdit: finish,
       quickEditElement,
+      quickEditLineRange,
     } = useReaderStore.getState();
     const originalText = quickEditOriginalText;
     const editText = quickEditText;
@@ -117,7 +142,27 @@ export function useQuickEdit() {
     }
 
     try {
-      const newContent = currentContent.replace(originalText, editText);
+      // 优先按行号精确定位（处理 callout 等 raw 与 currentContent 存在
+      // 微妙差异的场景：trailing whitespace / 行尾规范化等）
+      let newContent: string;
+      if (
+        quickEditLineRange &&
+        typeof quickEditLineRange.startLine === "number" &&
+        typeof quickEditLineRange.endLine === "number"
+      ) {
+        const result = replaceLinesByRange(
+          currentContent,
+          quickEditLineRange,
+          editText,
+        );
+        // 行号越界时 replaceLinesByRange 返回原 content，降级到字符串 replace
+        newContent =
+          result === currentContent
+            ? currentContent.replace(originalText, editText)
+            : result;
+      } else {
+        newContent = currentContent.replace(originalText, editText);
+      }
       if (newContent === currentContent) {
         addToast({ type: "warning", message: t("quickEdit.noMatch") });
         return;
