@@ -269,8 +269,11 @@ const SearchBar: React.FC = memo(() => {
   return (
     <div
       data-search-bar
-      className="fixed z-[55] top-[48px] left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2 rounded-lg border shadow-[0_4px_20px_rgba(0,0,0,0.4)] min-w-[360px]"
+      // 不用 `-translate-x-1/2`：见 FloatingTOC.tsx 同款问题注释（@zenuml/core 注入的未分层
+      // 通用选择器会重置 `--tw-translate-x/y`，让 Tailwind v4 的 transform 工具类失效）
+      className="fixed z-[55] top-[48px] left-1/2 flex items-center gap-2 px-3 py-2 rounded-lg border shadow-[0_4px_20px_rgba(0,0,0,0.4)] min-w-[360px]"
       style={{
+        transform: "translateX(-50%)",
         background: "var(--bg-sidebar, #1A1A2E)",
         borderColor: "rgba(100, 200, 200, 0.15)",
       }}

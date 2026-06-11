@@ -229,7 +229,15 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
           ref={navRef}
           role="navigation"
           aria-label={t("toc.navigation")}
-          className="fixed top-1/2 right-2 z-40 -translate-y-1/2"
+          // 注意：这里不用 Tailwind 的 `-translate-y-1/2`，
+          // 而用内联 transform：原因是 @mermaid-js/mermaid-zenuml 插件
+          // 会在加载时通过 vite-plugin-css-injected-by-js 注入一份
+          // @zenuml/core 内置的 Tailwind v3 风格 CSS，其中含一条
+          // 未分层的通用选择器 `*, ::before, ::after { --tw-translate-y: 0; }`，
+          // 优先级高于主机 Tailwind v4 的 `@layer utilities` 工具类，
+          // 会把 `--tw-translate-y` 重置为 0，导致 TOC 掉到右下角。
+          className="fixed top-1/2 right-2 z-40"
+          style={{ transform: "translateY(-50%)" }}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
             setIsHovering(false);

@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [0.4.0] - 2026-06-10
 
 ### Added
@@ -29,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 
 - The first cross-platform release **does not enable** macOS code signing (free-software strategy); users need to right-click → Open to bypass Gatekeeper
+
+### Fixed
+
+- Floating TOC misaligned on the ZenUML section: the `@mermaid-js/mermaid-zenuml` plugin injects @zenuml/core's bundled CSS via `vite-plugin-css-injected-by-js`, which contains an unlayered universal selector `*, ::before, ::after { --tw-translate-y: 0; }` that outranks the host's Tailwind v4 `@layer utilities` rule and resets `--tw-translate-y` to 0, breaking the `.-translate-y-1/2` utility. The nav then starts at the 50% top anchor and extends straight down to the bottom-right corner. FloatingTOC's `-translate-y-1/2` is replaced with an inline `transform: translateY(-50%)`; the same latent risk in `SearchBar` / `UpdateChecker` (`-translate-x-1/2`) is replaced with inline `transform: translateX(-50%)` as well
+- "Update check failed, please check your network" misreported in the About page: traced to three layered bugs — (1) Gitee Open API has no `/releases/latest` subpath (only GitHub does), the endpoint returned 404; (2) the repo has tags but no releases, the empty `/releases` list was parsed as an object and yielded empty fields; (3) GitHub's anonymous API limit (60/h) was exhausted by repeated dev-mode checks, all returning 403. All three fixed: Gitee switched to the list endpoint `/releases?per_page=1&page=1&direction=desc` taking the first item, with an empty array treated as "no release" and returning `Err` so `pick_latest` falls back gracefully; GitHub 403 now parses the `x-ratelimit-remaining` / `x-ratelimit-reset` headers, returning a clear "resets in ~X minutes" message on rate-limit hits (remaining=0), distinct from generic 403s; the `pick_latest` `(Ok, Ok)` arm's semantic misuse of `is_newer_version(gh, gi)` (which selected the smaller version, since `is_newer_version(a, b)` means `b > a`) is fixed by swapping to `is_newer_version(gi, gh)` to select the larger version
 
 ## [0.3.7] - 2026-06-10
 

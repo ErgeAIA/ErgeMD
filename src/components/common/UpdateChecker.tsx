@@ -112,8 +112,11 @@ const UpdateChecker: React.FC = memo(() => {
 
   return (
     <div
-      className="fixed z-50 bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
+      // 不用 `-translate-x-1/2`：见 FloatingTOC.tsx 同款问题注释（@zenuml/core 注入的未分层
+      // 通用选择器会重置 `--tw-translate-x/y`，让 Tailwind v4 的 transform 工具类失效）
+      className="fixed z-50 bottom-12 left-1/2 flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
       style={{
+        transform: "translateX(-50%)",
         background: "var(--toast-info-bg)",
         border: "1px solid var(--toast-info-border)",
         color: "var(--accent-cyan, #00FFFF)",

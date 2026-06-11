@@ -4,8 +4,6 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
-## [Unreleased]
-
 ## [0.4.0] - 2026-06-10
 
 ### 新增
@@ -28,6 +26,11 @@
 ### 备注
 
 - 跨平台首版 **不启用** macOS 代码签名（免费软件策略），用户需右键 → 打开绕过 Gatekeeper
+
+### 修复
+
+- 浮动目录在 ZenUML 章节下错位：@mermaid-js/mermaid-zenuml 插件通过 `vite-plugin-css-injected-by-js` 注入的 @zenuml/core 内部 CSS 含一条未分层的 `*, ::before, ::after { --tw-translate-y: 0; }` 通用选择器，优先级高于主机 Tailwind v4 的 `@layer utilities` 工具类，会把 `--tw-translate-y` 重置为 0，导致 `.-translate-y-1/2` 失效，nav 从 50% 顶部开始渲染后延伸到右下角。FloatingTOC 的 `-translate-y-1/2` 改用内联 `transform: translateY(-50%)` 解决；同类隐患的 `SearchBar` / `UpdateChecker` 的 `-translate-x-1/2` 一并替换为内联 `transform: translateX(-50%)`
+- 关于页「检查更新失败，请检查网络后重试」误报：定位到三层叠加的 bug——(1) Gitee Open API 没有 `/releases/latest` 子路径（GitHub 才有），端点 404；(2) 仓库仅有 tag 无 release，`/releases` 列表为空时旧代码按对象解析返回空字段；(3) GitHub 匿名 API 60/h 限速在 dev 反复触发下耗尽，统一返 403。三处分别修复：Gitee 改用 `/releases?per_page=1&page=1&direction=desc` 列表接口取第一条，空数组视为"无 release"返 Err 让 `pick_latest` 降级；GitHub 403 解析 `x-ratelimit-remaining` / `x-ratelimit-reset` 头，限速时（remaining=0）返"约 X 分钟后重置"的明确提示，区分于其他 403；同步修复 `pick_latest` (Ok, Ok) 分支用 `is_newer_version(gh, gi)` 选较小版本号的语义误用，调换参数为 `is_newer_version(gi, gh)` 改为选 max
 
 ## [0.3.7] - 2026-06-10
 
