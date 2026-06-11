@@ -87,7 +87,7 @@ function renderInlineMarkdown(text: string): string {
   html = html.replace(/===\s*(.+?)\s*===/g, "<mark>$1</mark>");
   html = html.replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
 
-  html = html.replace(/\^([^\^]+)\^/g, "<sup>$1</sup>");
+  html = html.replace(/\^([^^]+)\^/g, "<sup>$1</sup>");
 
   html = html.replace(/~([^~\n]+)~/g, "<sub>$1</sub>");
 

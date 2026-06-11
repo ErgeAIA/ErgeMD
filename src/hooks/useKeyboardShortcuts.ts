@@ -425,7 +425,8 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
         await getCurrentWindow().setPosition(
           new LogicalPosition(startPos.x + dx, startPos.y + dy),
         );
-      } catch {
+      } catch (err) {
+        console.warn("setPosition failed:", err);
       }
     };
 
