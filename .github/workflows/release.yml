@@ -84,11 +84,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'ErgeMD ${{ github.ref_name }}'
-          releaseBody: 'See the assets to download and install this version.'
-          includeRelease: true
-          includeUpdaterJson: true
+          includeRelease: false
+          includeUpdaterJson: false
       - name: Rename bundles
         env:
           BUILD_PLATFORM: ${{ matrix.suffix }}
@@ -111,8 +108,14 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ErgeMD-${{ github.ref_name }}-*
+            **/ErgeMD-${{ github.ref_name }}-setup.exe
+            **/ErgeMD-${{ github.ref_name }}-macos-*.dmg
+            **/ErgeMD-${{ github.ref_name }}-linux-*.AppImage
+            **/ErgeMD-${{ github.ref_name }}-linux-*.deb
             ErgeMD-${{ github.ref_name }}-windows-x64-portable.zip
           tag_name: ${{ github.ref_name }}
+          name: 'ErgeMD ${{ github.ref_name }}'
+          body: |
+            See the assets to download and install this version.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
