@@ -14,6 +14,7 @@ interface UpdateInfo {
   currentVersion: string;
   latestVersion: string;
   downloadUrl: string;
+  releaseUrl: string;
   releaseNotes: string;
 }
 

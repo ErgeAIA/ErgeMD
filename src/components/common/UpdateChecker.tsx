@@ -12,12 +12,14 @@ export const forceCheckUpdate = async (): Promise<{
   hasUpdate: boolean;
   latestVersion: string;
   downloadUrl: string;
+  releaseUrl: string;
 }> => {
   const result = await invoke<{
     has_update: boolean;
     current_version: string;
     latest_version: string;
     download_url: string;
+    release_url: string;
     release_notes: string;
   }>("check_update", { currentVersion: packageJson.version });
 
@@ -31,6 +33,7 @@ export const forceCheckUpdate = async (): Promise<{
       currentVersion: result.current_version,
       latestVersion: result.latest_version,
       downloadUrl: result.download_url,
+      releaseUrl: result.release_url,
       releaseNotes: result.release_notes,
     });
   } else {
@@ -41,6 +44,7 @@ export const forceCheckUpdate = async (): Promise<{
     hasUpdate: result.has_update,
     latestVersion: result.latest_version,
     downloadUrl: result.download_url,
+    releaseUrl: result.release_url,
   };
 };
 
@@ -61,6 +65,7 @@ const UpdateChecker: React.FC = memo(() => {
         current_version: string;
         latest_version: string;
         download_url: string;
+        release_url: string;
         release_notes: string;
       }>("check_update", { currentVersion: packageJson.version });
 
@@ -73,6 +78,7 @@ const UpdateChecker: React.FC = memo(() => {
           currentVersion: result.current_version,
           latestVersion: result.latest_version,
           downloadUrl: result.download_url,
+          releaseUrl: result.release_url,
           releaseNotes: result.release_notes,
         });
         setDismissed(false);
@@ -97,7 +103,9 @@ const UpdateChecker: React.FC = memo(() => {
   }, [checkUpdateEnabled, lastCheckUpdateTime, doCheck]);
 
   const handleDownload = useCallback(() => {
-    if (updateInfo?.downloadUrl) {
+    if (updateInfo?.releaseUrl) {
+      openUrl(updateInfo.releaseUrl);
+    } else if (updateInfo?.downloadUrl) {
       openUrl(updateInfo.downloadUrl);
     }
   }, [updateInfo]);

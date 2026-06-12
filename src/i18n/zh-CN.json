@@ -228,7 +228,8 @@
     "checkUpdateHint": "点击检查更新",
     "noUpdate": "已是最新版本 v{{version}}",
     "newVersionAvailable": "发现新版本 v{{version}}，请前往下载",
-    "latestVersionHint": "点击下载最新版 v{{version}}",
+    "latestVersionHint": "点击打开最新版 Release 页面 v{{version}}",
+    "viewRelease": "查看 Release",
     "updateCheckFailed": "检查更新失败，请检查网络后重试"
   },
   "update": {

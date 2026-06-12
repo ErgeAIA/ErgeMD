@@ -228,7 +228,8 @@
     "checkUpdateHint": "Click to check for updates",
     "noUpdate": "You're on the latest version v{{version}}",
     "newVersionAvailable": "New version v{{version}} available, please download",
-    "latestVersionHint": "Click to download latest v{{version}}",
+    "latestVersionHint": "Click to open latest release page v{{version}}",
+    "viewRelease": "View Release",
     "updateCheckFailed": "Update check failed, please retry with a stable network"
   },
   "update": {

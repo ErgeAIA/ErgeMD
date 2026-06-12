@@ -69,6 +69,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
   const [latestAvailable, setLatestAvailable] = useState<{
     version: string;
     downloadUrl: string;
+    releaseUrl: string;
   } | null>(null);
   const addToast = useReaderStore((s) => s.addToast);
 
@@ -79,10 +80,11 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
       try {
         const result = await forceCheckUpdate();
         if (cancelled) return;
-        if (result.hasUpdate && result.downloadUrl) {
+        if (result.hasUpdate && result.releaseUrl) {
           setLatestAvailable({
             version: result.latestVersion,
             downloadUrl: result.downloadUrl,
+            releaseUrl: result.releaseUrl,
           });
         }
       } catch {
@@ -99,17 +101,21 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
     if (checkingUpdate) return;
     setCheckingUpdate(true);
     try {
-      const { hasUpdate, latestVersion, downloadUrl } =
+      const { hasUpdate, latestVersion, releaseUrl } =
         await forceCheckUpdate();
       if (hasUpdate) {
-        if (downloadUrl) {
-          setLatestAvailable({ version: latestVersion, downloadUrl });
+        if (releaseUrl) {
+          setLatestAvailable({
+            version: latestVersion,
+            downloadUrl: releaseUrl,
+            releaseUrl: releaseUrl,
+          });
         }
         addToast({
           type: "info",
           message: t("about.newVersionAvailable", { version: latestVersion }),
           duration: 8000,
-          action: { label: t("update.download"), url: downloadUrl },
+          action: { label: t("about.viewRelease"), url: releaseUrl },
         });
       } else {
         setLatestAvailable(null);
@@ -279,7 +285,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                 </button>
                 {latestAvailable && (
                   <button
-                    onClick={() => openUrl(latestAvailable.downloadUrl)}
+                    onClick={() => openUrl(latestAvailable.releaseUrl)}
                     title={t("about.latestVersionHint", {
                       version: latestAvailable.version,
                     })}

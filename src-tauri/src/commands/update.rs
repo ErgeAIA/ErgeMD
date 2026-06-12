@@ -6,6 +6,7 @@ pub struct UpdateInfo {
     pub current_version: String,
     pub latest_version: String,
     pub download_url: String,
+    pub release_url: String,
     pub release_notes: String,
 }
 
@@ -14,22 +15,37 @@ pub async fn check_update(current_version: String) -> Result<UpdateInfo, String>
     let github_result = fetch_github_latest().await;
     let gitee_result = fetch_gitee_latest().await;
 
-    let latest = pick_latest(github_result, gitee_result)?;
-
-    let has_update = is_newer_version(&current_version, &latest.version);
-
-    Ok(UpdateInfo {
-        has_update,
-        current_version,
-        latest_version: latest.version,
-        download_url: latest.download_url,
-        release_notes: latest.release_notes,
-    })
+    match pick_latest(github_result, gitee_result) {
+        Some(latest) => {
+            let has_update = is_newer_version(&current_version, &latest.version);
+            Ok(UpdateInfo {
+                has_update,
+                current_version,
+                latest_version: latest.version,
+                download_url: latest.download_url,
+                release_url: latest.release_url,
+                release_notes: latest.release_notes,
+            })
+        }
+        None => {
+            // 两个平台都无法访问：返回一个带 release_url 的无更新信息，
+            // 避免直接报错让用户看到"检查更新失败"
+            Ok(UpdateInfo {
+                has_update: false,
+                current_version: current_version.clone(),
+                latest_version: current_version,
+                download_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
+                release_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
+                release_notes: String::new(),
+            })
+        }
+    }
 }
 
 struct ReleaseInfo {
     version: String,
     download_url: String,
+    release_url: String,
     release_notes: String,
 }
 
@@ -124,6 +140,7 @@ async fn fetch_github_latest() -> Result<ReleaseInfo, String> {
     Ok(ReleaseInfo {
         version: tag,
         download_url,
+        release_url: html_url,
         release_notes,
     })
 }
@@ -172,6 +189,7 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
     Ok(ReleaseInfo {
         version: tag,
         download_url,
+        release_url: html_url,
         release_notes,
     })
 }
@@ -179,21 +197,18 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
 fn pick_latest(
     github: Result<ReleaseInfo, String>,
     gitee: Result<ReleaseInfo, String>,
-) -> Result<ReleaseInfo, String> {
+) -> Option<ReleaseInfo> {
     match (github, gitee) {
         (Ok(gh), Ok(gi)) => {
             if is_newer_version(&gh.version, &gi.version) {
-                Ok(gh)
+                Some(gh)
             } else {
-                Ok(gi)
+                Some(gi)
             }
         }
-        (Ok(gh), Err(_)) => Ok(gh),
-        (Err(_), Ok(gi)) => Ok(gi),
-        (Err(gh_err), Err(gi_err)) => Err(format!(
-            "Both APIs failed. GitHub: {}; Gitee: {}",
-            gh_err, gi_err
-        )),
+        (Ok(gh), Err(_)) => Some(gh),
+        (Err(_), Ok(gi)) => Some(gi),
+        (Err(_), Err(_)) => None,
     }
 }
 
