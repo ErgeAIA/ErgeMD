@@ -8,9 +8,12 @@ import { resolve, join } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const version = JSON.parse(readFileSync(join(root, "package.json"), "utf-8")).version;
-const platform = process.env.BUILD_PLATFORM || process.platform; // "darwin" | "linux" | "win32"
+const platform = process.env.BUILD_PLATFORM || process.platform; // "darwin" | "linux" | "win32" | "windows-x64" ...
+const buildTarget = process.env.BUILD_TARGET; // e.g. "x86_64-pc-windows-msvc" / "aarch64-apple-darwin" / "x86_64-apple-darwin" / "x86_64-unknown-linux-gnu"
 
-const releaseDir = join(root, "src-tauri", "target", "release");
+// --target <triple> 时输出在 target/<triple>/release/，否则在 target/release/
+const targetSubdir = buildTarget ? join("target", buildTarget, "release") : join("target", "release");
+const releaseDir = join(root, "src-tauri", targetSubdir);
 const bundleDir = join(releaseDir, "bundle");
 
 const rename = (dir, oldPattern, newName, allowMissing = false) => {

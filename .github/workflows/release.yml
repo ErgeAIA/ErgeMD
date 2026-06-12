@@ -89,12 +89,14 @@ jobs:
       - name: Rename bundles
         env:
           BUILD_PLATFORM: ${{ matrix.suffix }}
+          BUILD_TARGET: ${{ matrix.target }}
         run: node scripts/rename-bundle.js
       - name: Create portable package (Windows)
         if: matrix.suffix == 'windows-x64'
         shell: pwsh
         run: |
-          $src = "src-tauri/target/release"
+          $target = "${{ matrix.target }}"
+          $src = "src-tauri/target/$target/release"
           $dst = "ErgeMD-portable"
           New-Item -ItemType Directory -Force -Path $dst
           # After rename-bundle.js, exe is named ErgeMD-v0.4.1.exe
