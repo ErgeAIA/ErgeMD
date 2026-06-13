@@ -86,6 +86,9 @@ jobs:
         with:
           includeRelease: false
           includeUpdaterJson: false
+          # 显式传 --target，让 cargo 输出到 target/<triple>/release/，
+          # 与 rename-bundle.js 和 portable 步骤的路径对齐
+          args: --target ${{ matrix.target }}
       - name: Rename bundles
         env:
           BUILD_PLATFORM: ${{ matrix.suffix }}
