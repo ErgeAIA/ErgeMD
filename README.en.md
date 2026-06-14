@@ -42,8 +42,11 @@ Latest version **v0.2.2**:
 
 ### macOS Downloads
 
-- [ErgeMD-v0.4.1-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.dmg) — Universal installer (Intel + Apple Silicon)
+- [ErgeMD-v0.4.1-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos-arm64.dmg) — Apple Silicon native installer
+- [ErgeMD-v0.4.1-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.dmg) — Universal installer (**currently arm64-only; Intel Mac has no native build yet**)
 - [ErgeMD-v0.4.1-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.app.tar.gz) — Command-line extractable
+
+> **macOS Platform Note**: The CI matrix currently builds only Apple Silicon (arm64). `macos.dmg` and `macos.app.tar.gz` are both arm64 builds; Intel Mac users are not provided a native build yet.
 
 > **Note**: v0.4.0 is **not code-signed** (free software strategy). On first launch, **right-click → Open** to bypass Gatekeeper.
 
