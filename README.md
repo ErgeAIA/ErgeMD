@@ -33,24 +33,25 @@
 
 ## 下载
 
-最新版本 **v0.4.0**：
+最新版本 **v0.4.1**：
 
 | 类型             | 下载链接                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 便携版（免安装） | [ErgeMD-v0.4.0-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-portable.zip) |
-| NSIS 安装包      | [ErgeMD-v0.4.0-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-setup.exe)       |
+| 便携版（免安装） | [ErgeMD-v0.4.1-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-portable.zip) |
+| NSIS 安装包      | [ErgeMD-v0.4.1-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-setup.exe)       |
 
 ### macOS 下载
 
-- [ErgeMD-v0.4.0-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-macos.dmg) — 通用安装包（Intel / Apple Silicon 均适用）
-- [ErgeMD-v0.4.0-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-macos.app.tar.gz) — 命令行解压版本
+- [ErgeMD-v0.4.1-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos-arm64.dmg) — Apple Silicon 原生安装包
+- [ErgeMD-v0.4.1-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.dmg) — 通用安装包（Intel / Apple Silicon 均适用）
+- [ErgeMD-v0.4.1-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.app.tar.gz) — 命令行解压版本
 
 > **注意**：由于 v0.4.0 未启用 macOS 代码签名（免费软件策略），macOS 首次打开请 **右键 → 打开** 绕过 Gatekeeper。
 
 ### Linux 下载
 
-- [ErgeMD-v0.4.0-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-linux-x86_64.AppImage) — 免安装便携
-- [ErgeMD-v0.4.0-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-linux-x86_64.deb) — Debian / Ubuntu 安装包
+- [ErgeMD-v0.4.1-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.AppImage) — 免安装便携
+- [ErgeMD-v0.4.1-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.deb) — Debian / Ubuntu 安装包
 
 **系统依赖**（Ubuntu 22.04+ / Debian 12+）：
 

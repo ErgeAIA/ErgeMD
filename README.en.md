@@ -42,15 +42,15 @@ Latest version **v0.2.2**:
 
 ### macOS Downloads
 
-- [ErgeMD-v0.4.0-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-macos.dmg) — Universal installer (Intel + Apple Silicon)
-- [ErgeMD-v0.4.0-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-macos.app.tar.gz) — Command-line extractable
+- [ErgeMD-v0.4.1-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.dmg) — Universal installer (Intel + Apple Silicon)
+- [ErgeMD-v0.4.1-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.app.tar.gz) — Command-line extractable
 
 > **Note**: v0.4.0 is **not code-signed** (free software strategy). On first launch, **right-click → Open** to bypass Gatekeeper.
 
 ### Linux Downloads
 
-- [ErgeMD-v0.4.0-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-linux-x86_64.AppImage) — No-install portable
-- [ErgeMD-v0.4.0-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.0/ErgeMD-v0.4.0-linux-x86_64.deb) — Debian / Ubuntu package
+- [ErgeMD-v0.4.1-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.AppImage) — No-install portable
+- [ErgeMD-v0.4.1-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.deb) — Debian / Ubuntu package
 
 **System dependencies** (Ubuntu 22.04+ / Debian 12+):
 
