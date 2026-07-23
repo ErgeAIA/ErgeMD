@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-07-23
+
+### Fixed
+
+- **titleBar.pin displayed the i18n key literal**: The `titleBar` object was missing `pin` / `unpin` i18n keys, causing `t()` to fall back to the key string. Added `pin` / `unpin` fields to `zh-CN.json` / `en-US.json`; `TitleBar.tsx` now dynamically switches the i18n key based on `isPinned` state. Also fixed the missing `about.easterEggClose` key in `EasterEgg.tsx`
+- **Exported HTML filename hardcoded as "export"**: `export.ts`'s `exportHtml` used a hardcoded defaultPath. Now reads `currentFilePath` from `useFileStore` to extract the filename as the default save name
+- **Content block edit window not locked to viewport**: `QuickEdit.tsx` listened to scroll events, causing the edit window to follow the target element on scroll. Removed scroll listeners, only calculates position on mount + resize; skips updates when the target element is disconnected from the DOM
+- **Mermaid diagrams 6.1-6.12 not rendered in exported HTML**: Virtual scrolling + lazy loading caused off-screen Mermaid blocks to never trigger `IntersectionObserver`, leaving only placeholders in the DOM at export time. Added `renderUnrenderedMermaidBlocks` to `export.ts`, which iterates `.mermaid-block[data-raw]` and calls `renderMermaidForExport` before generating HTML
+- **Admonition callout emoji icons missing**: `obsidian.css` had insufficient styling for `.obsidian-callout-icon` and incorrect Unicode mappings. Adjusted `display: inline-flex` layout, added `::before` pseudo-element rules, corrected Unicode codepoints for `clipboard-list` / `flame` / `list` icons
+- **Installed version: right-click to open MD file only shows window without loading the document**: (1) Introduced `tauri-plugin-single-instance` for hot-start scenarios — the running instance receives argv from the new process and emits a `file-opened` event to the frontend; (2) For cold-start, `setup` now extracts the file path via `std::env::args_os()` into `AppState.pending_file`, and the frontend pulls it via the `get_pending_file` command on mount; (3) Removed cold-start `emit` (webview not ready, event would be lost)
+- **Vite dev server port 1420 reserved by Hyper-V**: Windows Hyper-V dynamically reserves port ranges including 1420, causing `EACCES` on startup. Changed dev port from 1420 to 5173 in `vite.config.ts` and `tauri.conf.json`
+
 ## [0.4.1] - 2026-06-12
 
 ### Fixed
@@ -12,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **QuickEdit save failure "No matching text found"**: When double-clicking to edit and save block-level elements (ZenUML / Mermaid / PlantUML / Callout), the string-based `replace` failed to find the original text due to CRLF/LF line ending inconsistencies or whitespace normalization. Added `quickEditLines.ts` utility with line-number-based precise replacement; `LazyMermaidBlock`, `LazyPlantUMLBlock`, and `ObsidianCallout` are now integrated; `useQuickEdit` uses line-number positioning when available, falling back to string replacement otherwise
 - **Update check fails in network-restricted environments**: When both GitHub + Gitee APIs are unreachable, instead of throwing, the app now silently returns "no update available" (instead of the "check failed" toast); added `release_url` so the version badge opens the release page instead of downloading installer
 - **Lint errors**: invalid regex escape in `generateExportHtml.ts`; empty catch block in `useKeyboardShortcuts.ts`
+- **macOS universal dmg / app.tar.gz 404 (revised 2026-06-14)**: `rename-bundle.js` now (1) tars the `.app` directory into `ErgeMD-v{ver}-macos.app.tar.gz` for CLI-friendly installs; (2) copies the `macos-arm64.dmg` to `macos.dmg` as a fallback so the README's "universal installer" link no longer 404s (the file is still arm64-only — Intel Mac has no native build). README (CN/EN) explicitly notes "macOS CI builds only Apple Silicon"
 
 ## [0.4.0] - 2026-06-10
 

@@ -4,6 +4,18 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [0.4.2] - 2026-07-23
+
+### 修复
+
+- **titleBar.pin 显示标签名**：`titleBar` 对象缺失 `pin` / `unpin` i18n key，`t()` 回退返回 key 字面量导致 tooltip 显示 `titleBar.pin`。补齐 `zh-CN.json` / `en-US.json` 的 `pin` / `unpin` 字段；`TitleBar.tsx` 根据 `isPinned` 状态动态切换 i18n key。同步修复 `EasterEgg.tsx` 中 `about.easterEggClose` key 缺失问题
+- **导出 HTML 文件名硬编码为 "export"**：`export.ts` 的 `exportHtml` 使用硬编码 defaultPath。改为从 `useFileStore` 读取 `currentFilePath` 提取文件名作为默认保存名
+- **内容块编辑窗口未锁定视口**：`QuickEdit.tsx` 监听了 scroll 事件导致编辑窗口跟随目标元素滚动。移除 scroll 监听，仅在 mount + resize 时计算位置；目标元素脱离 DOM 时跳过更新保持当前位置
+- **导出 HTML 时 Mermaid 图表 6.1-6.12 未渲染**：虚拟滚动 + 懒加载导致视口外的 Mermaid block 未触发 `IntersectionObserver`，导出时 DOM 中只有占位符。`export.ts` 新增 `renderUnrenderedMermaidBlocks`，在生成 HTML 前遍历 `.mermaid-block[data-raw]` 调用 `renderMermaidForExport` 补救渲染
+- **Admonition 提示框 emoji 图标丢失**：`obsidian.css` 的 `.obsidian-callout-icon` 样式不足且部分 Unicode 映射错误。调整 `display: inline-flex` 布局，新增 `::before` 伪元素规则，修正 `clipboard-list` / `flame` / `list` 等图标的 Unicode 码位
+- **安装版右键打开 MD 文件只弹窗口不加载文档**：(1) 引入 `tauri-plugin-single-instance` 处理热启动场景——已运行实例收到新进程的 argv 转发，emit `file-opened` 事件给前端；(2) 冷启动场景 `setup` 中通过 `std::env::args_os()` 提取文件路径存入 `AppState.pending_file`，前端 mount 后调用 `get_pending_file` 命令主动拉取；(3) 移除冷启动 `emit`（webview 未就绪必然丢失）
+- **Vite dev server 端口 1420 被 Hyper-V 保留**：Windows 上 Hyper-V 动态保留端口范围包含 1420，导致 `EACCES` 启动失败。`vite.config.ts` 与 `tauri.conf.json` 的 dev 端口从 1420 改为 5173
+
 ## [0.4.1] - 2026-06-12
 
 ### 修复
@@ -11,6 +23,7 @@
 - **QuickEdit 保存失败"未找到匹配文本"**：ZenUML / Mermaid / PlantUML / Callout 等块级元素双击编辑后保存时，行尾 CRLF/LF 混用或空白规范化导致字符串 `replace` 找不到原文。新增 `quickEditLines.ts` 工具函数实现按行号精确定位替换；`LazyMermaidBlock`、`LazyPlantUMLBlock`、`ObsidianCallout` 均已集成；`useQuickEdit` 在行号可用时优先走行号定位，否则降级到字符串替换
 - **更新检查在网络受限环境下报错"检查更新失败"**：GitHub + Gitee 双 API 同时不可达时不再向上抛出异常，而是静默返回"已是最新版"；同时新增 `release_url` 字段，点击版本徽章跳转到 Release 页面而非直接下载安装包
 - **lint 错误**：`generateExportHtml.ts` 正则 `[^\^]` 非法转义；`useKeyboardShortcuts.ts` 空 catch 块
+- **macOS 通用 dmg / app.tar.gz 404（2026-06-14 修订）**：`rename-bundle.js` 新增 (1) 把 `.app` 目录打包为 `ErgeMD-v{ver}-macos.app.tar.gz`（命令行解压安装）；(2) 把 `macos-arm64.dmg` 复制为 `macos.dmg` 兜底，让 README 中"通用安装包"链接不再 404（实际仍为 arm64 专用，Intel Mac 暂未提供原生包）。README 中文/英文版同步加注"macOS CI 仅编译 Apple Silicon"
 
 ## [0.4.0] - 2026-06-10
 

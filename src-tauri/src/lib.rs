@@ -242,6 +242,23 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
+        // 单实例插件：已运行时新进程启动参数会转发给已运行实例
+        // 用于 Windows/Linux 热启动场景（右键 MD 文件 → 用 ErgeMD 打开）
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            // argv[0] 是 exe 路径，argv[1..] 是文件路径
+            for arg in argv.iter().skip(1) {
+                let path = std::path::Path::new(arg);
+                if path.exists()
+                    && path.extension().map_or(false, |ext| {
+                        ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown")
+                    })
+                {
+                    // 热启动场景：前端已加载，emit 可被监听到
+                    let _ = app.emit("file-opened", arg);
+                    break;
+                }
+            }
+        }))
         .manage(AppState {
             db_pool: Arc::new(Mutex::new(None)),
             pending_file: pending_file.clone(),
@@ -276,28 +293,33 @@ pub fn run() {
             let handle = app.handle().clone();
             let pending = pending_file.clone();
 
-            // Windows 冷启动：从命令行参数中提取文件路径
-            // 当用户右键 MD 文件选择"使用 ErgeMD 打开"时，Windows 将文件路径作为命令行参数传递
-            for arg in std::env::args().skip(1) {
+            // Windows/Linux 冷启动：从命令行参数中提取文件路径
+            // 当用户右键 MD 文件选择"使用 ErgeMD 打开"时，系统将文件路径作为命令行参数传递
+            // 使用 args_os() 以兼容非 UTF-8 路径（避免 panic）
+            for arg in std::env::args_os().skip(1) {
                 let path = std::path::Path::new(&arg);
                 if path.exists()
                     && path
                         .extension()
                         .map_or(false, |ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
                 {
-                    let fp = arg.clone();
-                    let pending_clone = pending.clone();
-                    let handle_clone = handle.clone();
-                    tauri::async_runtime::block_on(async {
-                        let mut guard = pending_clone.lock().await;
-                        *guard = Some(fp);
-                    });
-                    let _ = handle_clone.emit("file-opened", &arg);
-                    break;
+                    // 转 String 失败时跳过该参数（非 UTF-8 路径暂不支持，避免 panic）
+                    if let Ok(fp) = arg.into_string() {
+                        let pending_clone = pending.clone();
+                        tauri::async_runtime::block_on(async {
+                            let mut guard = pending_clone.lock().await;
+                            *guard = Some(fp);
+                        });
+                        // 冷启动场景：webview 尚未加载完成，emit 必然丢失
+                        // 前端通过 get_pending_file 命令主动拉取，无需 emit
+                        break;
+                    }
                 }
             }
 
-            // macOS / 热启动：监听 tauri://file-open 事件
+            // macOS：监听 tauri://file-open 事件（系统文件关联打开）
+            // 冷启动时 webview 可能未就绪，靠 get_pending_file 兜底；
+            // 热启动时 emit 可被前端监听
             app.listen("tauri://file-open", move |event| {
                 if let Ok(paths) = serde_json::from_str::<Vec<String>>(event.payload()) {
                     let file_path: Option<String> = paths.into_iter().next();

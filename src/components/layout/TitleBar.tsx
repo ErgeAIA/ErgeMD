@@ -208,8 +208,8 @@ const TitleBar: React.FC<TitleBarProps> = memo(
                 : "var(--text-muted, #50505A)";
               (e.currentTarget as HTMLElement).style.background = "transparent";
             }}
-            aria-label={t("titleBar.pin")}
-            title={t("titleBar.pin")}
+            aria-label={isPinned ? t("titleBar.unpin") : t("titleBar.pin")}
+            title={isPinned ? t("titleBar.unpin") : t("titleBar.pin")}
           >
             <svg
               aria-hidden="true"

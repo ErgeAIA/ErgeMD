@@ -49,7 +49,9 @@
     "minimize": "Minimize",
     "maximize": "Maximize",
     "restore": "Restore",
-    "close": "Close"
+    "close": "Close",
+    "pin": "Always on Top",
+    "unpin": "Unpin from Top"
   },
   "statusBar": {
     "wordCount": "{{count}} words",
@@ -230,7 +232,8 @@
     "newVersionAvailable": "New version v{{version}} available, please download",
     "latestVersionHint": "Click to open latest release page v{{version}}",
     "viewRelease": "View Release",
-    "updateCheckFailed": "Update check failed, please retry with a stable network"
+    "updateCheckFailed": "Update check failed, please retry with a stable network",
+    "easterEggClose": "Close"
   },
   "update": {
     "newVersionAvailable": "New version v{{version}} available, download now",

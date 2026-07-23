@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
+import { useFileStore } from "@/stores/fileStore";
+import { renderMermaidForExport } from "@/components/reader/MermaidDiagram";
+import { decodeBlockDataRaw } from "@/utils/quickEditLines";
 
 export interface ExportHtmlOptions {
   inlineCss?: boolean;
@@ -157,6 +160,71 @@ function extractHtmlContent(
   return container.innerHTML;
 }
 
+/**
+ * 导出前补救渲染未渲染的 mermaid block。
+ *
+ * 虚拟滚动 + IntersectionObserver 懒加载场景下，不可见区域的 mermaid block
+ * 在 DOM 中只有 placeholder（无 SVG），直接复制 innerHTML 导出会丢失图表。
+ * 此函数遍历所有 `data-block-type="mermaid"` 元素，对未渲染（不含 svg）的
+ * block 从 `data-raw` 提取 chart 代码并同步渲染，将 SVG 注入 DOM。
+ */
+async function renderUnrenderedMermaidBlocks(): Promise<void> {
+  const mermaidBlocks = document.querySelectorAll<HTMLDivElement>(
+    '[data-block-type="mermaid"]',
+  );
+  const renderTasks: Promise<void>[] = [];
+
+  mermaidBlocks.forEach((block) => {
+    // 已渲染（包含 svg）则跳过
+    if (block.querySelector("svg")) return;
+
+    const rawAttr = block.getAttribute("data-raw");
+    if (!rawAttr) return;
+
+    // data-raw 编码格式：`startLine|endLine|raw` 或纯 raw（均经 encodeURIComponent）
+    const parsed = decodeBlockDataRaw(rawAttr);
+    const rawText = parsed?.raw ?? safeDecodeUri(rawAttr);
+    if (!rawText) return;
+
+    // 从 fence 代码中提取 mermaid chart 内容
+    // 兼容 ```mermaid / ```mermaid{...} 等 fence 形式
+    const chartMatch = rawText.match(/```(?:mermaid)[^\n]*\n([\s\S]*?)\n```/);
+    const chart = chartMatch ? chartMatch[1].trim() : "";
+
+    if (!chart) return;
+
+    renderTasks.push(
+      (async () => {
+        const svg = await renderMermaidForExport(chart);
+        if (!svg) return;
+
+        // 找到内层 .mermaid 容器（MermaidDiagram 组件渲染的 div），替换其内容
+        const innerMermaid = block.querySelector<HTMLElement>(".mermaid");
+        if (innerMermaid) {
+          innerMermaid.innerHTML = svg;
+        } else {
+          // 兜底：直接在 block 内创建 .mermaid 容器
+          const svgContainer = document.createElement("div");
+          svgContainer.className = "mermaid";
+          svgContainer.innerHTML = svg;
+          block.innerHTML = "";
+          block.appendChild(svgContainer);
+        }
+      })(),
+    );
+  });
+
+  await Promise.all(renderTasks);
+}
+
+function safeDecodeUri(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
 export function generatePdfHtml(
   containerSelector: string = ".markdown-body",
   options: ExportHtmlOptions = {},
@@ -207,11 +275,19 @@ export async function exportHtml(
   containerSelector: string = ".markdown-body",
   options: ExportHtmlOptions = {},
 ): Promise<void> {
+  const fileStore = useFileStore.getState();
+  const defaultFileName = fileStore.currentFilePath
+    ? fileStore.currentFilePath.split(/[/\\]/).pop()?.replace(/\.[^.]+$/, "") || "export"
+    : "export";
+
+  // 补救渲染虚拟滚动下未渲染的 mermaid block，避免导出 HTML 丢失图表
+  await renderUnrenderedMermaidBlocks();
+
   const fullHtml = generateHtmlContent(containerSelector, options);
 
   const filePath = await save({
     filters: [{ name: "HTML", extensions: ["html"] }],
-    defaultPath: "export.html",
+    defaultPath: `${defaultFileName}.html`,
   });
 
   if (!filePath) return;

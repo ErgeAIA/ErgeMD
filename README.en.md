@@ -33,18 +33,18 @@ A desktop application focused on Markdown reading, with the core philosophy: **u
 
 ## Download
 
-Latest version **v0.2.2**:
+Latest version **v0.4.2**:
 
 | Type | Download Link |
 |------|---------------|
-| Portable (no install) | [ErgeMD-v0.2.2-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD-v0.2.2-portable.zip) |
-| NSIS Installer | [ErgeMD_0.2.2_x64-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.2.2/ErgeMD_0.2.2_x64-setup.exe) |
+| Portable (no install) | [ErgeMD-v0.4.2-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-portable.zip) |
+| NSIS Installer | [ErgeMD-v0.4.2-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-setup.exe) |
 
 ### macOS Downloads
 
-- [ErgeMD-v0.4.1-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos-arm64.dmg) — Apple Silicon native installer
-- [ErgeMD-v0.4.1-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.dmg) — Universal installer (**currently arm64-only; Intel Mac has no native build yet**)
-- [ErgeMD-v0.4.1-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-macos.app.tar.gz) — Command-line extractable
+- [ErgeMD-v0.4.2-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-macos-arm64.dmg) — Apple Silicon native installer
+- [ErgeMD-v0.4.2-macos.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-macos.dmg) — Universal installer (**currently arm64-only; Intel Mac has no native build yet**)
+- [ErgeMD-v0.4.2-macos.app.tar.gz](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-macos.app.tar.gz) — Command-line extractable
 
 > **macOS Platform Note**: The CI matrix currently builds only Apple Silicon (arm64). `macos.dmg` and `macos.app.tar.gz` are both arm64 builds; Intel Mac users are not provided a native build yet.
 
@@ -52,8 +52,8 @@ Latest version **v0.2.2**:
 
 ### Linux Downloads
 
-- [ErgeMD-v0.4.1-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.AppImage) — No-install portable
-- [ErgeMD-v0.4.1-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.1/ErgeMD-v0.4.1-linux-x86_64.deb) — Debian / Ubuntu package
+- [ErgeMD-v0.4.2-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-linux-x86_64.AppImage) — No-install portable
+- [ErgeMD-v0.4.2-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.4.2/ErgeMD-v0.4.2-linux-x86_64.deb) — Debian / Ubuntu package
 
 **System dependencies** (Ubuntu 22.04+ / Debian 12+):
 

@@ -19,6 +19,9 @@ const QuickEdit: React.FC<QuickEditProps> = memo(
 
     useEffect(() => {
       const updatePosition = () => {
+        // 目标元素脱离 DOM 时不跳位，保持当前位置
+        if (!targetElement.isConnected) return;
+
         const rect = targetElement.getBoundingClientRect();
         const windowHeight = window.innerHeight;
         const windowWidth = window.innerWidth;
@@ -42,22 +45,14 @@ const QuickEdit: React.FC<QuickEditProps> = memo(
         });
       };
 
+      // 仅在 mount 时计算一次位置，锁定在当前视口
       updatePosition();
 
+      // 仅监听 resize 重新计算（视口尺寸变化时调整）
       window.addEventListener("resize", updatePosition);
-      window.addEventListener("scroll", updatePosition, true);
-
-      const scrollContainer =
-        targetElement.closest('[data-scroll-container="true"]') ||
-        targetElement.closest('[data-virtuoso-scroller="true"]') ||
-        targetElement.closest('.reading-scroll-container') ||
-        document.body;
-      scrollContainer.addEventListener("scroll", updatePosition);
 
       return () => {
         window.removeEventListener("resize", updatePosition);
-        window.removeEventListener("scroll", updatePosition, true);
-        scrollContainer.removeEventListener("scroll", updatePosition);
       };
     }, [targetElement, height]);
 

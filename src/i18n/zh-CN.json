@@ -49,7 +49,9 @@
     "minimize": "最小化",
     "maximize": "最大化",
     "restore": "还原窗口",
-    "close": "关闭"
+    "close": "关闭",
+    "pin": "窗口置顶",
+    "unpin": "取消置顶"
   },
   "statusBar": {
     "wordCount": "{{count}} 字",
@@ -230,7 +232,8 @@
     "newVersionAvailable": "发现新版本 v{{version}}，请前往下载",
     "latestVersionHint": "点击打开最新版 Release 页面 v{{version}}",
     "viewRelease": "查看 Release",
-    "updateCheckFailed": "检查更新失败，请检查网络后重试"
+    "updateCheckFailed": "检查更新失败，请检查网络后重试",
+    "easterEggClose": "关闭"
   },
   "update": {
     "newVersionAvailable": "发现新版本 v{{version}}，前往下载",

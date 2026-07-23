@@ -24,23 +24,32 @@
 
 .obsidian-callout-icon {
   display: inline-flex;
-  width: 18px;
-  height: 18px;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;
+  height: 1.2em;
+  font-size: inherit;
+  line-height: 1;
   flex-shrink: 0;
 }
 
+.obsidian-callout-icon::before {
+  font-size: 1em;
+  line-height: 1;
+}
+
 .obsidian-icon-pencil::before { content: "\270E"; }
-.obsidian-icon-clipboard-list::before { content: "\2630"; }
+.obsidian-icon-clipboard-list::before { content: "\1F4CB"; }
 .obsidian-icon-info::before { content: "\2139"; }
 .obsidian-icon-check-circle-2::before { content: "\2611"; }
-.obsidian-icon-flame::before { content: "\2728"; }
+.obsidian-icon-flame::before { content: "\1F525"; }
 .obsidian-icon-check::before { content: "\2713"; }
 .obsidian-icon-help-circle::before { content: "\2753"; }
 .obsidian-icon-alert-triangle::before { content: "\26A0"; }
 .obsidian-icon-x::before { content: "\2717"; }
 .obsidian-icon-zap::before { content: "\26A1"; }
 .obsidian-icon-bug::before { content: "\1F41B"; }
-.obsidian-icon-list::before { content: "\1F4CB"; }
+.obsidian-icon-list::before { content: "\1F4DD"; }
 .obsidian-icon-quote::before { content: "\275D"; }
 
 .obsidian-callout-fold {

@@ -1,7 +1,7 @@
 {
   "name": "ergemd",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "scripts": {
     "lint": "eslint src/",
@@ -69,5 +69,6 @@
     "@vitest/ui": "^2.1.9",
     "@testing-library/react": "^16.1.0",
     "@testing-library/dom": "^10.4.0"
-  }
+  },
+  "packageManager": "pnpm@11.16.0+sha512.b767e9a98fc87aec0f42daefcd0e84941c2cdb45d73c4e1e68860fb2bdfdbe032ab592105479e5e05c237f740c8a5ffdbbb52385797ddc2296745a1bbb883e8d"
 }
