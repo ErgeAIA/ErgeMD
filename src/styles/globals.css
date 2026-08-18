@@ -77,6 +77,12 @@
 /* --- Obsidian 兼容模块样式 --- */
 @import "../components/obsidian/obsidian.css";
 
+/* ===== 字体令牌 ===== */
+:root {
+  /* 等宽字体栈：系统原生等宽，零打包、跨平台一致（G2.1 方案 B） */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
 /*
  * 兜底默认值：仅在 <html> 没有 data-theme 属性时生效。
  * 正常情况下 useTheme Hook 会在初始化时设置 data-theme，

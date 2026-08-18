@@ -426,7 +426,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                   padding: "2px 6px",
                   borderRadius: "3px",
                   fontSize: "0.9em",
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontFamily: "var(--font-mono)",
                   ...incomingStyle,
                 }}
                 {...rest}
@@ -559,8 +559,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 display: "inline-block",
                 padding: "2px 6px",
                 fontSize: "0.85em",
-                fontFamily:
-                  "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--text-primary)",
                 backgroundColor: "var(--bg-code)",
                 border: "1px solid var(--divider)",

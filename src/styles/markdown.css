@@ -219,7 +219,7 @@
   overflow-x: auto;
   font-size: 0.9em;
   line-height: 1.6;
-  font-family: "'JetBrains Mono', 'Fira Code', monospace";
+  font-family: var(--font-mono);
 }
 
 /* ===== highlight.js 代码高亮 ===== */
@@ -276,7 +276,7 @@
   border: 1px solid rgba(var(--accent-pink-rgb), 0.16);
   border-radius: 0.25em;
   padding: 0.12em 0.32em;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
   white-space: normal;
 }
@@ -294,7 +294,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: 0.25em;
   padding: 0.1em 0.35em;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   box-shadow: inset 0 -1px 0 var(--border-subtle);
 }
@@ -304,7 +304,7 @@
   background: var(--inline-code-bg);
   border-radius: 0.25em;
   padding: 0.1em 0.28em;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
 }
 

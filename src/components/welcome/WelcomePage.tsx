@@ -548,7 +548,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
                         <kbd
                           style={{
                             fontSize: "11px",
-                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFamily: "var(--font-mono)",
                             color: "var(--text-muted)",
                             background: "var(--bg-code)",
                             padding: "2px 6px",
@@ -665,7 +665,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
                             fontSize: "11px",
                             color: "var(--text-muted)",
                             flexShrink: 0,
-                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFamily: "var(--font-mono)",
                           }}
                         >
                           {formatTime(file.opened_at)}

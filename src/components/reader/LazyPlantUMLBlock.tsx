@@ -227,7 +227,7 @@ const LazyPlantUMLBlock: React.FC<LazyPlantUMLBlockProps> = memo(
                 onChange={(e) => setEditCode(e.target.value)}
                 className="w-full bg-transparent border-none outline-none resize-y text-sm"
                 style={{
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontFamily: "var(--font-mono)",
                   lineHeight: 1.6,
                   color: "var(--text-primary)",
                   minHeight: 200,

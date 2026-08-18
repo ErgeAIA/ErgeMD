@@ -263,7 +263,7 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
               onChange={(e) => setEditCode(e.target.value)}
               className="w-full bg-transparent border-none outline-none resize-y text-sm"
               style={{
-                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontFamily: "var(--font-mono)",
                 lineHeight: 1.6,
                 color: "var(--text-primary)",
                 minHeight: "200px",
@@ -306,7 +306,7 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
             <code
               className="hljs"
               style={{
-                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontFamily: "var(--font-mono)",
                 lineHeight: 1.6,
               }}
               dangerouslySetInnerHTML={{
