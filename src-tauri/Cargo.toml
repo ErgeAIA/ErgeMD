@@ -2,7 +2,7 @@
 name = "ergemd"
 version = "0.4.2"
 description = "ErgeMD - A Markdown Reader"
-authors = ["ErgeAIA"]
+authors = ["ErgeAIA <ergeaia@agent.qq.com>"]
 edition = "2021"
 
 [lib]
