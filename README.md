@@ -249,7 +249,7 @@ pnpm build
 
 <table>
 <tr>
-<td align="center" valign="middle" width="180">
+<td align="center" valign="middle" width="220">
 <img src="https://github.com/ErgeAIA.png" width="100" style="border-radius: 50%"><br>
 <b>宝藏二哥AIA / ErgeAIA</b><br>
 <sub>生命不息，折腾不止</sub>
