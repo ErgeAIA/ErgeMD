@@ -16,7 +16,7 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-stable-DEA584?style=for-the-badge&logo=rust&logoColor=black)
 
-[核心功能](#核心功能) · [下载](#下载) · [从源码构建](#从源码构建) · [技术栈](#技术栈) · [使用指南](#使用指南) · [文档](#文档) · [作者信息](#作者信息)
+[核心功能](#核心功能) · [下载](#下载) · [从源码构建](#从源码构建) · [技术栈](#技术栈) · [使用指南](#使用指南) · [作者信息](#作者信息)
 
 [English README](./README.en.md)
 
@@ -119,18 +119,6 @@ pnpm build
 | 数据库    | SQLite (sqlx)                         | 0.8.6                |
 | 后端语言  | Rust                                  | edition 2021         |
 | 包管理器  | pnpm                                  | >= 8                 |
-
-## 关键架构决策
-
-| 决策                         | 原因                                   |
-| ---------------------------- | -------------------------------------- |
-| 选择 Tauri 2 而非 Electron   | 更小的安装包、更好的性能、Rust 安全性  |
-| 选择 Zustand 而非 Redux      | 更轻量、API 简洁、基于选择器的订阅机制 |
-| 选择 CSS 变量主题系统        | 主题切换零重渲染、支持动态主题         |
-| 选择 @tanstack/react-virtual | 更现代的 API、更好的 TypeScript 支持   |
-| 前后端严格分离               | 确保 Rust 处理所有 IO、前端专注 UI     |
-| 阅读进度存入 SQLite          | 持久化、跨窗口同步、支持历史记录       |
-| 三种性能模式预设             | 满足不同设备配置和阅读场景需求         |
 
 ## 使用指南
 
@@ -250,14 +238,6 @@ pnpm build
 - 多版本共存测试
 
 > 注意：便携版不会自动关联文件类型，也不会创建快捷方式。如需这些功能，请使用安装版。
-
-## 文档
-
-| 文档                           | 说明               |
-| ------------------------------ | ------------------ |
-| [CHANGELOG.md](./CHANGELOG.md) | 版本更新日志       |
-| [TECH-SPEC.md](./TECH-SPEC.md) | 技术规格文档       |
-| [AGENTS.md](./AGENTS.md)       | 开发规范与决策记录 |
 
 ## TODO / 路线图
 
