@@ -49,3 +49,6 @@ docs/consolo-logs/*.txt
 
 # Docs (optional, uncomment if you want to exclude docs)
 # docs/
+
+# CodeGraph local cache (db, pid, sockets, logs)
+/.codegraph/
