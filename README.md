@@ -16,7 +16,7 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-stable-DEA584?style=for-the-badge&logo=rust&logoColor=black)
 
-[核心功能](#核心功能) · [下载](#下载) · [从源码构建](#从源码构建) · [技术栈](#技术栈) · [使用指南](#使用指南) · [作者信息](#作者信息)
+[核心功能](#核心功能) · [快速上手](#快速上手) · [下载](#下载) · [从源码构建](#从源码构建) · [技术栈](#技术栈) · [使用指南](#使用指南) · [作者信息](#作者信息)
 
 [English README](./README.en.md)
 
@@ -29,6 +29,12 @@
 - **Obsidian 语法兼容**：支持 Callout、Wiki 链接、嵌入引用、高亮标记、注释隐藏、块 ID 等 Obsidian 专属语法
 - **工作区管理**：多标签页、文件树、书签；快速打开原文件位置
 - **导出**：文档可导出 HTML、Word（DOCX）、PDF；Mermaid/PlantUML 图表一键保存为 SVG 图
+
+## 快速上手
+
+1. 从 [Releases](https://github.com/ErgeAIA/ErgeMD/releases) 下载对应平台安装包（Windows 便携版免安装；macOS 首次打开请右键 → 打开，见下方说明）。
+2. 启动 ErgeMD，按 `Ctrl + O` 打开一个 .md 文件，或直接拖入窗口。
+3. 开始阅读——Markdown 渲染、数学公式、Mermaid/PlantUML 图表、Obsidian 语法即刻生效。
 
 ## 下载
 
@@ -72,9 +78,9 @@ sudo apt-get install -y fonts-noto-cjk fonts-noto-color-emoji
 
 ### 前置条件
 
-- Node.js 18+
+- Node.js ≥ 20.19（或 ≥ 22.12，推荐 22 LTS）
 - Rust (stable)
-- pnpm 8+
+- pnpm ≥ 9（推荐 11）
 
 ### 构建
 
@@ -85,18 +91,26 @@ pnpm install
 # 开发模式（热重载）
 pnpm tauri dev
 
-# 生产构建
-pnpm tauri build
+# 生产构建（发布链路：版本同步 + 构建 + 产物重命名）
+pnpm tauri:build
 ```
+
+> `tauri:build` = `sync-version`（同步版本到 Cargo.toml / tauri.conf.json）+ `tauri build` + `rename-bundle`（重命名安装包）；仅试构建可用 `pnpm tauri build`。
 
 ### 测试
 
 ```bash
-# 前端类型检查
-pnpm lint
+# 前端测试（vitest）
+pnpm test
 
-# 前端构建
-pnpm build
+# Rust 后端测试
+pnpm test:rust
+
+# 测试覆盖率
+pnpm test:coverage
+
+# 静态检查（类型 + 代码规范）
+pnpm lint
 ```
 
 ## 技术栈

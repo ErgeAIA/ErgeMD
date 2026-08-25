@@ -16,7 +16,7 @@ A desktop application focused on Markdown reading, with the core philosophy: **u
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-stable-DEA584?style=for-the-badge&logo=rust&logoColor=black)
 
-[Core Features](#core-features) · [Download](#download) · [Building from Source](#building-from-source) · [Tech Stack](#tech-stack) · [User Guide](#user-guide) · [Documentation](#documentation) · [Author](#author)
+[Core Features](#core-features) · [Quick Start](#quick-start) · [Download](#download) · [Building from Source](#building-from-source) · [Tech Stack](#tech-stack) · [User Guide](#user-guide) · [Documentation](#documentation) · [Author](#author)
 
 [中文 README](./README.md)
 
@@ -30,6 +30,12 @@ A desktop application focused on Markdown reading, with the core philosophy: **u
 - **Workspace Management**: Multi-tab, File tree, Bookmarks; Quick open file location
 - **Export**: HTML, DOCX, PDF export; Mermaid diagrams save as SVG
 - **Lightweight & Efficient**: Rust backend + React frontend, native desktop experience
+
+## Quick Start
+
+1. Download the installer for your platform from [Releases](https://github.com/ErgeAIA/ErgeMD/releases) (Windows portable needs no install; on macOS, right-click → Open on first launch, see notes below).
+2. Launch ErgeMD, press `Ctrl + O` to open a .md file, or drag it into the window.
+3. Start reading — Markdown rendering, math formulas, Mermaid/PlantUML diagrams, and Obsidian syntax take effect instantly.
 
 ## Download
 
@@ -73,9 +79,9 @@ For older versions, visit the [Releases page](https://github.com/ErgeAIA/ErgeMD/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.19+ (or 22.12+; 22 LTS recommended)
 - Rust (stable)
-- pnpm 8+
+- pnpm 9+ (11 recommended)
 
 ### Build
 
@@ -86,18 +92,26 @@ pnpm install
 # Development mode (hot reload)
 pnpm tauri dev
 
-# Production build
-pnpm tauri build
+# Production build (release pipeline: version sync + build + bundle rename)
+pnpm tauri:build
 ```
+
+> `tauri:build` = `sync-version` (syncs version to Cargo.toml / tauri.conf.json) + `tauri build` + `rename-bundle` (renames artifacts); use `pnpm tauri build` for a plain build.
 
 ### Testing
 
 ```bash
-# Frontend linting
-pnpm lint
+# Frontend tests (vitest)
+pnpm test
 
-# Frontend build
-pnpm build
+# Rust backend tests
+pnpm test:rust
+
+# Test coverage
+pnpm test:coverage
+
+# Static checks (type + lint)
+pnpm lint
 ```
 
 ## Tech Stack
