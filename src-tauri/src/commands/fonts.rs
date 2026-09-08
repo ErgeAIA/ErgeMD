@@ -125,47 +125,52 @@ fn categorize_font(name: &str) -> &'static str {
 }
 
 #[tauri::command]
-pub fn get_system_fonts() -> Result<FontListResult, String> {
-    let collection = Collection::new().map_err(|e| format!("Failed to list fonts: {}", e))?;
+pub async fn get_system_fonts() -> Result<FontListResult, String> {
+    // 字体枚举是同步阻塞操作，放入线程池避免占住主线程
+    tauri::async_runtime::spawn_blocking(move || -> Result<FontListResult, String> {
+        let collection = Collection::new().map_err(|e| format!("Failed to list fonts: {}", e))?;
 
-    let mut seen = HashSet::new();
-    let mut sans_serif: Vec<SystemFont> = Vec::new();
-    let mut serif: Vec<SystemFont> = Vec::new();
-    let mut monospace: Vec<SystemFont> = Vec::new();
+        let mut seen = HashSet::new();
+        let mut sans_serif: Vec<SystemFont> = Vec::new();
+        let mut serif: Vec<SystemFont> = Vec::new();
+        let mut monospace: Vec<SystemFont> = Vec::new();
 
-    for font in collection.all() {
-        let family = font.family_name.clone();
+        for font in collection.all() {
+            let family = font.family_name.clone();
 
-        if seen.contains(&family) {
-            continue;
+            if seen.contains(&family) {
+                continue;
+            }
+            seen.insert(family.clone());
+
+            if is_blocked(&family) {
+                continue;
+            }
+
+            let category = categorize_font(&family);
+            let sys_font = SystemFont {
+                name: family.clone(),
+                family,
+                category: category.to_string(),
+            };
+
+            match category {
+                "monospace" => monospace.push(sys_font),
+                "serif" => serif.push(sys_font),
+                _ => sans_serif.push(sys_font),
+            }
         }
-        seen.insert(family.clone());
 
-        if is_blocked(&family) {
-            continue;
-        }
+        sans_serif.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        serif.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        monospace.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
 
-        let category = categorize_font(&family);
-        let sys_font = SystemFont {
-            name: family.clone(),
-            family,
-            category: category.to_string(),
-        };
-
-        match category {
-            "monospace" => monospace.push(sys_font),
-            "serif" => serif.push(sys_font),
-            _ => sans_serif.push(sys_font),
-        }
-    }
-
-    sans_serif.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    serif.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    monospace.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-
-    Ok(FontListResult {
-        sans_serif,
-        serif,
-        monospace,
+        Ok(FontListResult {
+            sans_serif,
+            serif,
+            monospace,
+        })
     })
+    .await
+    .map_err(|e| format!("Font enumeration task failed: {}", e))?
 }

@@ -1,6 +1,7 @@
 use base64::{engine::general_purpose, Engine as _};
 use encoding_rs;
 use serde::Serialize;
+use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -85,6 +86,9 @@ pub async fn write_binary_file(path: String, base64_data: String) -> Result<(), 
     Ok(())
 }
 
+/// 工作区扫描的最大目录深度，防止异常深层嵌套拖垮 UI
+const MAX_SCAN_DEPTH: usize = 32;
+
 #[tauri::command]
 pub async fn scan_workspace(folder_path: String) -> Result<Vec<FileNode>, String> {
     validate_path(&folder_path)?;
@@ -93,12 +97,17 @@ pub async fn scan_workspace(folder_path: String) -> Result<Vec<FileNode>, String
         return Err("Folder does not exist".to_string());
     }
 
-    let mut tree = build_file_tree(&root)?;
+    let mut visited = HashSet::new();
+    let mut tree = build_file_tree(&root, 0, &mut visited)?;
     sort_file_tree(&mut tree);
     Ok(vec![tree])
 }
 
-fn build_file_tree(dir: &PathBuf) -> Result<FileNode, String> {
+fn build_file_tree(
+    dir: &PathBuf,
+    depth: usize,
+    visited: &mut HashSet<PathBuf>,
+) -> Result<FileNode, String> {
     let name = dir
         .file_name()
         .unwrap_or_default()
@@ -107,7 +116,14 @@ fn build_file_tree(dir: &PathBuf) -> Result<FileNode, String> {
 
     let mut children = Vec::new();
 
-    if dir.is_dir() {
+    // 符号链接循环 / 超深嵌套防护：命中时该分支作为叶子节点返回，不整体失败
+    let can_recurse = depth < MAX_SCAN_DEPTH
+        && dir
+            .canonicalize()
+            .ok()
+            .is_some_and(|c| visited.insert(c));
+
+    if dir.is_dir() && can_recurse {
         let entries = fs::read_dir(dir).map_err(|e| format!("Failed to read dir: {}", e))?;
 
         let mut dirs: Vec<FileNode> = Vec::new();
@@ -127,7 +143,7 @@ fn build_file_tree(dir: &PathBuf) -> Result<FileNode, String> {
             }
 
             if path.is_dir() {
-                dirs.push(build_file_tree(&path)?);
+                dirs.push(build_file_tree(&path, depth + 1, visited)?);
             } else if path.extension().is_some_and(|ext| {
                 ext.eq_ignore_ascii_case("md")
                     || ext.eq_ignore_ascii_case("markdown")
@@ -231,6 +247,9 @@ pub async fn read_image_as_data_url(base_path: String, relative_path: String) ->
 
 #[tauri::command]
 pub async fn fetch_remote_image_as_data_url(url: String) -> Result<String, String> {
+    // 防止超大图片撑爆内存（base64 后体积再增 1/3）
+    const MAX_REMOTE_IMAGE_BYTES: usize = 20 * 1024 * 1024;
+
     let client = reqwest::Client::builder()
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
         .timeout(std::time::Duration::from_secs(15))
@@ -246,6 +265,12 @@ pub async fn fetch_remote_image_as_data_url(url: String) -> Result<String, Strin
 
     if !response.status().is_success() {
         return Err(format!("HTTP error: {}", response.status()));
+    }
+
+    if let Some(len) = response.content_length() {
+        if len as usize > MAX_REMOTE_IMAGE_BYTES {
+            return Err(format!("Image too large: {} bytes", len));
+        }
     }
 
     let content_type = response
@@ -292,6 +317,11 @@ pub async fn fetch_remote_image_as_data_url(url: String) -> Result<String, Strin
         .bytes()
         .await
         .map_err(|e| format!("Failed to read image data: {}", e))?;
+
+    // 无 content-length 时（分块传输）兜底校验实际字节数
+    if bytes.len() > MAX_REMOTE_IMAGE_BYTES {
+        return Err(format!("Image too large: {} bytes", bytes.len()));
+    }
 
     let base64_data = general_purpose::STANDARD.encode(&bytes);
     Ok(format!("data:{};base64,{}", mime_type, base64_data))
