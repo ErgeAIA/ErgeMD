@@ -5,6 +5,7 @@ import React, { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema, type Options } from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import remarkEmoji from "remark-emoji";
 import remarkGfm from "remark-gfm";
@@ -35,7 +36,38 @@ const REMARK_PLUGINS = [
 ] as unknown as Parameters<
   typeof import("react-markdown").default
 >[0]["remarkPlugins"];
-const REHYPE_PLUGINS = [rehypeRaw, rehypeSlug, rehypeKatex];
+// 消毒原始 HTML：拦截 script/事件属性/javascript: 协议；
+// 放行 className/id/style/data-*（obsidian 预处理的 wikilink/embed/block-id
+// span 与 baseComponents 的 style 透传依赖这些属性）；
+// img src 放行 data: 以支持内嵌 base64 图片。
+// rehype-slug 排在其后执行，生成的标题 id 不会被 clobber。
+const SANITIZE_SCHEMA: Options = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    "*": [
+      ...(defaultSchema.attributes?.["*"] ?? []),
+      "className",
+      "id",
+      "name",
+      "style",
+      "data-*",
+    ],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), "data"],
+  },
+};
+
+const REHYPE_PLUGINS = [
+  rehypeRaw,
+  [rehypeSanitize, SANITIZE_SCHEMA],
+  rehypeSlug,
+  rehypeKatex,
+] as unknown as Parameters<
+  typeof import("react-markdown").default
+>[0]["rehypePlugins"];
 
 // ── 组件 ──────────────────────────────────────────────
 

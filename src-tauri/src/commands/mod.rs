@@ -44,16 +44,40 @@ pub fn validate_path(path: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// webview 可写的文件类型白名单：文档导出（md/html/svg/docx/pdf）与图片保存。
+/// 防止被入侵的 webview 覆写系统可执行文件/脚本。
+const WRITABLE_EXTENSIONS: &[&str] = &[
+    "md", "markdown", "mdx", "html", "htm", "svg", "docx", "pdf", "png", "jpg", "jpeg", "gif",
+    "webp", "ico", "avif", "bmp",
+];
+
+pub fn validate_writable_path(path: &str) -> Result<(), String> {
+    validate_path(path)?;
+    let ext = PathBuf::from(path)
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_lowercase())
+        .unwrap_or_default();
+    if WRITABLE_EXTENSIONS.contains(&ext.as_str()) {
+        Ok(())
+    } else {
+        Err(format!(
+            "Writing not allowed for this file type (allowed: {})",
+            WRITABLE_EXTENSIONS.join(", ")
+        ))
+    }
+}
+
 #[tauri::command]
 pub async fn write_file(path: String, content: String) -> Result<(), String> {
-    validate_path(&path)?;
+    validate_writable_path(&path)?;
     fs::write(&path, &content).map_err(|e| format!("Failed to write file: {}", e))?;
     Ok(())
 }
 
 #[tauri::command]
 pub async fn write_binary_file(path: String, base64_data: String) -> Result<(), String> {
-    validate_path(&path)?;
+    validate_writable_path(&path)?;
     let bytes = general_purpose::STANDARD
         .decode(base64_data)
         .map_err(|e| format!("Failed to decode base64 data: {}", e))?;

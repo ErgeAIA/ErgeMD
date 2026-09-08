@@ -18,6 +18,10 @@ pub async fn export_pdf(
     html_content: String,
     file_path: String,
 ) -> Result<(), String> {
+    if !file_path.to_lowercase().ends_with(".pdf") {
+        return Err("PDF export requires a .pdf file path".to_string());
+    }
+
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()

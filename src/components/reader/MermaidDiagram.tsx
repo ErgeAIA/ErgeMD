@@ -2,6 +2,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
+import { sanitizeSvg } from "../../utils/sanitizeSvg";
 
 /**
  * Mermaid 渲染结果缓存（内存级别，页面刷新失效）。
@@ -69,7 +70,7 @@ export function renderMermaidForExport(chart: string): Promise<string> {
         mermaid.initialize({
           startOnLoad: false,
           theme: "default",
-          securityLevel: "loose",
+          securityLevel: "strict",
           flowchart: { useMaxWidth: false, htmlLabels: true },
         });
 
@@ -2362,7 +2363,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               display: "flex",
               justifyContent: "center",
             }}
-            dangerouslySetInnerHTML={{ __html: cached.svgHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizeSvg(cached.svgHtml) }}
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (target.closest("svg")) {
@@ -2396,7 +2397,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             display: "flex",
             justifyContent: "center",
           }}
-          dangerouslySetInnerHTML={{ __html: svgHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgHtml) }}
           onClick={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest("svg")) {

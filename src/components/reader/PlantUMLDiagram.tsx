@@ -2,6 +2,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
+import { sanitizeSvg } from "../../utils/sanitizeSvg";
 
 import vizGlobalUrl from "@plantuml/core/viz-global.js?url";
 
@@ -334,7 +335,7 @@ const PlantUMLDiagram: React.FC<PlantUMLDiagramProps> = memo(
           {svgHtml && !error && (
             <div
               className="plantuml-svg-wrapper"
-              dangerouslySetInnerHTML={{ __html: svgHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgHtml) }}
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest("svg")) {

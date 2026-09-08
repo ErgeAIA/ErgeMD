@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { sanitizeSvg } from "../../utils/sanitizeSvg";
 
 interface SVGPreviewProps {
   svgHtml: string;
@@ -18,6 +19,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const lastContextMenuTime = useRef(0);
+  const safeSvgHtml = useMemo(() => sanitizeSvg(svgHtml), [svgHtml]);
 
   // 拖拽平移
   const handleMouseDown = useCallback(
@@ -113,13 +115,13 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
 
       await invoke("write_file", {
         path: filePath,
-        content: svgHtml,
+        content: safeSvgHtml,
       });
     } catch (err) {
       console.error("Failed to save SVG:", err);
     }
     setShowContextMenu(false);
-  }, [svgHtml]);
+  }, [safeSvgHtml]);
 
   // 点击其他地方关闭右键菜单
   const handleClickOutsideContextMenu = useCallback(
@@ -306,7 +308,7 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
               ? "none"
               : "transform 0.15s ease-out",
           }}
-          dangerouslySetInnerHTML={{ __html: svgHtml }}
+          dangerouslySetInnerHTML={{ __html: safeSvgHtml }}
         />
       </div>
 
