@@ -93,12 +93,12 @@ pub async fn scan_workspace(folder_path: String) -> Result<Vec<FileNode>, String
         return Err("Folder does not exist".to_string());
     }
 
-    let mut tree = build_file_tree(&root, &root)?;
+    let mut tree = build_file_tree(&root)?;
     sort_file_tree(&mut tree);
     Ok(vec![tree])
 }
 
-fn build_file_tree(dir: &PathBuf, root: &PathBuf) -> Result<FileNode, String> {
+fn build_file_tree(dir: &PathBuf) -> Result<FileNode, String> {
     let name = dir
         .file_name()
         .unwrap_or_default()
@@ -127,8 +127,8 @@ fn build_file_tree(dir: &PathBuf, root: &PathBuf) -> Result<FileNode, String> {
             }
 
             if path.is_dir() {
-                dirs.push(build_file_tree(&path, root)?);
-            } else if path.extension().map_or(false, |ext| {
+                dirs.push(build_file_tree(&path)?);
+            } else if path.extension().is_some_and(|ext| {
                 ext.eq_ignore_ascii_case("md")
                     || ext.eq_ignore_ascii_case("markdown")
                     || ext.eq_ignore_ascii_case("mdx")

@@ -50,12 +50,11 @@ pub async fn export_pdf(
         .map_err(|e| format!("Failed to serialize HTML: {}", e))?;
 
     window
-        .eval(&format!(
+        .eval(format!(
             "document.open(); document.write({}); document.close();",
             html_json
         ))
         .map_err(|e| format!("Failed to inject HTML: {}", e))?;
-
     // 等待页面渲染完成
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 

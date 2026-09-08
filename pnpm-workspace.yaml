@@ -3,3 +3,7 @@ packages:
 allowBuilds:
   esbuild: false
   sharp: false
+overrides:
+  # image-size 官方补丁 >=2.0.3 尚未发布（当前最新 2.0.2，经 markdown-docx 传递），
+  # 待发布后加入此处；来源 GHSA-c4c3-pg64-4m4v
+  browserslist: ">=4.28.7"

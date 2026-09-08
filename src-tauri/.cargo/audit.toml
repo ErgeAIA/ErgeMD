@@ -1,0 +1,5 @@
+[advisories]
+ignore = [
+    # rsa Marvin 时序侧信道：0.9.x 无补丁版本可升；本应用不做任何 RSA 私钥运算，无实际影响
+    "RUSTSEC-2023-0071",
+]

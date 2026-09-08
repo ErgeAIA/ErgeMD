@@ -248,7 +248,7 @@ pub fn run() {
             for arg in argv.iter().skip(1) {
                 let path = std::path::Path::new(arg);
                 if path.exists()
-                    && path.extension().map_or(false, |ext| {
+                    && path.extension().is_some_and(|ext| {
                         ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown")
                     })
                 {
@@ -300,7 +300,7 @@ pub fn run() {
                 if path.exists()
                     && path
                         .extension()
-                        .map_or(false, |ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
                 {
                     // 转 String 失败时跳过该参数（非 UTF-8 路径暂不支持，避免 panic）
                     if let Ok(fp) = arg.into_string() {
