@@ -4,6 +4,25 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [Unreleased]
+
+### 安全
+
+- **修复 Markdown 渲染 XSS 攻击链**：文档中的原始 HTML 现在经过 sanitize 白名单消毒（保留维基链接、callout、任务列表、行内样式等正常功能所需属性）；Mermaid / PlantUML / SVG 预览的渲染结果统一过 DOMPurify；Mermaid `securityLevel` 从 `loose` 收紧为 `strict`；生产环境 CSP 移除 `unsafe-eval`
+- **webview 文件写入增加类型白名单**：`write_file` / `write_binary_file` 仅允许写入文档与图片类型（md / html / svg / docx / pdf / 图片等），`export_pdf` 校验 `.pdf` 后缀，防止被入侵的渲染进程覆写系统可执行文件
+- **收窄插件权限面**：移除前端从未使用的 fs 插件（npm 包、Rust 注册与 9 项 `fs:*` capabilities 一并清理）
+- **依赖安全更新**：vitest 升级至 3.2.7（修复 Vitest UI 任意文件读取漏洞）、mermaid 升级至 11.16.1（修复 5 项渲染相关安全漏洞）、sharp 0.35，以及 h2 / quick-xml 等 Rust 传递依赖修复
+
+### 修复
+
+- **工作区包含符号链接循环或超深目录时不再崩溃**：文件树扫描增加 32 层深度限制与路径去重，命中时该分支按空目录返回而非栈溢出
+- **打开字体设置时界面不再卡顿**：系统字体枚举移入后台线程执行
+- **包含超大远程图片的文档不再可能耗尽内存**：远程图片加载增加 20MB 大小上限（响应头预检 + 实际字节数兜底）
+
+### 移除
+
+- 清理约 870 行无引用的死代码（含 4 个未接线的 Obsidian 组件）与 40 条无引用的界面文案（中英同步），减小安装包体积
+
 ## [0.4.2] - 2026-07-23
 
 ### 修复

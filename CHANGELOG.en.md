@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- **Fixed an XSS chain in the Markdown renderer**: Raw HTML in documents is now sanitized against a whitelist (preserving attributes required by wikilinks, callouts, task lists, and inline styles); Mermaid / PlantUML / SVG preview output is sanitized via DOMPurify; Mermaid `securityLevel` tightened from `loose` to `strict`; production CSP no longer allows `unsafe-eval`
+- **File type whitelist for webview writes**: `write_file` / `write_binary_file` now only accept document and image types (md / html / svg / docx / pdf / images, etc.), and `export_pdf` validates the `.pdf` extension, preventing a compromised renderer from overwriting system executables
+- **Reduced plugin permission surface**: Removed the never-used fs plugin (npm package, Rust registration, and all 9 `fs:*` capabilities)
+- **Dependency security updates**: vitest 3.2.7 (fixes Vitest UI arbitrary file read), mermaid 11.16.1 (fixes 5 rendering-related vulnerabilities), sharp 0.35, plus Rust transitive dependency fixes for h2 / quick-xml
+
+### Fixed
+
+- **No more crashes on symlink loops or deeply nested workspace folders**: The file tree scan now enforces a 32-level depth limit with path de-duplication; affected branches return as empty folders instead of overflowing the stack
+- **Font settings no longer freeze the UI**: System font enumeration now runs on a background thread
+- **Documents with oversized remote images can no longer exhaust memory**: Remote image loading now enforces a 20MB size limit (response header pre-check plus a fallback on actual bytes)
+
+### Removed
+
+- Removed ~870 lines of dead code (including 4 unwired Obsidian components) and 40 unreferenced UI strings (zh/en in sync), reducing installer size
+
 ## [0.4.2] - 2026-07-23
 
 ### Fixed
