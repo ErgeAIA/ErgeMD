@@ -1,4 +1,4 @@
-export interface SyntaxDetector {
+interface SyntaxDetector {
   name: string;
   test: (content: string) => boolean;
 }
@@ -38,7 +38,7 @@ const frontmatterDetector: SyntaxDetector = {
   test: (content) => /^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/.test(content),
 };
 
-export const OBSIDIAN_DETECTORS: SyntaxDetector[] = [
+const OBSIDIAN_DETECTORS: SyntaxDetector[] = [
   calloutDetector,
   wikilinkDetector,
   embedDetector,
@@ -56,8 +56,4 @@ export function detectObsidianSyntax(content: string): Set<string> {
     }
   }
   return found;
-}
-
-export function hasObsidianSyntax(content: string): boolean {
-  return OBSIDIAN_DETECTORS.some((d) => d.test(content));
 }

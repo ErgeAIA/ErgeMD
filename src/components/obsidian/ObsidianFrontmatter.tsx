@@ -3,7 +3,7 @@ import React, { memo, useMemo } from "react";
 /**
  * 简单的 YAML frontmatter 解析器，不依赖任何外部库
  */
-export function parseFrontmatter(raw: string): Record<string, unknown> | null {
+function parseFrontmatter(raw: string): Record<string, unknown> | null {
   try {
     // 移除开头和结尾的 ---
     const lines = raw

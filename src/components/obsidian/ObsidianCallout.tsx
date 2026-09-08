@@ -1,6 +1,6 @@
 import React, { memo, useState } from "react";
 
-export interface CalloutTypeDef {
+interface CalloutTypeDef {
   title: string;
   color: string;
   icon: string;
@@ -131,4 +131,3 @@ const ObsidianCalloutInner: React.FC<CalloutProps> = ({
 export const ObsidianCallout = memo(ObsidianCalloutInner);
 ObsidianCallout.displayName = "ObsidianCallout";
 
-export { CALLOUT_TYPE_MAP };

@@ -225,7 +225,7 @@ function safeDecodeUri(s: string): string {
   }
 }
 
-export function generateHtmlContent(
+function generateHtmlContent(
   containerSelector: string = ".markdown-body",
   options: ExportHtmlOptions = {},
 ): string {
