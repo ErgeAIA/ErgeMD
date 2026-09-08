@@ -111,36 +111,11 @@
     "dark": "暗色主题",
     "system": "系统"
   },
-  "search": {
-    "placeholder": "搜索...",
-    "noResults": "无匹配结果"
-  },
-  "error": {
-    "fileNotFound": "文件不存在",
-    "permissionDenied": "权限不足",
-    "encodingError": "无法识别文件编码",
-    "readFailed": "文件读取失败"
-  },
-  "fileChange": {
-    "updated": "文件已更新，点击重新加载"
-  },
   "toc": {
-    "title": "目录",
     "navigation": "目录导航"
   },
   "chart": {
     "clickToZoom": "点击图表放大查看"
-  },
-  "zoom": {
-    "zoomIn": "放大",
-    "zoomOut": "缩小",
-    "close": "关闭",
-    "reset": "重置"
-  },
-  "svg": {
-    "saveAs": "保存为 SVG",
-    "saveFailed": "保存 SVG 失败，请再试一次",
-    "hint": "滚轮缩放 · 拖拽平移 · 双击重置 · 右键/按钮保存 · Esc 关闭"
   },
   "files": {
     "projectFiles": "项目文件",
@@ -168,36 +143,13 @@
     "openInNewWindow": "在新窗口打开图片",
     "copyPath": "复制图片路径",
     "editImage": "编辑图片",
-    "enterUrl": "输入图片地址",
     "loadFailed": "图片加载失败"
   },
-  "link": {
-    "open": "打开链接",
-    "copyUrl": "复制链接地址",
-    "edit": "编辑链接",
-    "enterText": "输入链接显示文本",
-    "enterUrl": "输入链接地址"
-  },
   "reader": {
-    "copy": "复制",
-    "selectAll": "全选",
-    "editParagraph": "编辑此段落",
-    "doubleClick": "双击",
-    "openInNewWindow": "在新窗口中打开",
     "rendering": "渲染中...",
     "renderError": "渲染失败",
     "plantumlError": "PlantUML 语法可能有误，请检查代码",
     "preview": "实时预览"
-  },
-  "code": {
-    "copy": "复制代码",
-    "copied": "已复制",
-    "copyFailed": "复制失败"
-  },
-  "toast": {
-    "dbInitFailed": "数据库初始化失败",
-    "exportFailed": "导出失败",
-    "folderOpenFailed": "文件夹打开失败"
   },
   "about": {
     "appDescription": "ErgeMD — 极简 Markdown 阅读器\n基于 Tauri 2 构建，专注于提供沉浸式、高性能的阅读体验\n支持多主题切换、目录导航、搜索、阅读进度保存等功能",
@@ -207,7 +159,6 @@
     "feature3": "阅读进度保存",
     "feature4": "全文搜索",
     "feature5": "多格式导出",
-    "authorTitle": "关于作者",
     "authorBio": "一个热衷于分享好东西的技术大叔\n深耕 AI 绘画、AI 编程、AI 办公\n全网搜罗好用的 PC 软件与提效神器\n坚持「无门槛、无套路、无保留」三无分享",
     "authorTag1": "三无分享",
     "authorTag2": "AI 普及大使",
@@ -217,13 +168,10 @@
     "bilibiliTitle": "来 B 站围观一下 📺",
     "bilibiliDesc": "分享 AI、编程、效率工具等内容\n期待与你在 B 站相遇～",
     "bilibiliButton": "前往B站主页",
-    "findMeTitle": "找到我",
     "footer": "© 2026 宝藏二哥AIA",
     "githubStar": "⭐ GitHub Star 支持一下",
     "menuLabel": "关于 ErgeMD",
-    "qrTipPlaceholder": "二维码占位",
     "qrTipLabel": "请二哥喝杯赛博茶 🍵",
-    "qrFriendPlaceholder": "二维码占位",
     "qrFriendLabel": "👉 加个好友，常来唠嗑 👋",
     "easterEggTitle": "🔍 你发现了隐藏入口！",
     "easterEggDesc": "二哥分享放心白嫖，随喜投喂 🍵",
@@ -237,10 +185,6 @@
   },
   "update": {
     "newVersionAvailable": "发现新版本 v{{version}}，前往下载",
-    "download": "下载",
-    "checkNow": "立即检查",
-    "checking": "正在检查更新...",
-    "upToDate": "已是最新版本",
-    "checkFailed": "检查更新失败"
+    "download": "下载"
   }
 }

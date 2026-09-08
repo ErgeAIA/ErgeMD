@@ -111,36 +111,11 @@
     "dark": "Dark Themes",
     "system": "System"
   },
-  "search": {
-    "placeholder": "Search...",
-    "noResults": "No results"
-  },
-  "error": {
-    "fileNotFound": "File not found",
-    "permissionDenied": "Permission denied",
-    "encodingError": "Unable to detect file encoding",
-    "readFailed": "Failed to read file"
-  },
-  "fileChange": {
-    "updated": "File updated, click to reload"
-  },
   "toc": {
-    "title": "Contents",
     "navigation": "Table of Contents"
   },
   "chart": {
     "clickToZoom": "Click to zoom"
-  },
-  "zoom": {
-    "zoomIn": "Zoom In",
-    "zoomOut": "Zoom Out",
-    "close": "Close",
-    "reset": "Reset"
-  },
-  "svg": {
-    "saveAs": "Save as SVG",
-    "saveFailed": "Failed to save SVG, please try again",
-    "hint": "Scroll to zoom · Drag to pan · Double-click to reset · Right-click/Save to save · Esc to close"
   },
   "files": {
     "projectFiles": "Project Files",
@@ -168,36 +143,13 @@
     "openInNewWindow": "Open in New Window",
     "copyPath": "Copy Image Path",
     "editImage": "Edit Image",
-    "enterUrl": "Enter image URL",
     "loadFailed": "Image load failed"
   },
-  "link": {
-    "open": "Open Link",
-    "copyUrl": "Copy Link URL",
-    "edit": "Edit Link",
-    "enterText": "Enter link text",
-    "enterUrl": "Enter link URL"
-  },
   "reader": {
-    "copy": "Copy",
-    "selectAll": "Select All",
-    "editParagraph": "Edit Paragraph",
-    "doubleClick": "Double-click",
-    "openInNewWindow": "Open in New Window",
     "rendering": "Rendering...",
     "renderError": "Render Error",
     "plantumlError": "PlantUML syntax may be incorrect, please check the code",
     "preview": "Live Preview"
-  },
-  "code": {
-    "copy": "Copy Code",
-    "copied": "Copied",
-    "copyFailed": "Copy failed"
-  },
-  "toast": {
-    "dbInitFailed": "Database initialization failed",
-    "exportFailed": "Export failed",
-    "folderOpenFailed": "Failed to open folder"
   },
   "about": {
     "appDescription": "ErgeMD — A Minimalist Markdown Reader\nBuilt with Tauri 2, focused on immersive, high-performance reading\nSupports multiple themes, TOC navigation, search, and progress saving",
@@ -207,7 +159,6 @@
     "feature3": "Progress Saving",
     "feature4": "Full-Text Search",
     "feature5": "Multi-Format Export",
-    "authorTitle": "About the Author",
     "authorBio": "A tech enthusiast who loves sharing great things\nDeeply involved in AI art, AI programming, and AI productivity\nCurating useful PC software and efficiency tools across the web\nCommitted to sharing with no barriers, no gimmicks, no reservations",
     "authorTag1": "No-Barrier Sharing",
     "authorTag2": "AI Evangelist",
@@ -217,13 +168,10 @@
     "bilibiliTitle": "Check out my Bilibili 📺",
     "bilibiliDesc": "Sharing AI, programming, productivity tools & more\nHope to see you on Bilibili!",
     "bilibiliButton": "Visit Bilibili",
-    "findMeTitle": "Find Me",
     "footer": "© 2026 宝藏二哥AIA",
     "githubStar": "⭐ Star on GitHub",
     "menuLabel": "About ErgeMD",
-    "qrTipPlaceholder": "QR Placeholder",
     "qrTipLabel": "Buy Erge a cyber tea 🍵",
-    "qrFriendPlaceholder": "QR Placeholder",
     "qrFriendLabel": "👉 Add friend, let's chat 👋",
     "easterEggTitle": "🔍 You found the hidden entrance!",
     "easterEggDesc": "Feel free to enjoy, tip if you like 🍵",
@@ -237,10 +185,6 @@
   },
   "update": {
     "newVersionAvailable": "New version v{{version}} available, download now",
-    "download": "Download",
-    "checkNow": "Check Now",
-    "checking": "Checking for updates...",
-    "upToDate": "You're up to date",
-    "checkFailed": "Update check failed"
+    "download": "Download"
   }
 }
