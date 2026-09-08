@@ -38,9 +38,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Trae IDE
-.trae/
-
 # Worktrees (using-git-worktrees skill)
 .worktrees/
 

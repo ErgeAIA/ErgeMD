@@ -240,7 +240,6 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         // 单实例插件：已运行时新进程启动参数会转发给已运行实例
         // 用于 Windows/Linux 热启动场景（右键 MD 文件 → 用 ErgeMD 打开）
