@@ -39,15 +39,6 @@ pub async fn init_db() -> Result<SqlitePool, Box<dyn std::error::Error>> {
     .await?;
 
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        )",
-    )
-    .execute(&pool)
-    .await?;
-
-    sqlx::query(
         "CREATE TABLE IF NOT EXISTS recent_files (
             file_path TEXT PRIMARY KEY,
             file_name TEXT NOT NULL,

@@ -1,4 +1,4 @@
-export type MarkdownBlockType =
+type MarkdownBlockType =
   | "heading"
   | "paragraph"
   | "blockquote"

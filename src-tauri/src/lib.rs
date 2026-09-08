@@ -154,25 +154,6 @@ async fn clear_recent_files(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn delete_reading_progress(
-    state: State<'_, AppState>,
-    file_path: String,
-) -> Result<(), String> {
-    let pool = {
-        let guard = state.db_pool.lock().await;
-        guard.as_ref().ok_or("Database not initialized")?.clone()
-    };
-
-    sqlx::query("DELETE FROM reading_progress WHERE file_path = ?")
-        .bind(&file_path)
-        .execute(&pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-#[tauri::command]
 async fn clear_all_reading_progress(state: State<'_, AppState>) -> Result<(), String> {
     let pool = {
         let guard = state.db_pool.lock().await;
@@ -183,46 +164,6 @@ async fn clear_all_reading_progress(state: State<'_, AppState>) -> Result<(), St
         .execute(&pool)
         .await
         .map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-#[tauri::command]
-async fn get_setting(state: State<'_, AppState>, key: String) -> Result<Option<String>, String> {
-    let pool = {
-        let guard = state.db_pool.lock().await;
-        guard.as_ref().ok_or("Database not initialized")?.clone()
-    };
-
-    let result: Option<(String,)> = sqlx::query_as("SELECT value FROM settings WHERE key = ?")
-        .bind(&key)
-        .fetch_optional(&pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    Ok(result.map(|r| r.0))
-}
-
-#[tauri::command]
-async fn save_setting(
-    state: State<'_, AppState>,
-    key: String,
-    value: String,
-) -> Result<(), String> {
-    let pool = {
-        let guard = state.db_pool.lock().await;
-        guard.as_ref().ok_or("Database not initialized")?.clone()
-    };
-
-    sqlx::query(
-        "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
-    )
-    .bind(&key)
-    .bind(&value)
-    .bind(&value)
-    .execute(&pool)
-    .await
-    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -270,10 +211,7 @@ pub fn run() {
             add_recent_file,
             delete_recent_file,
             clear_recent_files,
-            delete_reading_progress,
             clear_all_reading_progress,
-            get_setting,
-            save_setting,
             get_pending_file,
             commands::read_file,
             commands::write_file,
@@ -282,7 +220,6 @@ pub fn run() {
             commands::window::new_window,
             commands::reveal_in_explorer,
             commands::fonts::get_system_fonts,
-            commands::resolve_image_path,
             commands::read_image_as_data_url,
             commands::fetch_remote_image_as_data_url,
             commands::pdf::export_pdf,

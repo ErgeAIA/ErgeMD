@@ -189,19 +189,6 @@ pub fn is_cjk(c: char) -> bool {
 }
 
 #[tauri::command]
-pub async fn resolve_image_path(base_path: String, relative_path: String) -> Result<String, String> {
-    let base = PathBuf::from(&base_path);
-    let base_dir = if base.is_file() {
-        base.parent().ok_or("Invalid base path")?.to_path_buf()
-    } else {
-        base
-    };
-    let image_path = base_dir.join(relative_path);
-    let canonical = image_path.canonicalize().map_err(|e| format!("Failed to resolve path: {}", e))?;
-    Ok(canonical.to_string_lossy().to_string())
-}
-
-#[tauri::command]
 pub async fn read_image_as_data_url(base_path: String, relative_path: String) -> Result<String, String> {
     let base = PathBuf::from(&base_path);
     let base_dir = if base.is_file() {

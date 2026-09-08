@@ -4,7 +4,7 @@ import type { FileNode, TabInfo, TocItem, TOCMeta } from "../types";
 import { flushReadingProgress } from "../utils/readingProgress";
 
 // ===== 扩展 TocItem，添加 isActive 运行时字段 =====
-export interface TocItemWithActive extends TocItem {
+interface TocItemWithActive extends TocItem {
   isActive?: boolean;
 }
 

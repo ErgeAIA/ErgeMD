@@ -17,14 +17,6 @@ export function useActiveConfig(): ReaderConfig {
 }
 
 /**
- * 获取性能配置的 Hook
- */
-export function usePerformanceConfig() {
-  const config = useActiveConfig();
-  return config.performance;
-}
-
-/**
  * 获取 TOC 配置的 Hook
  */
 export function useTOCConfig() {
@@ -38,12 +30,4 @@ export function useTOCConfig() {
 export function useInteractionConfig() {
   const config = useActiveConfig();
   return config.interaction;
-}
-
-/**
- * 获取虚拟尺寸配置的 Hook
- */
-export function useVirtualSizesConfig() {
-  const config = useActiveConfig();
-  return config.virtualSizes;
 }

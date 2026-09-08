@@ -225,29 +225,6 @@ function safeDecodeUri(s: string): string {
   }
 }
 
-export function generatePdfHtml(
-  containerSelector: string = ".markdown-body",
-  options: ExportHtmlOptions = {},
-): string {
-  const { inlineCss = true, sectionId, grayscale = false } = options;
-  const htmlContent = extractHtmlContent(containerSelector, sectionId);
-  const cssVariables = collectCssVariables(grayscale);
-  const inlineStyles = buildInlineStyles(cssVariables, inlineCss, true);
-
-  return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ErgeMD Export</title>
-  ${inlineStyles}
-</head>
-<body>
-  ${htmlContent}
-</body>
-</html>`;
-}
-
 export function generateHtmlContent(
   containerSelector: string = ".markdown-body",
   options: ExportHtmlOptions = {},

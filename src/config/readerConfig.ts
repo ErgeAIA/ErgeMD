@@ -20,7 +20,7 @@ export interface ReaderPerformanceConfig {
   virtualOverscan: number;
 }
 
-export interface ReaderTOCConfig {
+interface ReaderTOCConfig {
   /** 每个 TOC 项的高度（px） */
   itemHeight: number;
   /** TOC 视口高度（px） */
@@ -43,7 +43,7 @@ export interface ReaderTOCConfig {
   inactiveOpacity: number;
 }
 
-export interface ReaderInteractionConfig {
+interface ReaderInteractionConfig {
   /** 搜索输入防抖延迟（ms） */
   searchDebounceMs: number;
   /** 复制状态重置超时（ms） */
@@ -52,7 +52,7 @@ export interface ReaderInteractionConfig {
   scrollStopDelayMs: number;
 }
 
-export interface ReaderVirtualSizesConfig {
+interface ReaderVirtualSizesConfig {
   /** 空白行估算高度（px） */
   blank: number;
   /** 分隔线估算高度（px） */
@@ -277,59 +277,3 @@ export const PresetConfigs: Record<ConfigLevel, ReaderConfig> = {
  * 默认阅读器配置（中档）
  */
 export const DefaultReaderConfig: ReaderConfig = PresetConfigs.medium;
-
-/**
- * 获取标题估算高度
- * @param level 标题层级（1-6）
- * @param config 配置对象（可选，默认为默认配置）
- * @returns 估算高度（px）
- */
-export function getEstimatedHeadingHeight(
-  level: number,
-  config: ReaderVirtualSizesConfig = DefaultReaderConfig.virtualSizes,
-): number {
-  const { headingBase, headingLevelDiff } = config;
-  return headingBase + (4 - level) * headingLevelDiff;
-}
-
-/**
- * 获取代码块估算高度
- * @param lineCount 代码行数
- * @param config 配置对象（可选，默认为默认配置）
- * @returns 估算高度（px）
- */
-export function getEstimatedCodeHeight(
-  lineCount: number,
-  config: ReaderVirtualSizesConfig = DefaultReaderConfig.virtualSizes,
-): number {
-  const { codeLine, codeBase } = config;
-  return Math.max(codeBase, lineCount * codeLine + codeBase);
-}
-
-/**
- * 获取表格估算高度
- * @param lineCount 表格行数
- * @param config 配置对象（可选，默认为默认配置）
- * @returns 估算高度（px）
- */
-export function getEstimatedTableHeight(
-  lineCount: number,
-  config: ReaderVirtualSizesConfig = DefaultReaderConfig.virtualSizes,
-): number {
-  const { tableLine, tableBase } = config;
-  return Math.max(tableBase, lineCount * tableLine);
-}
-
-/**
- * 获取默认块估算高度
- * @param lineCount 行数
- * @param config 配置对象（可选，默认为默认配置）
- * @returns 估算高度（px）
- */
-export function getEstimatedDefaultHeight(
-  lineCount: number,
-  config: ReaderVirtualSizesConfig = DefaultReaderConfig.virtualSizes,
-): number {
-  const { defaultLine, defaultBase } = config;
-  return Math.max(defaultBase, lineCount * defaultLine);
-}

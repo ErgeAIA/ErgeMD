@@ -46,7 +46,7 @@ export type ThemeMode =
   | "tokyo-night"
   | "neon-cyberpunk"
   | "solarized-light";
-export type Language = "zh-CN" | "en-US" | "auto";
+type Language = "zh-CN" | "en-US" | "auto";
 
 // ===== 阅读设置类型 =====
 export interface ReadingSettings {
@@ -62,7 +62,7 @@ export interface ReadingSettings {
 }
 
 // ===== Toast 消息类型（Phase 4 Task 1） =====
-export interface ToastAction {
+interface ToastAction {
   label: string;
   url?: string;
   onClick?: () => void;
@@ -86,7 +86,7 @@ export interface ContextMenuItem {
   action?: () => void;
 }
 
-export interface ContextMenuSeparator {
+interface ContextMenuSeparator {
   id: string;
   separator: true;
 }

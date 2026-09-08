@@ -14,7 +14,7 @@ import MarkdownView from "./MarkdownView";
 import type { VirtualMarkdownViewHandle } from "./VirtualMarkdownView";
 import VirtualMarkdownView from "./VirtualMarkdownView";
 
-export interface ReadingAreaProps {
+interface ReadingAreaProps {
   /** 文件路径，用于缓存 key 和进度恢复 */
   filePath: string;
   /** markdown 内容 */
@@ -32,7 +32,7 @@ export interface ReadingAreaProps {
  * 小文档（<2000 行）用传统 MarkdownView 一次性渲染，快速且无感知延迟。
  * 大文档（>=2000 行）用 VirtualMarkdownView 虚拟列表，只渲染视口附近 blocks。
  */
-export const ReadingArea = memo(
+const ReadingArea = memo(
   ({ filePath, content, isActive, onScrollReady }: ReadingAreaProps) => {
     const config = useActiveConfig();
     const readingSettings = useSettingsStore((s) => s.readingSettings);

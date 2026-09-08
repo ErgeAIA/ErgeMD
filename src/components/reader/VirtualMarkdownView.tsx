@@ -21,7 +21,7 @@ export interface VirtualMarkdownViewHandle {
   scrollToBlockIndex(index: number): void;
 }
 
-export interface VirtualMarkdownViewProps {
+interface VirtualMarkdownViewProps {
   content: string;
   scrollContainerRef: React.RefObject<HTMLElement | null>;
   onTocReady?: (items: VirtualTocItem[]) => void;
