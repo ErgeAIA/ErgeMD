@@ -40,9 +40,11 @@ const REMARK_PLUGINS = [
 // 放行 className/id/style/data-*（obsidian 预处理的 wikilink/embed/block-id
 // span 与 baseComponents 的 style 透传依赖这些属性）；
 // img src 放行 data: 以支持内嵌 base64 图片。
+// 默认白名单不含 mark/abbr/u（obsidian 高亮、remark-abbr 依赖），在此补上。
 // rehype-slug 排在其后执行，生成的标题 id 不会被 clobber。
 const SANITIZE_SCHEMA: Options = {
   ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "mark", "abbr", "u"],
   attributes: {
     ...defaultSchema.attributes,
     "*": [

@@ -96,13 +96,15 @@ async fn export_pdf_inner(
                 }
             };
 
+            // WebView2 偶发 isSuccessful=false 但 PDF 实际已写出，以文件落盘为准
+            let file_path_for_check = file_path_owned.clone();
             let file_path_h: windows_core::HSTRING = file_path_owned.into();
 
             let tx_err = tx.clone();
 
             let completed: PrintToPdfCompletedHandlerClosure =
                 Box::new(move |_result: windows_core::Result<()>, is_success: bool| {
-                    if is_success {
+                    if is_success || std::path::Path::new(&file_path_for_check).exists() {
                         let _ = tx.send(Ok(()));
                     } else {
                         let _ = tx.send(Err("PrintToPdf returned failure".to_string()));
