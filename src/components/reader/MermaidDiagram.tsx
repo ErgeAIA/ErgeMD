@@ -2,7 +2,6 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
-import { sanitizeSvg } from "../../utils/sanitizeSvg";
 
 /**
  * Mermaid 渲染结果缓存（内存级别，页面刷新失效）。
@@ -2363,7 +2362,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               display: "flex",
               justifyContent: "center",
             }}
-            dangerouslySetInnerHTML={{ __html: sanitizeSvg(cached.svgHtml) }}
+            // securityLevel strict 下 mermaid 已用内置 DOMPurify 消毒输出；
+            // 外层再过 DOMPurify 会剥掉 foreignObject 内的 htmlLabels 文字，故直接渲染
+            dangerouslySetInnerHTML={{ __html: cached.svgHtml }}
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (target.closest("svg")) {
@@ -2397,7 +2398,8 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             display: "flex",
             justifyContent: "center",
           }}
-          dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgHtml) }}
+          // 同上：mermaid strict 输出已消毒，二次消毒会丢失 htmlLabels 文字
+          dangerouslySetInnerHTML={{ __html: svgHtml }}
           onClick={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest("svg")) {

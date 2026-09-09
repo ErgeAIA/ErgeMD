@@ -2,7 +2,7 @@ import { useQuickEdit } from "@/hooks/useQuickEdit";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { MarkdownBlock } from "@/types/markdownBlock";
 import React, { memo, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema, type Options } from "rehype-sanitize";
@@ -69,6 +69,16 @@ const REHYPE_PLUGINS = [
   typeof import("react-markdown").default
 >[0]["rehypePlugins"];
 
+// react-markdown 自带的 defaultUrlTransform 不放行 data:，会把内嵌 base64 图片的
+// src 剥成空串（此转换发生在 rehype 插件之后、渲染之前）。放行 data:image/*，
+// 其余沿用默认白名单（http/https/mailto 等，javascript: 仍被拦截）
+function urlTransformAllowDataImages(url: string): string {
+  if (url.startsWith("data:image/")) {
+    return url;
+  }
+  return defaultUrlTransform(url);
+}
+
 // ── 组件 ──────────────────────────────────────────────
 
 interface MarkdownBlockViewProps {
@@ -103,6 +113,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           <ReactMarkdown
             remarkPlugins={REMARK_PLUGINS}
             rehypePlugins={REHYPE_PLUGINS}
+            urlTransform={urlTransformAllowDataImages}
           >
             {`${"#".repeat(level)} ${headingContent}`}
           </ReactMarkdown>
@@ -161,6 +172,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
           <ReactMarkdown
             remarkPlugins={REMARK_PLUGINS}
             rehypePlugins={REHYPE_PLUGINS}
+            urlTransform={urlTransformAllowDataImages}
           >
             {block.raw}
           </ReactMarkdown>
@@ -725,6 +737,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
         <ReactMarkdown
           remarkPlugins={REMARK_PLUGINS}
           rehypePlugins={REHYPE_PLUGINS}
+          urlTransform={urlTransformAllowDataImages}
           components={components}
         >
           {referenceDefinitions
