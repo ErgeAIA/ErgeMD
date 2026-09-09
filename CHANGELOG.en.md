@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Update card**: The update notification now shows a summary of what changed in the new version (entries grouped by Security/Added/Fixed, plus the release date), with actions to download now (direct platform installer link), view the full changelog, and "Skip this version" (no more reminders for that version); manually checking for updates from the About page opens the card expanded
+
 ### Security
 
 - **Fixed an XSS chain in the Markdown renderer**: Raw HTML in documents is now sanitized against a whitelist (preserving attributes required by wikilinks, callouts, task lists, and inline styles); Mermaid / PlantUML / SVG preview output is sanitized via DOMPurify; Mermaid `securityLevel` tightened from `loose` to `strict`; production CSP no longer allows `unsafe-eval`

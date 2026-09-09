@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### 新增
+
+- **更新卡片**：收到更新提示时可直接查看新版本的变更摘要（按「安全/新增/修复」分类展示条目、发布日期），支持立即下载（平台安装包直链）、查看完整日志与「跳过此版本」（该版本不再提醒）；关于页手动检查更新后卡片自动展开
+
 ### 安全
 
 - **修复 Markdown 渲染 XSS 攻击链**：文档中的原始 HTML 现在经过 sanitize 白名单消毒（保留维基链接、callout、任务列表、行内样式等正常功能所需属性）；Mermaid / PlantUML / SVG 预览的渲染结果统一过 DOMPurify；Mermaid `securityLevel` 从 `loose` 收紧为 `strict`；生产环境 CSP 移除 `unsafe-eval`
