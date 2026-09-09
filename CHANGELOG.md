@@ -9,6 +9,7 @@
 ### 安全
 
 - **修复 Markdown 渲染 XSS 攻击链**：文档中的原始 HTML 现在经过 sanitize 白名单消毒（保留维基链接、callout、任务列表、行内样式等正常功能所需属性）；Mermaid / PlantUML / SVG 预览的渲染结果统一过 DOMPurify；Mermaid `securityLevel` 从 `loose` 收紧为 `strict`；生产环境 CSP 移除 `unsafe-eval`
+- **修复导出 HTML / PDF 中的 XSS 载体**：导出管线中原始 HTML 块此前不经消毒直接输出，恶意文档导出的 HTML/PDF 文件在浏览器打开即可执行脚本；现导出路径与阅读路径使用同等消毒策略，行内 img/a 放行时仅重建安全属性（alt/src/href）
 - **webview 文件写入增加类型白名单**：`write_file` / `write_binary_file` 仅允许写入文档与图片类型（md / html / svg / docx / pdf / 图片等），`export_pdf` 校验 `.pdf` 后缀，防止被入侵的渲染进程覆写系统可执行文件
 - **收窄插件权限面**：移除前端从未使用的 fs 插件（npm 包、Rust 注册与 9 项 `fs:*` capabilities 一并清理）
 - **依赖安全更新**：vitest 升级至 3.2.7（修复 Vitest UI 任意文件读取漏洞）、mermaid 升级至 11.16.1（修复 5 项渲染相关安全漏洞）、sharp 0.35，以及 h2 / quick-xml 等 Rust 传递依赖修复

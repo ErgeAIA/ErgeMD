@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - **Fixed an XSS chain in the Markdown renderer**: Raw HTML in documents is now sanitized against a whitelist (preserving attributes required by wikilinks, callouts, task lists, and inline styles); Mermaid / PlantUML / SVG preview output is sanitized via DOMPurify; Mermaid `securityLevel` tightened from `loose` to `strict`; production CSP no longer allows `unsafe-eval`
+- **Fixed XSS carriers in exported HTML / PDF**: Raw HTML blocks in the export pipeline were previously emitted without sanitization, so an exported HTML/PDF file from a malicious document could execute scripts when opened in a browser; the export path now applies the same sanitization as the reading path, and inline img/a passthrough only rebuilds safe attributes (alt/src/href)
 - **File type whitelist for webview writes**: `write_file` / `write_binary_file` now only accept document and image types (md / html / svg / docx / pdf / images, etc.), and `export_pdf` validates the `.pdf` extension, preventing a compromised renderer from overwriting system executables
 - **Reduced plugin permission surface**: Removed the never-used fs plugin (npm package, Rust registration, and all 9 `fs:*` capabilities)
 - **Dependency security updates**: vitest 3.2.7 (fixes Vitest UI arbitrary file read), mermaid 11.16.1 (fixes 5 rendering-related vulnerabilities), sharp 0.35, plus Rust transitive dependency fixes for h2 / quick-xml

@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { parseMarkdownBlocks } from "./markdownBlocks";
 import { renderMermaidForExport } from "@/components/reader/MermaidDiagram";
 import { renderPlantUmlForExport } from "@/components/reader/PlantUMLDiagram";
@@ -106,8 +107,18 @@ function renderInlineMarkdown(text: string): string {
   html = html.replace(/&lt;em&gt;(.+?)&lt;\/em&gt;/g, "<em>$1</em>");
   html = html.replace(/&lt;code&gt;(.+?)&lt;\/code&gt;/g, "<code>$1</code>");
   html = html.replace(/&lt;del&gt;(.+?)&lt;\/del&gt;/g, "<del>$1</del>");
-  html = html.replace(/&lt;a([^>]*)&gt;(.+?)&lt;\/a&gt;/g, "<a$1>$2</a>");
-  html = html.replace(/&lt;img([^>]*)&gt;/g, "<img$1>");
+  // img/a 从转义态放行时只重建安全属性（alt/src、href），
+  // 防止 onerror 等事件属性随原文混入导出产物
+  html = html.replace(/&lt;a([^>]*)&gt;(.+?)&lt;\/a&gt;/g, (_m, attrs: string, text: string) => {
+    const href = /href=&quot;([^&]*)&quot;/.exec(attrs)?.[1] ?? "";
+    const safeHref = /^(https?:|mailto:|#|\/|\.\/|\.\.\/)/i.test(href) ? href : "";
+    return `<a href="${safeHref}">${text}</a>`;
+  });
+  html = html.replace(/&lt;img([^>]*)&gt;/g, (_m, attrs: string) => {
+    const alt = /alt=&quot;([^&]*)&quot;/.exec(attrs)?.[1] ?? "";
+    const src = /src=&quot;([^&]*)&quot;/.exec(attrs)?.[1] ?? "";
+    return `<img alt="${alt}" src="${src}">`;
+  });
 
   return html;
 }
@@ -318,7 +329,10 @@ async function renderBlockToHtml(
     }
 
     case "html":
-      return raw;
+      // 原始 HTML 块不能直出：导出产物会在浏览器/导出窗口中打开，
+      // 不过消毒等于输出可执行脚本。DOMPurify 默认策略即剥离
+      // script/事件属性/javascript: 协议，并保留 data-* 与 class
+      return DOMPurify.sanitize(raw);
 
     case "paragraph":
     default: {
