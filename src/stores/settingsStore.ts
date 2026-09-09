@@ -13,6 +13,7 @@ interface UpdateInfo {
   hasUpdate: boolean;
   currentVersion: string;
   latestVersion: string;
+  publishedAt: string;
   downloadUrl: string;
   releaseUrl: string;
   releaseNotes: string;
@@ -24,6 +25,7 @@ interface SettingsState {
   checkUpdateEnabled: boolean;
   lastCheckUpdateTime: number | null;
   updateInfo: UpdateInfo | null;
+  skippedVersion: string | null;
 
   updateReadingSettings: (partial: Partial<ReadingSettings>) => void;
   setTheme: (theme: ThemeMode) => void;
@@ -32,6 +34,7 @@ interface SettingsState {
   setCheckUpdateEnabled: (enabled: boolean) => void;
   setLastCheckUpdateTime: (time: number) => void;
   setUpdateInfo: (info: UpdateInfo | null) => void;
+  setSkippedVersion: (version: string | null) => void;
 }
 
 // ===== 默认阅读设置 =====
@@ -60,6 +63,7 @@ export const useSettingsStore = create<SettingsState>()(
       checkUpdateEnabled: defaultCheckUpdateEnabled,
       lastCheckUpdateTime: defaultLastCheckUpdateTime,
       updateInfo: null,
+      skippedVersion: null,
 
       // 局部更新阅读设置
       updateReadingSettings: (partial: Partial<ReadingSettings>) => {
@@ -95,6 +99,10 @@ export const useSettingsStore = create<SettingsState>()(
       setUpdateInfo: (info: UpdateInfo | null) => {
         set({ updateInfo: info });
       },
+
+      setSkippedVersion: (version: string | null) => {
+        set({ skippedVersion: version });
+      },
     }),
     {
       name: "ergemd-settings",
@@ -103,6 +111,7 @@ export const useSettingsStore = create<SettingsState>()(
         configLevel: state.configLevel,
         checkUpdateEnabled: state.checkUpdateEnabled,
         lastCheckUpdateTime: state.lastCheckUpdateTime,
+        skippedVersion: state.skippedVersion,
       }),
       merge: (
         persistedState: unknown,
@@ -114,6 +123,7 @@ export const useSettingsStore = create<SettingsState>()(
               configLevel?: ConfigLevel;
               checkUpdateEnabled?: boolean;
               lastCheckUpdateTime?: number | null;
+              skippedVersion?: string | null;
             }
           | undefined;
         return {
@@ -127,6 +137,7 @@ export const useSettingsStore = create<SettingsState>()(
             persisted?.checkUpdateEnabled ?? defaultCheckUpdateEnabled,
           lastCheckUpdateTime:
             persisted?.lastCheckUpdateTime ?? defaultLastCheckUpdateTime,
+          skippedVersion: persisted?.skippedVersion ?? null,
           updateInfo: null,
         };
       },

@@ -184,7 +184,12 @@
     "easterEggClose": "Close"
   },
   "update": {
-    "newVersionAvailable": "New version v{{version}} available, download now",
-    "download": "Download"
+    "newVersionAvailable": "New version v{{version}} available",
+    "whatsNew": "What's new",
+    "details": "Details",
+    "collapse": "Collapse",
+    "skipVersion": "Skip this version",
+    "viewFullLog": "View full changelog",
+    "download": "Download now"
   }
 }

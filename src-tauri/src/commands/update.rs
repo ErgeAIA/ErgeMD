@@ -5,6 +5,7 @@ pub struct UpdateInfo {
     pub has_update: bool,
     pub current_version: String,
     pub latest_version: String,
+    pub published_at: String,
     pub download_url: String,
     pub release_url: String,
     pub release_notes: String,
@@ -22,6 +23,7 @@ pub async fn check_update(current_version: String) -> Result<UpdateInfo, String>
                 has_update,
                 current_version,
                 latest_version: latest.version,
+                published_at: latest.published_at,
                 download_url: latest.download_url,
                 release_url: latest.release_url,
                 release_notes: latest.release_notes,
@@ -34,6 +36,7 @@ pub async fn check_update(current_version: String) -> Result<UpdateInfo, String>
                 has_update: false,
                 current_version: current_version.clone(),
                 latest_version: current_version,
+                published_at: String::new(),
                 download_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
                 release_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
                 release_notes: String::new(),
@@ -44,6 +47,7 @@ pub async fn check_update(current_version: String) -> Result<UpdateInfo, String>
 
 struct ReleaseInfo {
     version: String,
+    published_at: String,
     download_url: String,
     release_url: String,
     release_notes: String,
@@ -139,6 +143,10 @@ async fn fetch_github_latest() -> Result<ReleaseInfo, String> {
 
     Ok(ReleaseInfo {
         version: tag,
+        published_at: json["published_at"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         download_url,
         release_url: html_url,
         release_notes,
@@ -188,6 +196,7 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
 
     Ok(ReleaseInfo {
         version: tag,
+        published_at: json["created_at"].as_str().unwrap_or("").to_string(),
         download_url,
         release_url: html_url,
         release_notes,
