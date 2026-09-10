@@ -13,6 +13,11 @@ on:
 permissions:
   contents: write
 
+# tag 推送时为 tag 名；workflow_dispatch 补跑时为输入的 tag——
+# 构建/上传产物命名与 release 定位必须用它，而非 github.ref_name（dispatch 时是分支名）
+env:
+  TAG_NAME: ${{ inputs.tag_name || github.ref_name }}
+
 jobs:
   test:
     name: Lint & Test
@@ -96,23 +101,23 @@ jobs:
           $dst = "ErgeMD-portable"
           New-Item -ItemType Directory -Force -Path $dst
           # After rename-bundle.js, exe is named ErgeMD-v0.4.1.exe
-          Copy-Item "$src/ErgeMD-${{ github.ref_name }}.exe" $dst/ErgeMD.exe
+          Copy-Item "$src/ErgeMD-${{ env.TAG_NAME }}.exe" $dst/ErgeMD.exe
           Copy-Item "$src/*.dll" $dst/ -ErrorAction SilentlyContinue
           if (Test-Path "$src/WebView2Loader.dll") {
             Copy-Item "$src/WebView2Loader.dll" $dst/
           }
-          Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ github.ref_name }}-windows-x64-portable.zip" -Force
+          Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip" -Force
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            **/ErgeMD-${{ github.ref_name }}-setup.exe
-            **/ErgeMD-${{ github.ref_name }}-macos-*.dmg
-            **/ErgeMD-${{ github.ref_name }}-linux-*.AppImage
-            **/ErgeMD-${{ github.ref_name }}-linux-*.deb
-            ErgeMD-${{ github.ref_name }}-windows-x64-portable.zip
-          tag_name: ${{ github.ref_name }}
-          name: 'ErgeMD ${{ github.ref_name }}'
+            **/ErgeMD-${{ env.TAG_NAME }}-setup.exe
+            **/ErgeMD-${{ env.TAG_NAME }}-macos-*.dmg
+            **/ErgeMD-${{ env.TAG_NAME }}-linux-*.AppImage
+            **/ErgeMD-${{ env.TAG_NAME }}-linux-*.deb
+            ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip
+          tag_name: ${{ env.TAG_NAME }}
+          name: 'ErgeMD ${{ env.TAG_NAME }}'
           body: |
             See the assets to download and install this version.
         env:
