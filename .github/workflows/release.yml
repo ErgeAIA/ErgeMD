@@ -150,7 +150,8 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
-      TAG: ${{ env.TAG_NAME }}
+      # job 级 env 不允许引用 env context（GitHub 求值限制），此处直接取触发源
+      TAG: ${{ inputs.tag_name || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
