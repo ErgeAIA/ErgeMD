@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-10
+
 ### Added
 
 - **Update card**: The update notification now shows a summary of what changed in the new version (entries grouped by Security/Added/Fixed, plus the release date), with actions to download now (direct platform installer link), view the full changelog, and "Skip this version" (no more reminders for that version); manually checking for updates from the About page opens the card expanded
