@@ -20,7 +20,13 @@ fn parses_first_release_from_list() {
     let info = parse_gitee_releases(&body).expect("should parse");
     assert_eq!(info.version, "0.4.3");
     assert_eq!(info.published_at, "2026-09-10T02:01:00+08:00");
-    assert!(info.download_url.ends_with("setup.exe"));
+    // pick_platform_download_url 按运行平台选资产：windows 选 setup.exe，
+    // 其它平台无匹配资产时回退 html_url——断言需与平台无关
+    if cfg!(target_os = "windows") {
+        assert!(info.download_url.ends_with("setup.exe"));
+    } else {
+        assert_eq!(info.download_url, "https://gitee.com/ErgeAIA/ErgeMD/releases/v0.4.3");
+    }
     assert_eq!(info.release_notes, "更新内容");
 }
 
