@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Fixed update detection silently reporting "already latest" when both sources fail**: ① The Gitee source requested the non-existent `/releases/latest` endpoint (always 404 — the 0.4.1 changelog recorded a fix that never actually landed), now switched to the list API taking the newest entry; ② When both sources are unreachable (GitHub anonymous API rate limiting / no Gitee release / no network), the check now returns a real error — manual checks show a "check failed" notice instead of falsely claiming up-to-date, while automatic checks stay silent
 - **No more crashes on symlink loops or deeply nested workspace folders**: The file tree scan now enforces a 32-level depth limit with path de-duplication; affected branches return as empty folders instead of overflowing the stack
 - **Font settings no longer freeze the UI**: System font enumeration now runs on a background thread
 - **Documents with oversized remote images can no longer exhaust memory**: Remote image loading now enforces a 20MB size limit (response header pre-check plus a fallback on actual bytes)

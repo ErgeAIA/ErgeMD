@@ -30,27 +30,21 @@ pub async fn check_update(current_version: String) -> Result<UpdateInfo, String>
             })
         }
         None => {
-            // 两个平台都无法访问：返回一个带 release_url 的无更新信息，
-            // 避免直接报错让用户看到"检查更新失败"
-            Ok(UpdateInfo {
-                has_update: false,
-                current_version: current_version.clone(),
-                latest_version: current_version,
-                published_at: String::new(),
-                download_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
-                release_url: "https://github.com/ErgeAIA/ErgeMD/releases".to_string(),
-                release_notes: String::new(),
-            })
+            // 双源皆不可达：如实返回错误，让手动检查能给用户明确提示
+            // （自动检查的前端 catch 本就静默，不会打扰）；不再伪装成
+            // 「已是最新版」误导用户
+            Err("GitHub/Gitee 更新源均不可达".to_string())
         }
     }
 }
 
-struct ReleaseInfo {
-    version: String,
-    published_at: String,
-    download_url: String,
-    release_url: String,
-    release_notes: String,
+#[derive(Debug)]
+pub struct ReleaseInfo {
+    pub version: String,
+    pub published_at: String,
+    pub download_url: String,
+    pub release_url: String,
+    pub release_notes: String,
 }
 
 /// 按 `target_os` 关键字从 assets 列表中选择下载链接。
@@ -160,8 +154,10 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
+    // Gitee Open API 没有 /releases/latest 子路径（GitHub 才有），
+    // 必须用列表接口按 created_at 倒序取第一条
     let resp = client
-        .get("https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/latest")
+        .get("https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases?per_page=1&page=1&direction=desc")
         .send()
         .await
         .map_err(|e| format!("Gitee API request failed: {}", e))?;
@@ -175,28 +171,40 @@ async fn fetch_gitee_latest() -> Result<ReleaseInfo, String> {
         .await
         .map_err(|e| format!("Failed to parse Gitee response: {}", e))?;
 
-    let tag = json["tag_name"]
+    parse_gitee_releases(&json)
+}
+
+/// 解析 Gitee releases 列表响应，取第一条；空列表视为仓库无 release
+pub fn parse_gitee_releases(json: &serde_json::Value) -> Result<ReleaseInfo, String> {
+    let arr = json
+        .as_array()
+        .ok_or_else(|| "Gitee API 返回格式异常（非列表）".to_string())?;
+    let first = arr
+        .first()
+        .ok_or_else(|| "Gitee: no releases".to_string())?;
+
+    let tag = first["tag_name"]
         .as_str()
         .unwrap_or("")
         .trim_start_matches('v')
         .to_string();
 
-    let html_url = json["html_url"]
+    let html_url = first["html_url"]
         .as_str()
         .unwrap_or("https://gitee.com/ErgeAIA/ErgeMD/releases")
         .to_string();
 
     // Gitee API 返回的 assets 结构为 [{ "name": "...", "browser_download_url": "..." }]
-    let download_url = pick_platform_download_url(std::env::consts::OS, &json["assets"], &html_url);
+    let download_url = pick_platform_download_url(std::env::consts::OS, &first["assets"], &html_url);
 
-    let release_notes = json["body"]
+    let release_notes = first["body"]
         .as_str()
         .unwrap_or("")
         .to_string();
 
     Ok(ReleaseInfo {
         version: tag,
-        published_at: json["created_at"].as_str().unwrap_or("").to_string(),
+        published_at: first["created_at"].as_str().unwrap_or("").to_string(),
         download_url,
         release_url: html_url,
         release_notes,
