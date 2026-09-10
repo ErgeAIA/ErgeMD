@@ -165,17 +165,27 @@ jobs:
         if: ${{ env.GITEE_TOKEN != '' }}
         run: |
           BODY_JSON=$(jq -Rs . gitee-body.md)
+          # Gitee 怪癖：tag 不存在时查询返回 HTTP 200 + 字面 null（而非 404），
+          # 必须再校验 .id；curl 对 4xx 默认退出码为 0，需校验响应体
           HTTP=$(curl -sS -o /tmp/rel.json -w "%{http_code}" \
             "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/tags/$TAG?access_token=$GITEE_TOKEN")
+          RELEASE_ID=""
           if [ "$HTTP" = "200" ]; then
-            RELEASE_ID=$(jq -r .id /tmp/rel.json)
+            RELEASE_ID=$(jq -r '.id // empty' /tmp/rel.json)
+          fi
+          if [ -n "$RELEASE_ID" ]; then
             echo "Gitee release 已存在（id=$RELEASE_ID），更新正文"
-            curl -sS -X PATCH -H "Content-Type: application/json" \
+            RESP=$(curl -sS -X PATCH -H "Content-Type: application/json" \
               -d "{\"access_token\":\"$GITEE_TOKEN\",\"body\":$BODY_JSON}" \
-              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/$RELEASE_ID"
+              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/$RELEASE_ID")
+            echo "$RESP" | jq -e '.id' > /dev/null || { echo "::error::Gitee release 更新失败: $RESP"; exit 1; }
+            echo "更新成功"
           else
             echo "Gitee release 不存在（HTTP $HTTP），创建"
-            curl -sS -X POST -H "Content-Type: application/json" \
+            RESP=$(curl -sS -X POST -H "Content-Type: application/json" \
               -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$TAG\",\"name\":\"ErgeMD $TAG\",\"prerelease\":false,\"target_commitish\":\"main\",\"body\":$BODY_JSON}" \
-              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases"
+              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases")
+            echo "$RESP" | head -c 300
+            echo "$RESP" | jq -e '.id' > /dev/null || { echo "::error::Gitee release 创建失败: $RESP"; exit 1; }
+            echo "创建成功"
           fi
