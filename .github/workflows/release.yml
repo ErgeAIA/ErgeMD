@@ -225,9 +225,16 @@ jobs:
           git add -A
           git commit -m "ergemd: $TAG" || true
           git push origin HEAD:main
-          cd ..
 
-          # Gitee 流：updates-dist 镜像仓建 release + 传附件 + gitee 版清单（url 指 Gitee 附件）
+      # Gitee 流（尽力而为）：updates-dist 镜像仓建 release + 传附件 + gitee 版清单
+      # （url 指 Gitee 附件）。境外 runner 向 Gitee 上传附件可能超时——失败时
+      # updates-gitee.json 缺失，updater 自动回退 GitHub 源，不阻断主发布链路
+      - name: Publish Gitee updates-dist (best-effort)
+        continue-on-error: true
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
+          TAG: ${{ inputs.tag_name || github.ref_name }}
+        run: |
           GITEE_BASE="https://gitee.com/api/v5/repos/ergeaia/updates-dist"
           GITEE_TAG="ergemd-$TAG"
           HTTP=$(curl -sS --max-time 60 -o /tmp/gitee-rel.json -w "%{http_code}" -X POST \
@@ -323,8 +330,9 @@ jobs:
           fi
           if [ -n "$RELEASE_ID" ]; then
             echo "Gitee release 已存在（id=$RELEASE_ID），更新正文"
+            # Gitee 的 PATCH 接口同样要求 tag_name/name 必填
             RESP=$(curl -sS -X PATCH -H "Content-Type: application/json" \
-              -d "{\"access_token\":\"$GITEE_TOKEN\",\"body\":$BODY_JSON}" \
+              -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$TAG\",\"name\":\"ErgeMD $TAG\",\"body\":$BODY_JSON}" \
               "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/$RELEASE_ID")
             echo "$RESP" | jq -e '.id' > /dev/null || { echo "::error::Gitee release 更新失败: $RESP"; exit 1; }
             echo "更新成功"
