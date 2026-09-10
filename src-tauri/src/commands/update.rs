@@ -91,6 +91,26 @@ pub fn pick_platform_download_url(
     html_url.to_string()
 }
 
+/// 本机 gh CLI 登录凭证（进程内只取一次缓存；token 零落盘、不进日志）。
+/// 带 Authorization 头后 GitHub API 额度为 5000/h，不受匿名共享出口 IP
+/// 60/h 限流拖累；未安装 gh 或未登录时静默回退匿名请求。
+fn github_auth_token() -> Option<String> {
+    static CACHE: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    CACHE
+        .get_or_init(|| {
+            let output = std::process::Command::new("gh")
+                .args(["auth", "token"])
+                .output()
+                .ok()?;
+            if !output.status.success() {
+                return None;
+            }
+            let token = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            (!token.is_empty()).then_some(token)
+        })
+        .clone()
+}
+
 async fn fetch_github_latest() -> Result<ReleaseInfo, String> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
@@ -98,8 +118,12 @@ async fn fetch_github_latest() -> Result<ReleaseInfo, String> {
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    let resp = client
-        .get("https://api.github.com/repos/ErgeAIA/ErgeMD/releases/latest")
+    let mut request = client.get("https://api.github.com/repos/ErgeAIA/ErgeMD/releases/latest");
+    if let Some(token) = github_auth_token() {
+        request = request.bearer_auth(&token);
+    }
+
+    let resp = request
         .send()
         .await
         .map_err(|e| format!("GitHub API request failed: {}", e))?;
