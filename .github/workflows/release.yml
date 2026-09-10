@@ -144,10 +144,12 @@ jobs:
       - name: Build release notes from CHANGELOG
         if: ${{ env.GITEE_TOKEN != '' }}
         run: |
-          awk -v start="## [$TAG]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
+          # CHANGELOG 标题为 ## [0.4.3]（无 v 前缀），TAG 为 v0.4.3
+          VER="${TAG#v}"
+          awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
             CHANGELOG.md > gitee-body.md
           if [ ! -s gitee-body.md ]; then
-            echo "::error::CHANGELOG 中未找到 $TAG 段落"
+            echo "::error::CHANGELOG 中未找到 $VER 段落"
             exit 1
           fi
           {
