@@ -68,7 +68,6 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [latestAvailable, setLatestAvailable] = useState<{
     version: string;
-    downloadUrl: string;
     releaseUrl: string;
   } | null>(null);
   const addToast = useReaderStore((s) => s.addToast);
@@ -83,7 +82,6 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
         if (result.hasUpdate && result.releaseUrl) {
           setLatestAvailable({
             version: result.latestVersion,
-            downloadUrl: result.downloadUrl,
             releaseUrl: result.releaseUrl,
           });
         }
@@ -107,7 +105,6 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
         if (releaseUrl) {
           setLatestAvailable({
             version: latestVersion,
-            downloadUrl: releaseUrl,
             releaseUrl: releaseUrl,
           });
         }

@@ -43,6 +43,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": [
       "nsis",
       "app",
@@ -95,5 +96,17 @@
         "role": "Viewer"
       }
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZBODk5REE4RTBGQTQ0NjYKUldSbVJQcmdxSjJKYWdmVHVXUTRvaFd3bk5nRTV2VGtjRTh6QUFXZnk1eFM0cVZHR2sxc3ZiUk8K",
+      "endpoints": [
+        "https://raw.githubusercontent.com/ErgeAIA/updates-dist/main/ergemd/updates.json",
+        "https://gitee.com/ergeaia/updates-dist/raw/main/ergemd/updates-gitee.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

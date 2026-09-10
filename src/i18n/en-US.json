@@ -190,6 +190,9 @@
     "collapse": "Collapse",
     "skipVersion": "Skip this version",
     "viewFullLog": "View full changelog",
-    "download": "Download now"
+    "installNow": "Update now",
+    "downloading": "Downloading",
+    "restartToUpdate": "Restart to finish update",
+    "installFailed": "Update installation failed, please try again later"
   }
 }

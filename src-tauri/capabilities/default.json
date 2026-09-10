@@ -23,6 +23,8 @@
     "dialog:allow-save",
     "dialog:allow-message",
     "dialog:allow-ask",
-    "opener:default"
+    "opener:default",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

@@ -1,0 +1,41 @@
+- [x] `src/components/obsidian/detectors.ts` 存在，导出 `detectObsidianSyntax`、`hasObsidianSyntax`、`OBSIDIAN_DETECTORS`
+- [x] 7 个语法检测器（callout/wikilink/embed/highlight/comment/blockid/frontmatter）正则正确匹配对应语法
+- [x] `detectObsidianSyntax()` 对不含 Obsidian 语法的普通 Markdown 返回空 Set
+- [x] `hasObsidianSyntax()` 对不含 Obsidian 语法的普通 Markdown 返回 false
+- [x] `src/components/obsidian/ObsidianCallout.tsx` 存在，导出 `ObsidianCallout`、`parseCalloutHeader`、`CALLOUT_TYPE_MAP`
+- [x] `CALLOUT_TYPE_MAP` 包含 13 种主类型 + 所有别名（summary/tldr/hint/important/check/done/help/faq/caution/attention/fail/missing/error/cite）
+- [x] `parseCalloutHeader()` 正确解析 `[!type]+/-` 和自定义标题
+- [x] `ObsidianCallout` 组件支持折叠（useState 管理 collapsed 状态，点击标题切换）
+- [x] `ObsidianCallout` 组件使用 `React.memo` 包裹
+- [x] `src/components/obsidian/ObsidianWikilink.tsx` 存在，导出 `ObsidianWikilink`、`parseWikilink`
+- [x] `parseWikilink()` 正确解析 `[[note]]`、`[[note|text]]`、`[[note#heading]]`、`[[note#^blockId]]`、`[[#heading]]`
+- [x] `src/components/obsidian/ObsidianEmbed.tsx` 存在，导出 `ObsidianEmbed`、`parseEmbed`
+- [x] `parseEmbed()` 正确解析 `![[file]]`、`![[image.png|300]]`、`![[note#heading]]`、`![[document.pdf#page=3]]`
+- [x] `parseEmbed()` 按扩展名正确判断文件类型（image/pdf/audio/video/note）
+- [x] `ObsidianEmbed` 图片类型渲染 `<img>` 标签，加载失败时显示 fallback 文本
+- [x] `src/components/obsidian/ObsidianHighlight.tsx` 存在，渲染 `<mark className="obsidian-highlight">`
+- [x] `src/components/obsidian/ObsidianBlockId.tsx` 存在，渲染不可见锚点 `<span>` 不显示文本
+- [x] `src/components/obsidian/ObsidianFrontmatter.tsx` 存在，导出 `ObsidianFrontmatter`、`parseFrontmatter`
+- [x] `parseFrontmatter()` 正确解析基本键值对、内联数组 `[a, b]`、多行数组 `- item`
+- [x] `src/types/markdownBlock.ts` 中 `MarkdownBlockType` 包含 `"frontmatter"`
+- [x] `src/utils/markdownBlocks.ts` 两套解析逻辑都正确识别 frontmatter block（首行 `---` → 查找结束 `---`）
+- [x] `src/components/obsidian/useObsidianModule.ts` 存在，导出 `useObsidianModule`、`preprocessObsidianSyntax`
+- [x] `useObsidianModule` 无 Obsidian 语法时返回 null
+- [x] `useObsidianModule` 有 callout 语法时返回 blockquote 覆盖组件，正确检测 `[!type]` 并渲染 `ObsidianCallout`
+- [x] `preprocessObsidianSyntax` 正确替换 Embed/Wikilink/Highlight/Comment/BlockId 为 HTML 标签
+- [x] `preprocessObsidianSyntax` 保护代码块（fenced code + inline code）内容不被误替换
+- [x] `preprocessObsidianSyntax` 无 Obsidian 语法时原样返回内容
+- [x] `src/components/obsidian/index.ts` 存在，导出所有公共 API
+- [x] `src/components/obsidian/obsidian.css` 存在，所有选择器使用 `.obsidian-*` 前缀
+- [x] obsidian.css 中 `color-mix()` 带有 `rgba()` 回退
+- [x] obsidian.css 中 `.obsidian-block-id` 设置 `display: none`
+- [x] `src/styles/globals.css` 导入了 obsidian.css
+- [x] `MarkdownBlockView.tsx` 中 `ADMONITION_TYPES`、`getTextContent`、`cloneElementWithText` 已移除
+- [x] `MarkdownBlockView.tsx` 中 blockquote 组件不再包含内联 Admonition 检测逻辑
+- [x] `MarkdownBlockView.tsx` 使用 `useObsidianModule` hook 合并 Obsidian components
+- [x] `MarkdownBlockView.tsx` 使用 `preprocessObsidianSyntax` 预处理内容
+- [x] `MarkdownBlockView.tsx` 在 block.type switch 中处理 `frontmatter` case
+- [x] 14 个主题文件都包含 `--obsidian-callout-*` 变量（13 个变量）
+- [x] `pnpm build` 无编译错误
+- [ ] `pnpm lint` 无 lint 错误
+- [ ] 不含 Obsidian 语法的普通 Markdown 文件渲染无回归

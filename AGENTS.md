@@ -21,6 +21,10 @@
 
 > **打包产物**：`src-tauri/target/release/ErgeMD-v{x}.exe`（独立可执行文件）、`src-tauri/target/release/bundle/nsis/ErgeMD-v{x}-setup.exe`（NSIS 安装包）
 
+> **本地打包必须带签名私钥**（`createUpdaterArtifacts: true`，v0.4.4 起）：
+> `export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/ergemd.key)`
+> 私钥文件 `~/.tauri/ergemd.key`（无密码）是更新签名根凭证，丢失后已装客户端将无法接收任何后续更新——务必异地备份。CI 侧由 GitHub secret `TAURI_SIGNING_PRIVATE_KEY` 注入。
+
 ***
 
 ## 双平台同步

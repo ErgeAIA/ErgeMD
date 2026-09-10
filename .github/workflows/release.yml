@@ -62,6 +62,10 @@ jobs:
             target: x86_64-unknown-linux-gnu
             suffix: linux-x64
     runs-on: ${{ matrix.platform }}
+    env:
+      # createUpdaterArtifacts: true 时构建必须签名；无密码私钥，PASSWORD 留空即可
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -107,6 +111,18 @@ jobs:
             Copy-Item "$src/WebView2Loader.dll" $dst/
           }
           Compress-Archive -Path $dst -DestinationPath "ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip" -Force
+      - name: Upload updater artifacts (installer + signature)
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-${{ matrix.suffix }}
+          path: |
+            src-tauri/target/**/release/bundle/nsis/*.exe
+            src-tauri/target/**/release/bundle/nsis/*.exe.sig
+            src-tauri/target/**/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/**/release/bundle/macos/*.app.tar.gz.sig
+            src-tauri/target/**/release/bundle/appimage/*.AppImage
+            src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
+          if-no-files-found: error
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
@@ -122,6 +138,128 @@ jobs:
             See the assets to download and install this version.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 更新分发：汇总三平台签名产物 → 生成 updater manifest → 发布到 updates-dist
+  # （GitHub 流：main 仓清单 + release 安装包；Gitee 流：镜像仓清单 + Gitee 附件，
+  #   国内用户清单与下载全走 Gitee。Gitee 失败不阻断 GitHub 发布）
+  publish-updater:
+    name: Publish updater manifest
+    needs: build
+    if: ${{ needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
+      TAG: ${{ env.TAG_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ErgeAIA/updates-dist
+          token: ${{ secrets.RELEASE_TOKEN }}
+          path: updates-dist
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Assemble manifest and publish (GitHub + Gitee)
+        run: |
+          set -euo pipefail
+          VER="${TAG#v}"
+          DIST="updates-dist/ergemd"
+          RELEASE_DIR="release-assets"
+          mkdir -p "$DIST" "$RELEASE_DIR"
+
+          # 收集签名产物，统一命名（无空格；GitHub 附件会把空格转点导致 url 404）
+          EXE=$(find artifacts -name "*.exe" ! -name "*.sig" | head -1)
+          cp "$EXE" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe"
+          cp "$EXE.sig" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe.sig"
+          TARGZ=$(find artifacts -name "*.app.tar.gz" | head -1)
+          cp "$TARGZ" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz"
+          cp "$TARGZ.sig" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz.sig"
+          APPIMAGE=$(find artifacts -name "*.AppImage" | head -1)
+          cp "$APPIMAGE" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage"
+          cp "$APPIMAGE.sig" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage.sig"
+
+          # notes：CHANGELOG 对应版本段落（与更新卡片的分组解析同源）
+          awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
+            CHANGELOG.md > notes.md
+
+          # GitHub 版 manifest（url 指 updates-dist release 附件）
+          node - "$VER" "$TAG" <<'EOF'
+          const fs = require("fs");
+          const [ver, tag] = process.argv.slice(2);
+          const base = `https://github.com/ErgeAIA/updates-dist/releases/download/ergemd-${tag}`;
+          const platforms = {};
+          const sig = (f) => fs.readFileSync(`release-assets/${f}.sig`, "utf8").trim();
+          platforms["windows-x86_64"] = { signature: sig(`ErgeMD_${ver}_x64-setup.exe`), url: `${base}/ErgeMD_${ver}_x64-setup.exe` };
+          platforms["darwin-aarch64"] = { signature: sig(`ErgeMD_${ver}_aarch64.app.tar.gz`), url: `${base}/ErgeMD_${ver}_aarch64.app.tar.gz` };
+          platforms["linux-x86_64"] = { signature: sig(`ErgeMD_${ver}_amd64.AppImage`), url: `${base}/ErgeMD_${ver}_amd64.AppImage` };
+          const manifest = {
+            version: ver,
+            notes: fs.readFileSync("notes.md", "utf8"),
+            pub_date: new Date().toISOString(),
+            platforms,
+          };
+          fs.writeFileSync("updates-dist/ergemd/updates.json", JSON.stringify(manifest, null, 2) + "\n");
+          EOF
+
+          # GitHub updates-dist：建 release 传安装包 + 推清单
+          gh release create "ergemd-$TAG" --repo ErgeAIA/updates-dist \
+            --title "ErgeMD $TAG" --notes "ErgeMD $TAG updater assets" || true
+          gh release upload "ergemd-$TAG" --repo ErgeAIA/updates-dist \
+            "$RELEASE_DIR"/* --clobber || true
+          cd updates-dist
+          git config user.name "ErgeAIA"
+          git config user.email "ergeaia@users.noreply.github.com"
+          git add -A
+          git commit -m "ergemd: $TAG" || true
+          git push origin HEAD:main
+          cd ..
+
+          # Gitee 流：updates-dist 镜像仓建 release + 传附件 + gitee 版清单（url 指 Gitee 附件）
+          GITEE_BASE="https://gitee.com/api/v5/repos/ergeaia/updates-dist"
+          GITEE_TAG="ergemd-$TAG"
+          HTTP=$(curl -sS --max-time 60 -o /tmp/gitee-rel.json -w "%{http_code}" -X POST \
+            "$GITEE_BASE/releases" -H "Content-Type: application/json" \
+            -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$GITEE_TAG\",\"name\":\"ErgeMD $TAG\",\"prerelease\":false,\"target_commitish\":\"main\",\"body\":\"ErgeMD $TAG updater assets\"}")
+          RELEASE_ID=$(jq -r '.id // empty' /tmp/gitee-rel.json)
+          if [ -z "$RELEASE_ID" ]; then
+            RELEASE_ID=$(curl -sS --max-time 60 "$GITEE_BASE/releases/tags/$GITEE_TAG?access_token=$GITEE_TOKEN" | jq -r '.id // empty')
+          fi
+          if [ -z "$RELEASE_ID" ]; then
+            echo "::error::Gitee updates-dist release 创建/查询失败（HTTP $HTTP）"
+            exit 1
+          fi
+          for f in "$RELEASE_DIR"/*; do
+            curl -sS --max-time 300 -X POST \
+              -H "Authorization: token $GITEE_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$f" \
+              "$GITEE_BASE/releases/$RELEASE_ID/assets?name=$(basename "$f")" > /dev/null
+          done
+          node - "$VER" "$GITEE_TAG" <<'EOF'
+          const fs = require("fs");
+          const [ver, giteeTag] = process.argv.slice(2);
+          const base = `https://gitee.com/ergeaia/updates-dist/releases/download/${giteeTag}`;
+          const platforms = {};
+          const sig = (f) => fs.readFileSync(`release-assets/${f}.sig`, "utf8").trim();
+          platforms["windows-x86_64"] = { signature: sig(`ErgeMD_${ver}_x64-setup.exe`), url: `${base}/ErgeMD_${ver}_x64-setup.exe` };
+          platforms["darwin-aarch64"] = { signature: sig(`ErgeMD_${ver}_aarch64.app.tar.gz`), url: `${base}/ErgeMD_${ver}_aarch64.app.tar.gz` };
+          platforms["linux-x86_64"] = { signature: sig(`ErgeMD_${ver}_amd64.AppImage`), url: `${base}/ErgeMD_${ver}_amd64.AppImage` };
+          const manifest = {
+            version: ver,
+            notes: fs.readFileSync("notes.md", "utf8"),
+            pub_date: new Date().toISOString(),
+            platforms,
+          };
+          fs.writeFileSync("updates-dist/ergemd/updates-gitee.json", JSON.stringify(manifest, null, 2) + "\n");
+          EOF
+          cd updates-dist
+          git remote add gitee "https://ergeaia:$GITEE_TOKEN@gitee.com/ergeaia/updates-dist.git" 2>/dev/null || true
+          git add -A
+          git commit -m "ergemd gitee manifest: $TAG" || true
+          git push gitee HEAD:main
 
   # 双平台仓库同步：源码由 git push gitee 同步，这里把 release 元数据同步到 Gitee
   # （正文 = CHANGELOG 对应版本段落 + GitHub 下载指引，产物不上传——

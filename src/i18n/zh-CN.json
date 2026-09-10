@@ -190,6 +190,9 @@
     "collapse": "收起",
     "skipVersion": "跳过此版本",
     "viewFullLog": "查看完整日志",
-    "download": "立即下载"
+    "installNow": "立即更新",
+    "downloading": "下载中",
+    "restartToUpdate": "重启完成更新",
+    "installFailed": "更新安装失败，请稍后重试"
   }
 }

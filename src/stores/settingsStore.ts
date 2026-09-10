@@ -9,22 +9,11 @@ import {
 import type { ReadingSettings, ThemeMode } from "../types";
 
 // ===== settingsStore 状态接口 =====
-interface UpdateInfo {
-  hasUpdate: boolean;
-  currentVersion: string;
-  latestVersion: string;
-  publishedAt: string;
-  downloadUrl: string;
-  releaseUrl: string;
-  releaseNotes: string;
-}
-
 interface SettingsState {
   readingSettings: ReadingSettings;
   configLevel: ConfigLevel;
   checkUpdateEnabled: boolean;
   lastCheckUpdateTime: number | null;
-  updateInfo: UpdateInfo | null;
   skippedVersion: string | null;
 
   updateReadingSettings: (partial: Partial<ReadingSettings>) => void;
@@ -33,7 +22,6 @@ interface SettingsState {
   getActiveConfig: () => ReaderConfig;
   setCheckUpdateEnabled: (enabled: boolean) => void;
   setLastCheckUpdateTime: (time: number) => void;
-  setUpdateInfo: (info: UpdateInfo | null) => void;
   setSkippedVersion: (version: string | null) => void;
 }
 
@@ -62,7 +50,6 @@ export const useSettingsStore = create<SettingsState>()(
       configLevel: defaultConfigLevel,
       checkUpdateEnabled: defaultCheckUpdateEnabled,
       lastCheckUpdateTime: defaultLastCheckUpdateTime,
-      updateInfo: null,
       skippedVersion: null,
 
       // 局部更新阅读设置
@@ -94,10 +81,6 @@ export const useSettingsStore = create<SettingsState>()(
 
       setLastCheckUpdateTime: (time: number) => {
         set({ lastCheckUpdateTime: time });
-      },
-
-      setUpdateInfo: (info: UpdateInfo | null) => {
-        set({ updateInfo: info });
       },
 
       setSkippedVersion: (version: string | null) => {
@@ -138,7 +121,6 @@ export const useSettingsStore = create<SettingsState>()(
           lastCheckUpdateTime:
             persisted?.lastCheckUpdateTime ?? defaultLastCheckUpdateTime,
           skippedVersion: persisted?.skippedVersion ?? null,
-          updateInfo: null,
         };
       },
     },
