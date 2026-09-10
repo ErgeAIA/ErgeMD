@@ -38,6 +38,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Trae IDE runtime logs（.trae/rules 规则文件仍纳入版本控制）
+.trae/localhost-*.txt
+
 # Worktrees (using-git-worktrees skill)
 .worktrees/
 
