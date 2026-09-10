@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-09-10
+
+### Added
+
+- **In-app auto-update**: Integrated the official Tauri updater — when an update is available, download it directly inside the app (with a progress bar) and silently install & restart, no more jumping to the browser to download the installer manually; update manifests are distributed via dual sources (GitHub / Gitee static mirrors, immune to API rate limiting), with domestic users served through the Gitee path; all update packages are verified with minisign signatures
+
+### Fixed
+
+- **GitHub update source now avoids anonymous API rate limiting**: When the GitHub CLI (gh) is installed and logged in, update checks automatically reuse its credentials (5,000 req/h on a dedicated quota instead of the shared 60/h anonymous pool); silently falls back to anonymous requests when gh is absent
+
 ## [0.4.3] - 2026-09-10
 
 ### Added
