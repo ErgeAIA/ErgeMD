@@ -171,16 +171,25 @@ jobs:
           RELEASE_DIR="release-assets"
           mkdir -p "$DIST" "$RELEASE_DIR"
 
-          # 收集签名产物，统一命名（无空格；GitHub 附件会把空格转点导致 url 404）
+          # 收集签名产物，统一命名（无空格；GitHub 附件会把空格转点导致 url 404）。
+          # v2 签名文件命名各平台不一致（规范名/原始名混合），一律按 .sig 模式查找配对
           EXE=$(find artifacts -name "*.exe" ! -name "*.sig" | head -1)
-          cp "$EXE" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe"
-          cp "$EXE.sig" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe.sig"
+          EXESIG=$(find artifacts -name "*.exe.sig" | head -1)
           TARGZ=$(find artifacts -name "*.app.tar.gz" | head -1)
+          TARGZSIG=$(find artifacts -name "*.app.tar.gz.sig" | head -1)
+          APPIMAGE=$(find artifacts -name "*.AppImage" ! -name "*.sig" | head -1)
+          APPIMAGESIG=$(find artifacts -name "*.AppImage.sig" | head -1)
+          [ -n "$EXE" ] && [ -n "$EXESIG" ] && [ -n "$TARGZ" ] && [ -n "$TARGZSIG" ] && \
+            [ -n "$APPIMAGE" ] && [ -n "$APPIMAGESIG" ] || {
+            echo "::error::签名产物不齐：exe=$EXE exe.sig=$EXESIG tar.gz=$TARGZ tar.gz.sig=$TARGZSIG AppImage=$APPIMAGE AppImage.sig=$APPIMAGESIG"
+            exit 1
+          }
+          cp "$EXE" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe"
+          cp "$EXESIG" "$RELEASE_DIR/ErgeMD_${VER}_x64-setup.exe.sig"
           cp "$TARGZ" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz"
-          cp "$TARGZ.sig" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz.sig"
-          APPIMAGE=$(find artifacts -name "*.AppImage" | head -1)
+          cp "$TARGZSIG" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz.sig"
           cp "$APPIMAGE" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage"
-          cp "$APPIMAGE.sig" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage.sig"
+          cp "$APPIMAGESIG" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage.sig"
 
           # notes：CHANGELOG 对应版本段落（与更新卡片的分组解析同源）
           awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
