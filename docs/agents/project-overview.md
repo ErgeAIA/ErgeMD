@@ -1,9 +1,36 @@
-# CLAUDE.md — ErgeMD 关键文件索引
+# Project Overview — ErgeMD
 
-> 本文件是 [AGENTS.md](./AGENTS.md) 的补充，专门记录**关键文件路径索引**，
-> 供 AI 在接手任务时快速定位代码位置。规范、命令、约定等内容以 AGENTS.md 为准。
+> 层 B 项目概览：关键文件路径索引、目录结构、开源信息与发布 Tag 明细。
+> 本文件由 vibe-init 于 2026-10-17 从 CLAUDE.md（272 行）与旧 AGENTS.md 受控迁移而成，只追加不重写。
 
-## 前端核心
+## 目录结构
+
+```
+src/
+├── main.tsx              # App 入口
+├── App.tsx               # 主 UI
+├── components/           # React 组件（reader / layout / panels / welcome / obsidian 等）
+├── stores/               # Zustand stores
+├── styles/               # 样式（themes 14+ 主题 / core 核心样式）
+├── hooks/                # 自定义 hooks
+├── utils/                # 工具函数
+├── config/               # 配置
+└── i18n/                 # 国际化
+
+src-tauri/
+├── src/
+│   ├── lib.rs            # Tauri 主入口
+│   ├── main.rs           # Rust main
+│   ├── commands/         # Tauri 命令（fonts / window / pdf / update）
+│   └── db/               # 数据库（init / models）
+└── tauri.conf.json       # Tauri 配置
+```
+
+构建脚本：`scripts/sync-version.js`（从 package.json 同步版本）、`scripts/rename-bundle.js`（打包后重命名产物）。
+
+## 关键文件索引
+
+### 前端核心
 
 | 功能                     | 文件                                                                           |
 | ------------------------ | ------------------------------------------------------------------------------ |
@@ -14,7 +41,7 @@
 | 彩蛋页（F12）            | [components/welcome/EasterEgg.tsx](./src/components/welcome/EasterEgg.tsx)     |
 | App 图标                 | [components/welcome/AppIcon.tsx](./src/components/welcome/AppIcon.tsx)         |
 
-## 阅读器
+### 阅读器
 
 | 功能            | 文件                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------- |
@@ -35,7 +62,7 @@
 | PlantUML 图表   | [components/reader/PlantUMLDiagram.tsx](./src/components/reader/PlantUMLDiagram.tsx)         |
 | PlantUML 懒加载 | [components/reader/LazyPlantUMLBlock.tsx](./src/components/reader/LazyPlantUMLBlock.tsx)     |
 
-## 布局 / 面板
+### 布局 / 面板
 
 | 功能         | 文件                                                                                         |
 | ------------ | -------------------------------------------------------------------------------------------- |
@@ -49,7 +76,7 @@
 | 文件树       | [components/panels/FileList.tsx](./src/components/panels/FileList.tsx)                       |
 | 阅读设置     | [components/panels/ReadingOptions.tsx](./src/components/panels/ReadingOptions.tsx)           |
 
-## 右键菜单
+### 右键菜单
 
 | 功能           | 文件                                                                                                       |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -64,7 +91,7 @@
 | 阅读器图片菜单 | [components/reader/ContextMenuImage.tsx](./src/components/reader/ContextMenuImage.tsx)                     |
 | 阅读器链接菜单 | [components/reader/ContextMenuLink.tsx](./src/components/reader/ContextMenuLink.tsx)                       |
 
-## 通用组件
+### 通用组件
 
 | 功能           | 文件                                                                                             |
 | -------------- | ------------------------------------------------------------------------------------------------ |
@@ -75,7 +102,7 @@
 | 配置级别选择器 | [components/settings/ConfigLevelSelector.tsx](./src/components/settings/ConfigLevelSelector.tsx) |
 | 传送门         | [components/Portal.tsx](./src/components/Portal.tsx)                                             |
 
-## Obsidian 扩展
+### Obsidian 扩展
 
 | 功能               | 文件                                                                                             |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
@@ -90,7 +117,7 @@
 | 按需加载 Hook      | [components/obsidian/useObsidianModule.tsx](./src/components/obsidian/useObsidianModule.tsx)     |
 | Obsidian 样式      | [components/obsidian/obsidian.css](./src/components/obsidian/obsidian.css)                       |
 
-## 状态管理（Zustand）
+### 状态管理（Zustand）
 
 | 功能                    | 文件                                                     |
 | ----------------------- | -------------------------------------------------------- |
@@ -100,7 +127,7 @@
 
 > 注意：**最近打开记录的状态在 `WelcomePage` 组件内 useState 管理，未抽到 store。**
 
-## Hooks
+### Hooks
 
 | 功能       | 文件                                                                 |
 | ---------- | -------------------------------------------------------------------- |
@@ -113,7 +140,7 @@
 | 自动隐藏   | [hooks/useAutoHide.ts](./src/hooks/useAutoHide.ts)                   |
 | 活跃配置   | [hooks/useActiveConfig.ts](./src/hooks/useActiveConfig.ts)           |
 
-## 工具 / 导出 / 解析
+### 工具 / 导出 / 解析
 
 | 功能             | 文件                                                             |
 | ---------------- | ---------------------------------------------------------------- |
@@ -131,7 +158,7 @@
 | Block 类型       | [types/markdownBlock.ts](./src/types/markdownBlock.ts)           |
 | PlantUML 类型    | [types/plantuml.d.ts](./src/types/plantuml.d.ts)                 |
 
-## 样式 / 主题
+### 样式 / 主题
 
 | 功能          | 文件                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------ |
@@ -147,7 +174,7 @@
 | PlantUML      | [styles/themes/core/plantuml.css](./src/styles/themes/core/plantuml.css)                         |
 | 14 个主题     | [styles/themes/](./src/styles/themes/)                                                           |
 
-## 国际化
+### 国际化
 
 | 功能     | 文件                                     |
 | -------- | ---------------------------------------- |
@@ -155,7 +182,7 @@
 | English  | [i18n/en-US.json](./src/i18n/en-US.json) |
 | 入口     | [i18n/index.ts](./src/i18n/index.ts)     |
 
-## Rust 后端
+### Rust 后端
 
 | 功能         | 文件                                                                         |
 | ------------ | ---------------------------------------------------------------------------- |
@@ -185,14 +212,14 @@
 - `delete_reading_progress(filePath)` — 删除单条阅读进度
 - `clear_all_reading_progress()` — 清空全部阅读进度
 
-## 构建脚本
+### 构建脚本
 
 | 功能       | 文件                                                   |
 | ---------- | ------------------------------------------------------ |
 | 版本同步   | [scripts/sync-version.js](./scripts/sync-version.js)   |
 | 打包重命名 | [scripts/rename-bundle.js](./scripts/rename-bundle.js) |
 
-## 根目录配置
+### 根目录配置
 
 | 功能            | 文件                                                     |
 | --------------- | -------------------------------------------------------- |
@@ -203,22 +230,30 @@
 | Tauri 配置      | [src-tauri/tauri.conf.json](./src-tauri/tauri.conf.json) |
 | 入口 HTML       | [index.html](./index.html)                               |
 
-## 文档
+### 项目文档
 
 | 功能               | 文件                                       |
 | ------------------ | ------------------------------------------ |
 | 项目规范（**主**） | [AGENTS.md](./AGENTS.md)                   |
 | 项目说明           | [README.md](./README.md)                   |
 | 英文说明           | [README.en.md](./README.en.md)             |
-| 技术规格           | [docs/TECH-SPEC.md](./docs/TECH-SPEC.md)   |
+| 技术规格           | [TECH-SPEC.md](./TECH-SPEC.md)             |
 | 产品需求           | [docs/ErgeMD-pdr.md](./docs/ErgeMD-pdr.md) |
-| 错误记录           | [ERROR_LOG.md](./ERROR_LOG.md)             |
+| 错误记录（全本）   | [error-log-archive.md](./error-log-archive.md) |
+| 命名规范           | [naming-consistency-guide.md](./naming-consistency-guide.md) |
 | 更新日志           | [CHANGELOG.md](./CHANGELOG.md)             |
 | 英文更新日志       | [CHANGELOG.en.md](./CHANGELOG.en.md)       |
 | 阶段计划           | [docs/phase/](./docs/phase/)               |
 | AI 规则            | [.trae/rules/](./.trae/rules/)             |
 
-## 发布与 Tag 约定
+## 开源与许可
+
+- 许可证：**AGPL-3.0**（[LICENSE](./LICENSE)）
+- 约束：AGPL 为强 copyleft，衍生作品须以同一协议开源；网络服务场景同样触发开源义务
+- 新增依赖须核对许可证与 AGPL-3.0 兼容，警惕 GPL / AGPL / SSPL 等强约束许可证混入
+- 贡献约定：提交信息遵循 Conventional Commits；改动须可审查、范围最小
+
+## 发布与 Tag 约定（明细）
 
 > 本节约定版本升级与 Git Tag 的关系，影响 `.github/workflows/release.yml`
 > （该工作流仅在推送 `v*` tag 时触发打包：Windows NSIS 安装包 + portable zip）。
@@ -266,6 +301,29 @@ git push gitee v{x.y.z}                       # Gitee
 - 不要忘了推送 tag——commit 已 push 但 tag 没 push，release 工作流不会触发
 - 不要在打 tag 后又修改版本号——会导致 tag 与代码版本不一致，需删除旧 tag 后重新打
 
----
+## 文档归档与迁移（2026-10-17 终态）
 
-*最后更新：2026-06-04*
+> `docs/.ai/` 历史资产已全部处置：有价值文档迁入 `docs/agents/`，其余内容蒸馏/同步进过程文档，原目录待用户删除。本表为终态登记。
+
+### 已迁入 docs/agents/ 的文档
+
+| 原位置（docs/.ai/） | 迁入后 | 形态 |
+| --- | --- | --- |
+| ERROR_LOG.md（53 节全本） | [error-log-archive.md](./error-log-archive.md) | 全本归档；结构化活跃记录为 [debug-log.md](./debug-log.md) |
+| TECH-SPEC.md | [TECH-SPEC.md](./TECH-SPEC.md) | 原样迁移（2026-05 期历史规格，改动前以代码与 decision-log 为准） |
+| naming-consistency-guide.md | [naming-consistency-guide.md](./naming-consistency-guide.md) | 原样迁移（规则已入 AGENTS.md Conventions「类型与 Store 命名」行） |
+
+### 内容已蒸馏/同步、不复制原件的
+
+| 原位置 | 内容去向 |
+| --- | --- |
+| context-handover/（7 份，2026-05-08 ~ 06-01） | 决策 → [decision-log.md](./decision-log.md)（DEC-002~030）；进度 → [project-progress.md](./project-progress.md) 历史阶段脉络 |
+| session-snapshots/（1 份） | 已锁定结论 → decision-log.md（DEC-015~017） |
+| session-lessons/（8 份） | 决策 → decision-log.md（DEC-008~014）；可复用经验 → [experience/](./experience/) 五域 28 条 |
+
+### 有意不迁移
+
+| 原位置 | 理由 |
+| --- | --- |
+| 2026-05-20-obsidian-compatibility.md | 已完成的实施计划，模块已落地于 `src/components/obsidian/` |
+| obsidian-floating-toc-technical-analysis.md | 对外部插件 obsidian-floating-toc-plugin 的调研；自研 TOC 已历经 Phase 15~18 重构，可迁移模式已被取代（DEC-019 / BUG-028/029/039 / lessons 03 已覆盖其有价值部分） |

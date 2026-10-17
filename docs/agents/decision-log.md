@@ -1,0 +1,235 @@
+---
+title: Decision Log
+type: decision-log
+project: ErgeMD
+updated: 2026-10-17
+priority: higher-than-prd
+description: >
+  开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
+  只追加，不删除或改写历史。AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
+---
+
+# Decision Log
+
+> 偏离 PRD 或做出重要技术选择时在此追加记录。只追加，不删除或改写历史。
+> **优先级高于 PRD**：冲突时以本文件最新决策为准，并回写 PRD/ADR。
+> 格式：`## DEC-NNN: 标题`，新条目置顶，NNN 三位递增。
+> 字段：`- **日期**：` / `- **背景**：` / `- **决策**：` / `- **验证**：`
+
+---
+
+## DEC-001: Git 推送授权口径统一为「用户显式授权后执行」
+
+- **日期**：2026-10-17
+- **背景**：旧 AGENTS.md「双平台同步」节写「推送到已配置的 remote → AI 可自行执行」，与同文件「安全边界 → Git 操作（push、commit、branch）必须先询问」直接冲突
+- **决策**：统一为严格口径——commit / push / branch / 删除文件 / 完整构建均须经用户明确授权后执行
+- **验证**：与本会话实际协作一致（用户每次显式指示后才执行 commit 与双平台推送）
+
+---
+
+## 2026-10-17 历史同步 — 自 docs/.ai/context-handover、session-snapshots、session-lessons
+
+> 以下 DEC-002~DEC-030 为迁移前历史决策，按源文件记录日期回填；「验证」字段照实录（含「待用户验证」状态），不补写。
+
+## DEC-002: 桌面框架选型 Tauri 2 而非 Electron
+
+- **日期**：2026-05-08
+- **背景**：需要跨平台桌面框架承载 Markdown 阅读器
+- **决策**：选 Tauri 2；理由：安装包约 4MB（Electron 约 100MB）、性能更好、Rust 安全性
+- **验证**：已确认（源文件记录「已确认」）
+
+## DEC-003: 状态管理选型 Zustand 而非 Redux
+
+- **日期**：2026-05-08
+- **背景**：前端状态管理选型
+- **决策**：选 Zustand；理由：更轻量、API 简洁、基于选择器的订阅机制
+- **验证**：已确认
+
+## DEC-004: 主题系统采用 CSS 变量方案
+
+- **日期**：2026-05-08
+- **背景**：14+ 主题需要零成本切换与动态主题能力
+- **决策**：CSS 变量主题系统；理由：主题切换零重渲染、支持动态主题、与 Tailwind 兼容
+- **验证**：已确认
+
+## DEC-005: Mermaid 主题通过 CSS 变量映射
+
+- **日期**：2026-05-08
+- **背景**：Mermaid 图表需跟随 14 个主题切换
+- **决策**：Mermaid 颜色经 CSS 变量映射（`--mermaid-*` → `--chart-*`），不用独立 JS 配置文件；理由：与主题体系统一、支持动态切换
+- **验证**：已确认
+
+## DEC-006: 统一项目文档入口为 AGENTS.md 并整合 CLAUDE.md
+
+- **日期**：2026-05-08
+- **背景**：项目级 AI 协作文档双入口（AGENTS.md + CLAUDE.md）并存
+- **决策**：合并为 AGENTS.md 唯一入口，删除 CLAUDE.md（当时已删过一次；后再度并存，最终于 2026-10-17 由 vibe-init 受控迁移真正完成）
+- **验证**：2026-10-17 迁移完成（见 DEC-001 同期 init-report）
+
+## DEC-007: 完成 14 主题 Mermaid 完整变量体系同步
+
+- **日期**：2026-05-08
+- **背景**：仅 aurora 主题完成 Mermaid 配置，其余 13 主题图表不跟随主题
+- **决策**：全部 14 个主题同步完整 Mermaid 变量体系（forest / cyberpunk / cherry-blossom 本轮补齐）
+- **验证**：已合入本地，待用户本地验证主题切换效果
+
+## DEC-008: Markdown 大文件采用基于块的虚拟化渲染
+
+- **日期**：2026-04-30
+- **背景**：完整 DOM 渲染长文档性能不可接受
+- **决策**：≥500 行文档启用基于块的虚拟化（`@tanstack/react-virtual`）；被否决方案：继续完整渲染（不可行）
+- **验证**：已确认
+
+## DEC-009: Mermaid 版本锁定 11.14.0
+
+- **日期**：2026-04-30
+- **背景**：需要 xychart 正式支持
+- **决策**：锁定 11.14.0；被否决方案：11.4.1（仅支持 xychart-beta）
+- **验证**：已确认（后因 ZenUML 插件升级至 11.15.0/11.16.1，见 package.json）
+
+## DEC-010: details/summary 使用原生 HTML
+
+- **日期**：2026-04-30
+- **背景**：自定义折叠组件破坏 details 折叠行为
+- **决策**：移除自定义组件，使用原生 HTML details/summary
+- **验证**：已确认
+
+## DEC-011: 「在资源管理器中显示」由 Rust 后端实现
+
+- **日期**：2026-04-30
+- **背景**：Tauri 前端无法直接调用系统级操作
+- **决策**：Rust `std::process::Command` 注册 `reveal_in_explorer` 命令，前端 invoke 调用；跨平台条件编译（Windows explorer / Unix xdg-open）
+- **验证**：已确认
+
+## DEC-012: HTML 块解析跟踪标签闭合状态
+
+- **日期**：2026-04-30
+- **背景**：空行不是 HTML 块的可靠分隔符，嵌套标签被错误分割
+- **决策**：解析时维护标签栈，开始标签压栈、结束标签弹栈；自闭合标签（br/hr/img）特殊处理
+- **验证**：已确认
+
+## DEC-013: 表格对齐通过 align 属性传递
+
+- **日期**：2026-04-30
+- **背景**：remark-gfm 通过 HTML align 属性传递对齐信息
+- **决策**：自定义 th/td 从 `props.align` 或 `node.properties.align` 读取，不用 style.textAlign；需 `as any` 断言
+- **验证**：已确认
+
+## DEC-014: Mermaid 图表主题适配采用三层架构
+
+- **日期**：2026-05-09
+- **背景**：14 个主题各自维护一套完整 mermaid 变量导致 328 个重复定义
+- **决策**：三层分离——① `core/mermaid/*.css` 定义 `--mermaid-*` 统一引用 `var(--chart-*)`；② `getMermaidColors()` 读取 CSS 变量；③ `getMermaidThemeSignature()` 追踪变量用于缓存失效；themeVariables 失效的图表用 SVG 后处理注入 scoped CSS
+- **验证**：Phase 13.7 移除 328 个重复变量，TS 通过 + 运行时验收通过
+
+## DEC-015: Packet 图表用 SVG 后处理覆盖（Mermaid Bug 规避）
+
+- **日期**：2026-05-09
+- **背景**：Mermaid 11.14.0 Packet themeVariables 存在官方 Bug（issue #7058），变量传入不生效
+- **决策**：`patchPacketSvg` 注入 scoped CSS，用 `aria-roledescription="packet"` 检测 + `#<svgId>` 作用域限定，新样式追加在 `</style>` 后；已否决方案：继续用 themeVariables（无效）、全局 CSS 覆盖（污染其他图表）
+- **验证**：15A-R5 修复 + 15A-V 集中复验通过
+
+## DEC-016: Radar 曲线颜色使用 cScale0~cScale4
+
+- **日期**：2026-05-09
+- **背景**：`radarCurve0`~`radarCurve4` 变量名不被 Mermaid 识别
+- **决策**：Radar 曲线颜色用 `cScale0`~`cScale4`（唯一有效变量），背景/轴标签等仍需 CSS 覆盖
+- **验证**：15A-R4 修正 + Tauri 验证通过
+
+## DEC-017: Treemap 用 classDef important 方式配色
+
+- **日期**：2026-05-09
+- **背景**：Mermaid 11.14.0 不暴露任何 Treemap themeVariables
+- **决策**：classDef important 方式；已否决方案：猜测 themeVariables 命名（无效）
+- **验证**：随 15B 系列验证
+
+## DEC-018: Phase 17B 设计原则——阅读优先
+
+- **日期**：2026-05-09
+- **背景**：Markdown 强调文字主题适配范围拿捏
+- **决策**：阅读优先，正文永远是视觉中心；strong/em 不变彩色只改字重/继承色，链接用 text-decoration-color 过渡，mark 用 --search-highlight，新增 kbd/samp/del/ins 轻量样式；回滚列表 li 显式 color 改自然继承
+- **验证**：TS: 0 + 多主题人工验证通过
+
+## DEC-019: TOC 初始点击定位采用「延迟可点击 + 二次校准」
+
+- **日期**：2026-05-09
+- **背景**：Phase 18-Audit 确认根因：Mermaid 异步渲染完成后容器高度变化，TOC 点击时 DOM 偏移量不准确
+- **决策**：新建 `scrollToHeading.ts` 的 `scheduleScrollCorrection()`，点击后 280/650/1200ms 多次校准，1500ms 布局稳定窗口，柔化偏差分级（≤6px 不校、6~480px smooth、≥480px auto），wheel/touchmove 取消后续校准
+- **验证**：TS: 0，待 Tauri 人工验证
+
+## DEC-020: Wardley 背景主题适配根因修复方案
+
+- **日期**：2026-05-10
+- **背景**：Wardley 背景固定浅灰
+- **决策**：三个根因同时修——① 传递 `vars.wardley` 子对象（渲染器从 themeVariables.wardley 读取）；② SVG 后处理选择器去掉不存在的 `.wardley-map` 前缀，改用实际 class；③ Wardley 加入 universal text fallback 排除列表；`<style>` 不存在时用 replace `<svg>` 兜底
+- **验证**：tsc Exit Code 0，多主题截图验证通过
+
+## DEC-021: Ishikawa 石川图轻量适配方案
+
+- **日期**：2026-05-10
+- **背景**：Ishikawa（beta 新图表）暗色可读性差
+- **决策**：轻量适配——ChartColors 增加 ishikawa 字段 + SVG 内部 style 注入（text fill + line/path stroke + rect/polygon stroke），加入 universal fallback 排除列表；示例用官方 `ishikawa-beta` 缩进语法
+- **验证**：tsc Exit Code 0 + 多主题截图验证通过
+
+## DEC-022: Mermaid 新图表适配原则
+
+- **日期**：2026-05-10
+- **背景**：Mermaid 图表类型多且各版本支持度不一
+- **决策**：新图表先查官方 themeVariables 支持度；通用变量能生效的用 themeVariables，不生效的走 SVG 后处理兜底；SVG style 注入需处理 `<style>` 缺失的 fallback
+- **验证**：已确立为适配原则
+
+## DEC-023: PDF 导出使用 HTML 中转独立管线
+
+- **日期**：2026-06-01
+- **背景**：PDF 导出长期不稳定：虚拟滚动、懒加载、样式丢失、图表不渲染
+- **决策**：从 Markdown 原文直接生成完整 HTML，经 WebView2 PrintToPdf 生成 PDF；支持带样式/灰度双模式；所有图表导出前渲染完成
+- **验证**：代码完成（19-A~19-G），待用户本地实机测试
+
+## DEC-024: 导出不复用阅读组件逻辑
+
+- **日期**：2026-06-01
+- **背景**：复用阅读组件时虚拟滚动卸载导致图表未渲染
+- **决策**：导出独立管线，与阅读组件彻底分离；删除 exportMode.ts 脏补丁
+- **验证**：tsc Exit Code 0
+
+## DEC-025: PlantUML 导出用串行队列渲染
+
+- **日期**：2026-06-01
+- **背景**：并发渲染 PlantUML 冲突
+- **决策**：串行队列渲染（复用阅读侧队列）
+- **验证**：代码完成，待用户验证
+
+## DEC-026: 导出内容从 fileStore 获取
+
+- **日期**：2026-06-01
+- **背景**：多文档导出始终导出第一个文档（DOM 查询选错 Tab）
+- **决策**：必须从 fileStore 获取 currentContent，禁止 querySelector 取内容
+- **验证**：代码完成，待用户验证
+
+## DEC-027: 导出时并行处理渲染与保存对话框
+
+- **日期**：2026-06-01
+- **背景**：优化导出等待体验
+- **决策**：渲染流程与保存对话框并行
+- **验证**：代码完成，待用户验证
+
+## DEC-028: 本地图片用 Rust 命令 + base64 而非 asset 协议
+
+- **日期**：2026-05-19
+- **背景**：asset 协议在 Windows 绝对路径 scope 匹配上不可靠（glob `**` 不匹配驱动器号路径）
+- **决策**：`read_image_as_data_url` 命令返回 base64 data URL；被否决方案：convertFileSrc + asset 协议（Windows 不可靠，见 BUG-048）
+- **验证**：build 产物待 F12 验证 CSP 无违规
+
+## DEC-029: CI 构建放弃 tauri-action 改用显式 pnpm tauri build
+
+- **日期**：2026-06-13
+- **背景**：tauri-action@v0 在当前配置下不跑 build，整个 release pipeline 损坏 5+ 次迭代
+- **决策**：release.yml 改用 `pnpm tauri build --target ${{ matrix.target }}`（shell: pwsh）；macos-x64 跨编译暂时移除，只保留 macos-arm64
+- **验证**：v0.4.1 起 CI 正常产出（见 BUG-051）
+
+## DEC-030: 命名一致性——一个概念一个名字
+
+- **日期**：未标注（源文件 docs/.ai/naming-consistency-guide.md 无日期）
+- **背景**：AI 协作开发中同义词漂移导致类型/字段/Store 命名不一致
+- **决策**：建立命名字典并全局遵守：类型 `TabInfo`/`ReadingProgress`/`RecentFile`/`FileNode`/`TocItem`/`ThemeMode`/`Language`（不用 Tab/TOCItem/Theme）；Store `useFileStore`/`useReaderStore`/`useSettingsStore`；跨语言字段显式映射（user_id ↔ userId）
+- **验证**：规范已并入 AGENTS.md Conventions「类型与 Store 命名」行
