@@ -1,6 +1,6 @@
 # mermaid 域 — Mermaid 图表主题适配
 
-> 技术栈前提：Mermaid 11.x + 14 主题 CSS 变量体系 + Tauri WebView。
+> 技术栈前提：Mermaid 12.x（已钉 `dagre`+`classic` 保留 11.x 渲染观感）+ 14 主题 CSS 变量体系 + Tauri WebView。
 > 条目清单与速查见 [theme-variables.md](./theme-variables.md)。
 
 | # | 标题 | 级别 |

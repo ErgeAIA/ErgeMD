@@ -3,7 +3,7 @@
 ## M1: 自定义图表主题必须走 base 主题 + themeVariables 🔴
 
 - **主张**：Mermaid 图表自定义配色必须使用 `base` 主题 + `themeVariables`；亮色主题必须显式 `darkMode: false`；themeVariables 只接受实际颜色值，不解析 CSS 变量。
-- **适用**：任何需要图表跟随应用主题切换的场景（Mermaid 11.x）。
+- **适用**：任何需要图表跟随应用主题切换的场景（Mermaid 12.x）。
 - **Why**：① 只有 `base` 主题支持自定义 themeVariables，`default`/`dark` 主题传入即被忽略；② `base` 默认按暗色风格计算颜色，亮色不设 `darkMode: false` 会得到错误配色；③ Mermaid 在 JS 侧消费配置对象，`var(--xxx)` 对它不可解析，只会得到非法色值。
 - **How**：
   ```typescript
@@ -73,13 +73,13 @@
 
 ## M5: 已知 Mermaid Bug 清单 🟢
 
-- **主张**：以下为项目实测确认的 Mermaid 11.x 已知问题与规避姿势，升级 Mermaid 后必须重新验证。
-- **适用**：本项目技术栈（Mermaid 11.14~11.16 + Tauri WebView）；换版本/换环境必须重新核对。
+- **主张**：以下为项目实测确认的 Mermaid 已知问题与规避姿势（当前 12.2.0），升级 Mermaid 后必须重新验证。
+- **适用**：本项目技术栈（Mermaid 12.2.0 + Tauri WebView）；换版本/换环境必须重新核对。
 - **Why**：这些是上游 Bug，本项目无法修复，只能规避；版本升级后行为可能变化。
 - **How**：
   - Packet：themeVariables 不传播到样式函数（issue #7058）→ SVG 后处理 `patchPacketSvg`，`aria-roledescription="packet"` 检测 + `#svgId` 作用域
-  - `htmlLabels: false` 时文字不居中（issue #1177）→ 曾回退 true；嵌入式 WebView 文字不可见见 BUG-015 的完整决策链
-  - v11 中文/CJK 字符宽度计算错误，每节点缺末字符 → 无解，等官方；降级 v10 会 esbuild 报错
+  - `htmlLabels: false` 时文字不居中（issue #1177，mermaid 12.2.0 已修复 #8390；本项目仍钉 `htmlLabels: true`）→ 嵌入式 WebView 文字不可见见 BUG-015 的完整决策链
+  - Mermaid 中文/CJK 字符宽度计算错误，每节点缺末字符 → 无解，等官方；降级 v10 会 esbuild 报错
   - Wardley：渲染器从 `themeVariables.wardley` 子对象读样式，不是顶层变量；SVG 内无 `.wardley-map` class
   - Treemap：不暴露任何 themeVariables → classDef important
 - **反例**：假设「官方文档写了就该生效」——Packet 的 `packetTextColor` 传入完全不生效。
