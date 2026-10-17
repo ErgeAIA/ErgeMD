@@ -70,6 +70,9 @@ export function renderMermaidForExport(chart: string): Promise<string> {
           startOnLoad: false,
           theme: "default",
           securityLevel: "strict",
+          // 与阅读路径保持一致：钉 dagre + classic，避免导出与文档观感漂移
+          layout: "dagre",
+          look: "classic",
           flowchart: { useMaxWidth: false, htmlLabels: true },
         });
 
@@ -366,6 +369,38 @@ interface ChartColors {
     swimlaneBg: string;
     swimlaneStroke: string;
     arrowhead: string;
+  };
+  swimlane?: {
+    nodeBg: string;
+    nodeBorder: string;
+    nodeText: string;
+    laneBg: string;
+    laneBorder: string;
+    edgeColor: string;
+    edgeLabelBg: string;
+    edgeLabelText: string;
+  };
+  usecase?: {
+    actorBg: string;
+    actorBorder: string;
+    bg: string;
+    border: string;
+    boundaryBg: string;
+    boundaryBorder: string;
+    includeLine: string;
+    extendLine: string;
+  };
+  cynefin?: {
+    complexBg: string;
+    complicatedBg: string;
+    clearBg: string;
+    chaoticBg: string;
+    confusionBg: string;
+    boundaryColor: string;
+    cliffColor: string;
+    arrowColor: string;
+    labelColor: string;
+    textColor: string;
   };
 }
 
@@ -690,6 +725,38 @@ function getMermaidColors(): {
         swimlaneStroke: getCSSVar("--mermaid-eventmodeling-swimlane-stroke", lineColor),
         arrowhead: getCSSVar("--mermaid-eventmodeling-arrowhead", lineColor),
       },
+      swimlane: {
+        nodeBg: getCSSVar("--mermaid-swimlane-node-bg", backgroundColor),
+        nodeBorder: getCSSVar("--mermaid-swimlane-node-border", primaryBorderColor),
+        nodeText: getCSSVar("--mermaid-swimlane-node-text", primaryTextColor),
+        laneBg: getCSSVar("--mermaid-swimlane-lane-bg", secondaryColor),
+        laneBorder: getCSSVar("--mermaid-swimlane-lane-border", primaryBorderColor),
+        edgeColor: getCSSVar("--mermaid-swimlane-edge", lineColor),
+        edgeLabelBg: getCSSVar("--mermaid-swimlane-edge-label-bg", backgroundColor),
+        edgeLabelText: getCSSVar("--mermaid-swimlane-edge-label-text", primaryTextColor),
+      },
+      usecase: {
+        actorBg: getCSSVar("--mermaid-usecase-actor-bg", primaryColor),
+        actorBorder: getCSSVar("--mermaid-usecase-actor-border", primaryBorderColor),
+        bg: getCSSVar("--mermaid-usecase-bg", backgroundColor),
+        border: getCSSVar("--mermaid-usecase-border", primaryBorderColor),
+        boundaryBg: getCSSVar("--mermaid-usecase-boundary-bg", secondaryColor),
+        boundaryBorder: getCSSVar("--mermaid-usecase-boundary-border", primaryBorderColor),
+        includeLine: getCSSVar("--mermaid-usecase-include-line", lineColor),
+        extendLine: getCSSVar("--mermaid-usecase-extend-line", primaryColor),
+      },
+      cynefin: {
+        complexBg: getCSSVar("--mermaid-cynefin-complex-bg", primaryColor),
+        complicatedBg: getCSSVar("--mermaid-cynefin-complicated-bg", primaryColor),
+        clearBg: getCSSVar("--mermaid-cynefin-clear-bg", secondaryColor),
+        chaoticBg: getCSSVar("--mermaid-cynefin-chaotic-bg", primaryColor),
+        confusionBg: getCSSVar("--mermaid-cynefin-confusion-bg", secondaryColor),
+        boundaryColor: getCSSVar("--mermaid-cynefin-boundary", primaryBorderColor),
+        cliffColor: getCSSVar("--mermaid-cynefin-cliff", primaryColor),
+        arrowColor: getCSSVar("--mermaid-cynefin-arrow", lineColor),
+        labelColor: getCSSVar("--mermaid-cynefin-label", primaryTextColor),
+        textColor: getCSSVar("--mermaid-cynefin-text", primaryTextColor),
+      },
     },
   };
 }
@@ -785,12 +852,18 @@ function normalizeChartType(chart: string): string {
     "treemap-beta": "treemap",
     // Venn
     "venn-beta": "venn",
-    // Ishikawa
-    ishikawa: "ishikawa",
+    // Ishikawa (Mermaid 关键字为 ishikawa-beta，需显式映射才能命中主题适配)
+    "ishikawa-beta": "ishikawa",
     // Wardley
     "wardley-beta": "wardley",
     // TreeView
     "treeview-beta": "treeview",
+    // Swimlane (Mermaid 11.16.0+ 新增)
+    "swimlane-beta": "swimlane",
+    // Use Case (Mermaid 12.0.0+ 全新类型)
+    "usecase-beta": "usecase",
+    // Cynefin (Mermaid 11.16.0+ 新增)
+    "cynefin-beta": "cynefin",
   };
 
   return typeMap[firstToken] || firstToken;
@@ -1108,7 +1181,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       theme: resolvedTheme,
       signature: themeSignature,
       chart,
-      _version: "v36",
+      // v37：mermaid 12 升级轮。v36 及以前的缓存可能含 neo 外观的 drop-shadow
+      // 残留（未钉 look 时渲染产出），升版一次性作废旧键（BUG-065）
+      _version: "v37",
     });
 
     useEffect(() => {
@@ -1254,6 +1329,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           const isIshikawa = chartType === "ishikawa";
           const isZenuml = chartType === "zenuml";
           const isEventModeling = chartType === "eventmodeling";
+          const isSwimlane = chartType === "swimlane";
+          const isUsecase = chartType === "usecase";
+          const isCynefin = chartType === "cynefin";
 
           if (isTimeline) {
             const vars = themeVariables as any;
@@ -1657,11 +1735,67 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.emArrowhead = emColors.arrowhead;
           }
 
+          if (isSwimlane && colors.charts.swimlane) {
+            const vars = themeVariables as any;
+            vars.darkMode = isLight ? false : true;
+            const sc = colors.charts.swimlane;
+            vars.nodeBg = sc.nodeBg;
+            vars.nodeBorder = sc.nodeBorder;
+            vars.nodeText = sc.nodeText;
+            vars.clusterBkg = sc.laneBg;
+            vars.clusterBorder = sc.laneBorder;
+            vars.edgeColor = sc.edgeColor;
+            vars.edgeLabelBg = sc.edgeLabelBg;
+            vars.edgeLabelTextColor = sc.edgeLabelText;
+            vars.textColor = sc.nodeText;
+          }
+
+          if (isUsecase && colors.charts.usecase) {
+            const vars = themeVariables as any;
+            vars.darkMode = isLight ? false : true;
+            const uc = colors.charts.usecase;
+            vars.usecaseActorBkg = uc.actorBg;
+            vars.usecaseActorBorder = uc.actorBorder;
+            vars.usecaseBkg = uc.bg;
+            vars.usecaseBorder = uc.border;
+            vars.usecaseBoundaryBkg = uc.boundaryBg;
+            vars.usecaseBoundaryBorder = uc.boundaryBorder;
+            vars.usecaseIncludeLine = uc.includeLine;
+            vars.usecaseExtendLine = uc.extendLine;
+          }
+
+          if (isCynefin && colors.charts.cynefin) {
+            const vars = themeVariables as any;
+            const cf = colors.charts.cynefin;
+            vars.cynefin = {
+              complexBg: cf.complexBg,
+              complicatedBg: cf.complicatedBg,
+              clearBg: cf.clearBg,
+              chaoticBg: cf.chaoticBg,
+              confusionBg: cf.confusionBg,
+              boundaryColor: cf.boundaryColor,
+              boundaryWidth: 2,
+              cliffColor: cf.cliffColor,
+              cliffWidth: 3,
+              arrowColor: cf.arrowColor,
+              arrowWidth: 2,
+              labelColor: cf.labelColor,
+              textColor: cf.textColor,
+              domainFontSize: 16,
+              itemFontSize: 14,
+            };
+          }
+
           mermaid.initialize({
             startOnLoad: false,
             theme: mermaidTheme,
             themeVariables,
             themeCSS: erThemeCSS,
+            // mermaid 12 起 ELK 成为默认布局、neo 成为默认外观，会改变全部图表
+            // 的布局与观感；本项目主题适配体系按 11.x 的 DOM 结构校准，先钉回
+            // dagre + classic 冻结现状，ELK/neo 的评估另行单独进行
+            layout: "dagre",
+            look: "classic",
             flowchart: {
               useMaxWidth: false,
               htmlLabels: true,
@@ -2410,7 +2544,11 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           title={t("chart.clickToZoom")}
         />
         {showPreview && (
-          <SVGPreview svgHtml={svgHtml} onClose={() => setShowPreview(false)} />
+          <SVGPreview
+            svgHtml={svgHtml}
+            skipSanitize
+            onClose={() => setShowPreview(false)}
+          />
         )}
         {showContextMenu && onEdit && (
           <div

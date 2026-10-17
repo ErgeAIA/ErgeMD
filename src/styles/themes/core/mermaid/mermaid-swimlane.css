@@ -1,0 +1,34 @@
+/*
+================================================================================
+ErgeMD 主题系统 - mermaid-swimlane.css
+================================================================================
+
+职责：Swimlane 泳道图变量映射
+优先级：Mermaid 层
+
+设计原则：
+- 节点（泳道内的流程图形状）沿用流程图令牌：背景 --chart-surface-1（承载文字）、边框 --chart-stroke-0
+- 泳道（subgraph / cluster 容器）背景使用 --chart-surface-2，比节点背景更内敛，使节点在泳道中浮现，深浅主题均不刺眼
+- 边标签背景用 --chart-surface-1（与节点一致，使其浮在泳道背景之上清晰可读），文字用 --chart-text
+- 连线使用 --chart-edge
+================================================================================
+*/
+
+[data-theme] {
+
+  /* === Swimlane 节点（承载文字）=== */
+  --mermaid-swimlane-node-bg: var(--chart-surface-1);
+  --mermaid-swimlane-node-border: var(--chart-stroke-0);
+  --mermaid-swimlane-node-text: var(--chart-text);
+
+  /* === Swimlane 泳道（cluster 容器）=== */
+  --mermaid-swimlane-lane-bg: var(--chart-surface-2);
+  --mermaid-swimlane-lane-border: var(--chart-stroke-0);
+
+  /* === Swimlane 连线 === */
+  --mermaid-swimlane-edge: var(--chart-edge);
+
+  /* === Swimlane 边标签（承载文字，浮于泳道背景之上）=== */
+  --mermaid-swimlane-edge-label-bg: var(--chart-surface-1);
+  --mermaid-swimlane-edge-label-text: var(--chart-text);
+}

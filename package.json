@@ -18,7 +18,7 @@
     "tauri:build": "pnpm sync-version && pnpm tauri build && node scripts/rename-bundle.js"
   },
   "dependencies": {
-    "@mermaid-js/mermaid-zenuml": "0.2.3",
+    "@mermaid-js/mermaid-zenuml": "1.0.1",
     "@plantuml/core": "^1.2026.8",
     "@syenchuk/remark-abbr": "^1.0.1",
     "@tanstack/react-virtual": "^3.14.11",
@@ -33,7 +33,7 @@
     "i18next": "^26.4.2",
     "katex": "^0.16.47",
     "markdown-docx": "^1.7.0",
-    "mermaid": "11.16.1",
+    "mermaid": "12.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-i18next": "^17.0.13",

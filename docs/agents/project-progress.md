@@ -21,6 +21,9 @@ description: >
 - **阶段**：vibe-audit 修复轮 1（正确性 → 单一解析源 → 按需常驻 → 卫生项）
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-10-17 文档任务：丰富 docs/TestCase/MarkdownSyntaxExample.md——H1/H2/H3 共 69 个标题下补充测试范围与检查要点（Mermaid 28 种图表逐节标注回归重点，标注已知上游问题）；仅改文档，未动代码与构建配置，待用户实机验证
+- 2026-10-17 文档与测试（接上条）：MarkdownSyntaxExample.md 补入泳道图 / 用例图 / Cynefin 框架图三节（6.29~6.31，取官方最新语法），章节计数与文末清单同步为 31 种；修正 mermaid-zenuml.css 注释中的 zenuml 版本（0.2.3 → 1.0.1）；新增 src/components/reader/mermaidSyntaxDoc.test.ts 固化「文档全部 mermaid 块可 parse」回归（33/33 通过，含镜像站链接防护）；实测发现官方用例图示例 `usecase-beta direction LR`（同行）在 12.2.0 解析失败，direction 须独立成行，已在文档记录该坑
+- 2026-10-17 主题适配（接上条）：为泳道图 / 用例图 / Cynefin 框架图三种新图表补齐 Mermaid 主题变量适配——新增 mermaid-swimlane.css / mermaid-usecase.css / mermaid-cynefin.css（沿用 chart palette 令牌：surface 承载文字、stroke 描边、edge 连线、fill-N 语义着色），并在 ChartColors 接口、getMermaidColors、normalizeChartType 映射、themeVariables 注入块四处补齐；顺带修正 ishikawa 映射（关键字 ishikawa-beta 此前漏映射，石川图主题块从未命中）；vite.config.ts 注释 ZenUML 版本 0.2.3→1.0.1（用户授权改构建配置）。人类阅读性：五域按语义着色（复杂=紫/繁杂=蓝/清晰=绿/混沌=橙/混乱=中性），include/extend 虚线分色区分；用例图 actor 文字沿用 primaryTextColor 与 eventmodeling 同套 fill-N+text 配对原则。tsc --noEmit 通过、eslint 仅存量 as-any warning、回归测试 33/33。14 主题 × 三图视觉可读性仍待用户实机
 - **最后更新**：2026-10-17 审计修复轮 1 代码改动完成（未提交）
   - H1 chunk 缓存键加文档指纹 + FIFO 淘汰；H2 isTableLine 收紧（BUG-030 修复恢复）；H3 新增 queryActiveMarkdownBody 替换 4 处裸 querySelector
   - M1/M2 单一解析源：大文档跳过 extractTOC；virtualTocItems 改由 VirtualMarkdownView 经 onTocReady 上行；FloatingTOC 新增 items 注入（DEC-031）
@@ -31,6 +34,10 @@ description: >
   - 验证通过（用户授权）：pnpm lint 0 错误（36 个存量 warning 均不在改动文件）、tsc --noEmit 通过、vitest 24/24 通过、cargo check 通过
   - L7 默认折叠完成：FileTreeNode 仅根层（depth 0）默认展开，更深层级按需展开
   - BUG-063 修复（用户实测反馈）：虚拟模式 TOC 跳转改收敛循环（scrollToHeading.ts 新增 jumpToHeadingWithRetry：目标未渲染重发 scrollToIndex，已渲染按实测位置 auto 校正至收敛），替换原定点补救
+  - BUG-064 修复（用户实测反馈）：Mermaid 预览缺文字——SVGPreview 新增 skipSanitize，mermaid 预览不再二次消毒（DOMPurify 剥 foreignObject 内容，配置层无解，已实测）
+  - Mermaid 升级评估完成（未执行）：12.2.0 破坏性变更 ELK 默认布局 / 默认主题 redux-color+neo；需 ZenUML 0.2.3→1.0.1；硬阻碍为 Safari 17.4+（macOS 12 Monterey/2021 起），与 minimumSystemVersion 10.15 冲突，待用户决策
+  - Mermaid 升级已执行（DEC-033）：12.2.0 + zenuml 1.0.1，initialize 钉 layout:'dagre' + look:'classic'；用户确认 macOS 用户量少、接受 ≤11 系统图表降级（变更日志已声明）；chunk 6MB→8.2MB（ELK 内置），chunkSizeWarningLimit→8500；lint/tsc/vitest/build 全过；**14 主题 × 图表类型视觉回归待用户实机**（重点：MarkdownSyntaxExample.md 全图表 + ZenUML/C4/packet 等依赖 DOM 结构的后处理）
+  - BUG-065 修复（用户实测反馈）：neo 外观 drop-shadow 污影——缓存键 _version v36→v37 作废旧键，classic 钉位经浏览器实测彻底消除阴影；待实机确认切 Tab 无残留
 - **下一步**：用户本地验证（`pnpm tauri dev`：多 Tab 搜索/切换、大小文档 TOC、大文档打开速度）→ 提交到 fix/audit-round-1 → 合并 main → 双平台推送
 - **本阶段禁止**：改动 .trae/rules/、docs/phase/
 - **本轮有意 deferred**：L3 db_pool 直注（需 cargo check，构建需授权）、L5 App.tsx 拆分（独立重构）、L7 文件树虚拟化（UX 变更待定）、H3 后半「搜索走数据层」（功能级改动）

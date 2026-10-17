@@ -6,9 +6,17 @@ import { sanitizeSvg } from "../../utils/sanitizeSvg";
 interface SVGPreviewProps {
   svgHtml: string;
   onClose: () => void;
+  /**
+   * 上游输出已完成消毒时跳过二次消毒。
+   * DOMPurify 即便 ADD_TAGS 放行 foreignObject，也会剥掉其中的 HTML 子节点
+   * （htmlLabels 文字容器）——已实测 5 种配置变体均无解。mermaid
+   * securityLevel: strict 的输出自带消毒，与文档视图同一信任模型。
+   */
+  skipSanitize?: boolean;
 }
 
-const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
+const SVGPreview: React.FC<SVGPreviewProps> = memo(
+  ({ svgHtml, onClose, skipSanitize = false }: SVGPreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgWrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -19,7 +27,10 @@ const SVGPreview: React.FC<SVGPreviewProps> = memo(({ svgHtml, onClose }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const lastContextMenuTime = useRef(0);
-  const safeSvgHtml = useMemo(() => sanitizeSvg(svgHtml), [svgHtml]);
+  const safeSvgHtml = useMemo(
+    () => (skipSanitize ? svgHtml : sanitizeSvg(svgHtml)),
+    [svgHtml, skipSanitize],
+  );
 
   // 拖拽平移
   const handleMouseDown = useCallback(

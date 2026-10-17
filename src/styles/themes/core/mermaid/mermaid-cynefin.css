@@ -1,0 +1,36 @@
+/*
+================================================================================
+ErgeMD 主题系统 - mermaid-cynefin.css
+================================================================================
+
+职责：Cynefin 框架图变量映射
+优先级：Mermaid 层
+
+设计原则（人类阅读性优先）：
+- 五域按语义着色，便于直觉理解：
+  复杂 Complex（涌现）→ 紫 fill-2；繁杂 Complicated（分析）→ 蓝 fill-0；
+  清晰 Clear（有序）→ 绿 fill-4；混沌 Chaotic（危机）→ 橙 fill-3；
+  混乱 Confusion（未知）→ 中性 surface-2
+- 域标签 / 条目文字统一用 --chart-text，跟随主题明暗翻转，与主题色板配对保证可读
+- 边界 / 悬崖 / 箭头用中性描边与连线色，不与域填充抢视觉
+================================================================================
+*/
+
+[data-theme] {
+
+  /* === Cynefin 五域背景（语义着色）=== */
+  --mermaid-cynefin-complex-bg: var(--chart-fill-2);
+  --mermaid-cynefin-complicated-bg: var(--chart-fill-0);
+  --mermaid-cynefin-clear-bg: var(--chart-fill-4);
+  --mermaid-cynefin-chaotic-bg: var(--chart-fill-3);
+  --mermaid-cynefin-confusion-bg: var(--chart-surface-2);
+
+  /* === Cynefin 边界 / 悬崖 / 箭头（中性，不抢视觉）=== */
+  --mermaid-cynefin-boundary: var(--chart-stroke-0);
+  --mermaid-cynefin-cliff: var(--chart-fill-3);
+  --mermaid-cynefin-arrow: var(--chart-edge);
+
+  /* === Cynefin 文字（跟随主题明暗）=== */
+  --mermaid-cynefin-label: var(--chart-text);
+  --mermaid-cynefin-text: var(--chart-text);
+}

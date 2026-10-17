@@ -528,3 +528,19 @@ description: >
 - **修复**：`scrollToHeading.ts` 新增 `jumpToHeadingWithRetry` 收敛循环替换虚拟模式跳转路径——目标未渲染时重发 `scrollToBlockIndex`（测量数据随渲染 refine）将其滚入渲染窗口；已渲染则按 `getBoundingClientRect` 实测位置以 `behavior: "auto"` 精确校正（避免 smooth 与动态测量竞态）；校正后持续验证至命中 6px 容差或用尽 12 次（约 1.5s）；用户滚轮/触摸立即取消。小文档路径（元素全渲染）保持原方案
 - **验证限制**：需用 8112 行测试文档实机复测各层级标题跳转
 - **教训**：虚拟滚动里「先近似滚动、后定点补救」不是补救——补救方必须能在目标缺席时重试、在位置漂移后重新武装，形成收敛循环而非有限次抽奖
+
+## BUG-064: Mermaid 预览（点击放大）文字丢失
+- **日期**：2026-10-17（用户实测报告；当日修复）
+- **现象**：文档内图表正常，点击放大进 SVG 预览后节点框在但标签文字全部消失；「另存为 SVG」存出的文件同样缺文字
+- **根因**：阅读路径 `htmlLabels: true`，文字位于 `foreignObject` 内。文档视图按既有先例直接渲染 mermaid strict 输出、不过 DOMPurify，但 `SVGPreview` 仍走 `sanitizeSvg`——DOMPurify 保住 `foreignObject` 标签（ADD_TAGS）却剥掉其中全部 HTML 子节点。jsdom 实测复现：5 种配置变体（`USE_PROFILES` html+svg、ADD_TAGS 补 div/span 等子标签、合并、URI 属性）均无法保住内容，配置层无解
+- **修复**：`SVGPreview` 新增 `skipSanitize` 参数并接入 `safeSvgHtml` 计算；MermaidDiagram 预览传入（mermaid `securityLevel: strict` 输出自带消毒，与文档视图同一信任模型，`MermaidDiagram.tsx:2365/:2401` 早有同因注释）；PlantUML 预览保持消毒（viz.js 输出为原生 `<text>`，不受影响）。**更正记录**：首次改动只加了参数未接线（`safeSvgHtml` 仍无条件消毒），经用户实测发现后补正——加开关必须同时改消费点
+- **验证限制**：需实机确认预览与另存 SVG 的文字恢复
+- **教训**：DOMPurify 对 foreignObject（SVG 的 HTML 集成点）内容按命名空间剔除，ADD_TAGS 只保标签不保内容；「上游已消毒」的信任边界要么贯彻到底要么都不信——半套消毒比不消毒更坏
+
+## BUG-065: Mermaid 12 neo 外观 drop-shadow 残留（图表灰色污影）
+- **日期**：2026-10-17（用户实测报告；当日定位并修复）
+- **现象**：mermaid 12 升级后，流程图/类图/状态图/ER/旅程/需求/思维导图/块图/看板/事件建模/维恩等带曲线连接的图表，节点与曲线边缘带灰色半透明污影；切 Tab 仍有残留，重启/刷新后消失
+- **根因**：两层叠加。① mermaid 12 的 neo 外观给节点、标签容器与边外框路径（`g.outer-path`）加 `drop-shadow(rgb(185,185,185) 1px 2px 2px)`——无头浏览器实证：neo 下 8 个元素带计算后 filter，classic 下 7 类图全部 0 filter；受影响类型即新版渲染器带 neo 阴影 CSS 的那些。② 阴影只在未钉 look 的渲染中产生（升级热更新后模块图滞后那一批），产出写入模块级 `mermaidCache`，而缓存键 `_version` 未随升级 bump，切 Tab 重挂载反复复用带影字符串；重启清缓存后新渲染走钉位即干净
+- **修复**：缓存键 `_version` v36 → v37 一次性作废旧键；`look: "classic"` 钉位（阅读 + 导出两处 initialize）对全部图表类型彻底消除阴影（浏览器实测验证）
+- **验证限制**：需实机确认切 Tab 无残留、14 主题下各类图无污影
+- **教训**：渲染引擎大版本升级必须同步 bump 自建渲染缓存的版本键，否则旧配置产出的缓存会跨版本复用；外观类默认值变更（neo / redux-color）要以钉位冻结，并在真实浏览器用 `getComputedStyle` 验证，不能只读文档

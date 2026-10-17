@@ -249,3 +249,11 @@ description: >
 - **决策**：常驻窗口 = 最近活动的 3 个 + 全部固定 Tab；超出者卸载阅读区，切回时经 percentageCache 恢复滚动位置
 - **验证**：lint 通过；待多 Tab 大文档实测（切换流畅度、滚动恢复）
 - **已知取舍**：非常驻 Tab 切回需重新解析与渲染（首次切换有成本）；固定 Tab 永远常驻，不受上限约束
+
+## DEC-033: Mermaid 升级 12.2.0 并钉 dagre + classic
+
+- **日期**：2026-10-17
+- **背景**：mermaid 停留在 11.16.1；12.x 带来 mindmap 尺寸/居中修复（#8390/#8409）、泳道 DOM id 作用域化（#8161）、序列图解析修复、错误信息可读性等。评估确认 12.0.0 的破坏性变更（ELK 默认布局、默认主题 redux-color + neo 外观、移除 defaultRenderer）中前两项会影响本项目全部图表
+- **决策**：① mermaid 11.16.1 → 12.2.0，@mermaid-js/mermaid-zenuml 0.2.3 → 1.0.1（peer 已支持 ^12，导出形态仍为 default，注册代码兼容）；② 两处 `mermaid.initialize`（阅读 + 导出）钉 `layout: "dagre"` + `look: "classic"`，冻结 12.0 的默认布局/外观变更——本项目三层主题适配与 SVG 后处理按 11.x 的 DOM 结构校准，ELK/neo 的尝鲜另行单独评估；③ 已知代价并已在变更日志声明：新引擎要求 Safari 17.4+，macOS 12 Monterey（2021）起正常，macOS 11 Big Sur（2020）及更早图表不可用（用户确认 macOS 用户量少，接受降级；minimumSystemVersion 暂维持 10.15 不变）；mermaid chunk 6MB → 8.2MB（ELK 内置且无法从标准包导入剔除，动态加载，gzip 约 2.2MB），`chunkSizeWarningLimit` 调至 8500
+- **验证**：lint 0 错误、tsc 通过、vitest 24/24、vite build 通过（无 chunk 警告）；ZenUML 注册与导出形态已核查兼容
+- **待办**：14 主题 × 图表类型视觉回归需用户实机确认（MarkdownSyntaxExample.md 全图表走查）；通过后再走一轮 vibe-distill 更新 experience/mermaid 的版本前提

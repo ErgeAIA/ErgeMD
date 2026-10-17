@@ -81,10 +81,11 @@ export default defineConfig(async () => ({
         },
       },
     },
-    // ZenUML 外部插件 (@mermaid-js/mermaid-zenuml@0.2.3) 引入 @zenuml/core@^3.47.0
-    // 依赖较大，导致 mermaid chunk 从 ~1MB 膨胀至 ~6MB
-    // 调整 chunkSizeWarningLimit 以消除构建警告，构建产物不变
-    chunkSizeWarningLimit: 6500,
+    // mermaid chunk 体积演进：基础 ~1MB → ZenUML 1.0.1（@zenuml/core）~6MB
+    // → mermaid 12.2.0 内置 ELK 布局引擎后 ~8.2MB（gzip ~2.2MB）。
+    // 该 chunk 为动态导入（首个 mermaid 块渲染时才加载），且 layout 已钉 dagre、
+    // ELK 当前不参与渲染，但无法从标准包导入中剔除。调高警告线消除噪音。
+    chunkSizeWarningLimit: 8500,
   },
   clearScreen: false,
   server: {

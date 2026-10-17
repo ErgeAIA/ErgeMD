@@ -12,7 +12,7 @@ ZenUML 是块状图：
 - 边框使用 --chart-stroke-*
 - 生命线/消息线使用 --chart-edge
 
-注意：ZenUML 外部插件（@mermaid-js/mermaid-zenuml@0.2.3）不接受 mermaid 的
+注意：ZenUML 外部插件（@mermaid-js/mermaid-zenuml@1.0.1）不接受 mermaid 的
 themeVariables（源码中无 themeVariables 引用），且使用内联 style="fill:..."
 硬编码颜色。CSS 变量定义仅作为后备参考，实际生效依靠 MermaidDiagram.tsx
 中 SVG 后处理注入的 !important 规则。

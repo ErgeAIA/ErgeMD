@@ -70,6 +70,9 @@
 @import "./themes/core/mermaid/mermaid-ishikawa.css";
 @import "./themes/core/mermaid/mermaid-wardley.css";
 @import "./themes/core/mermaid/mermaid-treeview.css";
+@import "./themes/core/mermaid/mermaid-swimlane.css";
+@import "./themes/core/mermaid/mermaid-usecase.css";
+@import "./themes/core/mermaid/mermaid-cynefin.css";
 
 /* --- PlantUML 容器样式 --- */
 @import "./themes/core/plantuml.css";

@@ -1,0 +1,36 @@
+/*
+================================================================================
+ErgeMD 主题系统 - mermaid-usecase.css
+================================================================================
+
+职责：Use Case 用例图变量映射
+优先级：Mermaid 层
+
+设计原则：
+- 参与者（actor）用 --chart-fill-0 强调色填充，与用例椭圆明显区分
+- 用例（usecase 椭圆）用 --chart-surface-1（承载文字）
+- 系统边界（systemBoundary 容器）用 --chart-surface-2，内敛不抢视觉
+- 边框统一 --chart-stroke-0
+- include / extend 连线：include 用中性 --chart-edge，extend 用强调色 --chart-fill-3；
+  两者均为虚线、仅靠线型难区分，分色后人类更易辨识二者差异
+================================================================================
+*/
+
+[data-theme] {
+
+  /* === Use Case 参与者（actor）=== */
+  --mermaid-usecase-actor-bg: var(--chart-fill-0);
+  --mermaid-usecase-actor-border: var(--chart-stroke-0);
+
+  /* === Use Case 用例（usecase 椭圆，承载文字）=== */
+  --mermaid-usecase-bg: var(--chart-surface-1);
+  --mermaid-usecase-border: var(--chart-stroke-0);
+
+  /* === Use Case 系统边界（systemBoundary 容器）=== */
+  --mermaid-usecase-boundary-bg: var(--chart-surface-2);
+  --mermaid-usecase-boundary-border: var(--chart-stroke-0);
+
+  /* === Use Case 关系连线 === */
+  --mermaid-usecase-include-line: var(--chart-edge);
+  --mermaid-usecase-extend-line: var(--chart-fill-3);
+}
