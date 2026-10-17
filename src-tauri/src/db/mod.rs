@@ -49,16 +49,6 @@ pub async fn init_db() -> Result<SqlitePool, Box<dyn std::error::Error>> {
     .await?;
 
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS workspaces (
-            folder_path TEXT PRIMARY KEY,
-            folder_name TEXT NOT NULL,
-            opened_at INTEGER NOT NULL
-        )",
-    )
-    .execute(&pool)
-    .await?;
-
-    sqlx::query(
         "CREATE TABLE IF NOT EXISTS schema_version (
             key TEXT PRIMARY KEY DEFAULT 'current',
             version INTEGER NOT NULL

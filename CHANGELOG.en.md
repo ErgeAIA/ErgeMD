@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Precise TOC jumps in very large documents**: Clicking a table-of-contents entry in documents of 10k+ lines used to land off-target, requiring a second manual scroll. Root cause: the virtual list positions blocks by estimated heights (unmeasured error accumulates to thousands of pixels), and the old correction silently gave up when the target block was not yet rendered. Replaced with a convergence loop: if the target is not rendered, the scroll is re-issued until it enters the render window; once rendered, the position is corrected from measured geometry until it lands within pixel tolerance. Verified against an 8,000+ line document across all heading levels
+- **Chunked parse cache could cross documents**: The cache key lacked a document identity, so two different documents with the same line range and identical first/last line lengths hit the same entry and received each other's parsed blocks; the cache also had no size cap and grew with every document opened. The key now includes a document fingerprint (line count + total characters) with bounded eviction
+- **Pipes in plain text misdetected as tables**: Paragraphs containing `|` (e.g. `a | b`, shell pipelines) were merged into table blocks, bloating the parse of long documents; table row detection is now tightened (line starts/ends with `|`, or still has at least two pipes after stripping inline code)
+- **Search / select-all acted on the wrong tab**: All tabs' reading areas stay mounted in the DOM, so global queries could match an inactive tab; search, highlight clearing, and select-all now target only the visible document
+- **TOC highlight could drift one section in virtual scrolling**: The active section is now derived from the middle of the viewport instead of its top edge
+- **Word count in saved reading progress was always 0**: The value was hardcoded on persist and the database column never updated; real word counts are now saved, and persist failures are no longer silently swallowed (visible in the console)
+
+### Changed
+
+- **Faster opening of very large documents**: TOC extraction no longer performs a redundant full-document scan — for large documents the TOC is produced by the chunked parser as a single source shared by rendering and jumping, saving one full pass on open
+- **Steadier memory with many open tabs**: Reading areas are now resident on demand — only the active, pinned, and 3 most recently used tabs stay rendered; the rest are unmounted and restore their scroll position when revisited
+- **File tree collapsed by default**: Opening a workspace expands only the root level, with subfolders expanded on demand, so huge workspaces no longer render every node at once
+- **Code font unified to the system monospace stack**: Code blocks previously specified JetBrains Mono (not installed on most systems, so it silently fell back anyway); the font is now a centrally defined system monospace variable — consistent across platforms with zero bundle cost. Users who have JetBrains Mono installed can still select it in font settings
+
+### Security
+
+- **Disabled the unused asset protocol**: Since local images switched to base64 inlining, the asset protocol had no consumers while still exposing the full path scope; it is now disabled on both the config and Rust feature sides to shrink the attack surface
+
+### Removed
+
+- Removed the never-read, never-written workspaces table
+
 ## [0.4.4] - 2026-09-10
 
 ### Added

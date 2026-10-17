@@ -6,11 +6,19 @@ import { invoke } from "@tauri-apps/api/core";
  * 标签切换时直接读取缓存恢复，不依赖 DOM。
  */
 const percentageCache = new Map<string, number>();
+const wordCountCache = new Map<string, number>();
 
 /** 更新缓存中某文件的百分比（scroll 事件中调用） */
 export function cacheScrollPercentage(filePath: string, percentage: number) {
   if (filePath) {
     percentageCache.set(filePath, Math.min(100, Math.max(0, percentage)));
+  }
+}
+
+/** 更新缓存中某文件的字数（App 侧 wordCount 变化时调用，供持久化使用，审计 L4） */
+export function cacheWordCount(filePath: string, wordCount: number) {
+  if (filePath) {
+    wordCountCache.set(filePath, wordCount);
   }
 }
 
@@ -31,9 +39,9 @@ export async function flushReadingProgress(filePath: string): Promise<void> {
   await invoke("save_reading_progress", {
     filePath,
     scrollPercentage: percentage,
-    wordCount: 0,
-  }).catch(() => {
-    // 静默失败
+    wordCount: wordCountCache.get(filePath) ?? 0,
+  }).catch((err) => {
+    console.error("Failed to save reading progress:", err);
   });
 }
 
@@ -50,8 +58,10 @@ export async function flushAllReadingProgress(): Promise<void> {
         ? invoke("save_reading_progress", {
             filePath,
             scrollPercentage: percentage,
-            wordCount: 0,
-          }).catch(() => {})
+            wordCount: wordCountCache.get(filePath) ?? 0,
+          }).catch((err) => {
+            console.error("Failed to save reading progress:", err);
+          })
         : Promise.resolve(),
     ),
   );

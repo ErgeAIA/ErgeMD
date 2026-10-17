@@ -3,13 +3,20 @@ import { getTOCContextMenuItems } from "@/components/context-menu/TOCContextMenu
 import { useTOCConfig } from "@/hooks/useActiveConfig";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useFileStore } from "@/stores/fileStore";
-import type { TocItem } from "@/types";
 import { exportHtml } from "@/utils/export";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+interface FloatingTOCItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
 interface FloatingTOCProps {
   scrollContainerRef: React.RefObject<HTMLElement | null>;
+  /** 外部注入的 TOC 列表（虚拟模式传解析器产出的 VirtualTocItem，保证展示与跳转同一份数据）；缺省用 store 的 tocItems */
+  items?: readonly FloatingTOCItem[];
   onScrollToBlock: (blockIndex: number) => void;
   onActiveTocChange?: (tocIndex: number) => void;
 }
@@ -17,9 +24,10 @@ interface FloatingTOCProps {
 const FloatingTOC: React.FC<FloatingTOCProps> = memo(
   ({
     scrollContainerRef,
+    items,
     onScrollToBlock,
     onActiveTocChange,
-  }) => {
+  }: FloatingTOCProps) => {
     const { t } = useTranslation();
     const tocConfig = useTOCConfig();
     const {
@@ -33,7 +41,8 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
       inactiveOpacity,
     } = tocConfig;
 
-    const tocItems = useFileStore((s) => s.tocItems);
+    const storeTocItems = useFileStore((s) => s.tocItems);
+    const tocItems: readonly FloatingTOCItem[] = items ?? storeTocItems;
 
     const [isHovering, setIsHovering] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
@@ -160,7 +169,7 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
 
     // 点击跳转到对应 block
     const handleClick = useCallback(
-      (e: React.MouseEvent | React.KeyboardEvent, item: TocItem) => {
+      (e: React.MouseEvent | React.KeyboardEvent, item: FloatingTOCItem) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -178,7 +187,7 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
     );
 
     const handleItemKeyDown = useCallback(
-      (e: React.KeyboardEvent, item: TocItem) => {
+      (e: React.KeyboardEvent, item: FloatingTOCItem) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           handleClick(e, item);
@@ -188,7 +197,7 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
     );
 
     const handleContextMenu = useCallback(
-      (e: React.MouseEvent, item: TocItem) => {
+      (e: React.MouseEvent, item: FloatingTOCItem) => {
         e.preventDefault();
 
         const items = getTOCContextMenuItems({

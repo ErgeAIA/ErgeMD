@@ -1,5 +1,6 @@
 import { useInteractionConfig } from "@/hooks/useActiveConfig";
 import { useReaderStore } from "@/stores/readerStore";
+import { queryActiveMarkdownBody } from "@/utils/domUtils";
 import React, { memo, useCallback, useEffect, useRef } from "react";
 
 /**
@@ -38,7 +39,7 @@ const SearchBar: React.FC = memo(() => {
 
   // 获取 .markdown-body 的最近可滚动祖先
   const getScrollContainer = useCallback((): HTMLElement | null => {
-    const markdownBody = document.querySelector(".markdown-body");
+    const markdownBody = queryActiveMarkdownBody();
     if (!markdownBody) return null;
     // 向上查找 overflowY: auto 或 scroll 的祖先
     let el: HTMLElement | null = markdownBody.parentElement;
@@ -59,7 +60,7 @@ const SearchBar: React.FC = memo(() => {
 
   // 清除搜索高亮
   const clearHighlights = useCallback(() => {
-    const container = document.querySelector(".markdown-body");
+    const container = queryActiveMarkdownBody();
     if (!container) return;
 
     const highlights = container.querySelectorAll(".search-highlight");
@@ -117,7 +118,7 @@ const SearchBar: React.FC = memo(() => {
       }
 
       // 在 markdown-body 中搜索
-      const container = document.querySelector(".markdown-body");
+      const container = queryActiveMarkdownBody();
       if (!container) {
         setSearchResults([]);
         return;

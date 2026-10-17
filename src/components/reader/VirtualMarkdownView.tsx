@@ -151,7 +151,11 @@ const VirtualMarkdownView = React.forwardRef<
         rafId = null;
         const visibleRange = virtualizer.getVirtualItems();
         if (visibleRange.length > 0) {
-          onActiveBlockChange?.(visibleRange[0].index);
+          // 取视口中部 block：visibleRange[0] 是视口顶部，上一章节尾部仍在
+          // 视口时会高亮错位（恢复 BUG-028 记录的修复，此前被回退）
+          const midItem =
+            visibleRange[Math.floor(visibleRange.length / 2)] ?? visibleRange[0];
+          onActiveBlockChange?.(midItem.index);
 
           const lastVisibleIndex = visibleRange[visibleRange.length - 1].index;
           if (isChunked && lastVisibleIndex >= blocks.length - 5) {

@@ -1,7 +1,7 @@
 import { useActiveConfig } from "@/hooks/useActiveConfig";
 import { useFileStore } from "@/stores/fileStore";
-import { parseMarkdownBlocks } from "@/utils/markdownBlocks";
-import { scheduleScrollCorrection } from "@/utils/scrollToHeading";
+import type { VirtualTocItem } from "@/types/markdownBlock";
+import { jumpToHeadingWithRetry, scheduleScrollCorrection } from "@/utils/scrollToHeading";
 import { Component, memo, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import {
@@ -55,12 +55,9 @@ const ReadingArea = memo(
 
     const useVirtual = lineCount >= config.performance.virtualThreshold;
 
-    // 在虚拟列表模式下，通过 parseMarkdownBlocks 获取带 blockIndex 的 TOC
-    const virtualTocItems = useMemo(() => {
-      if (!useVirtual) return [];
-      const { tocItems } = parseMarkdownBlocks(content);
-      return tocItems;
-    }, [content, useVirtual]);
+    // 虚拟列表模式的 TOC：由 VirtualMarkdownView 的解析器经 onTocReady 上行。
+    // 单一解析源——不再为取 TOC 对全文额外调用一次 parseMarkdownBlocks（审计 M1）
+    const [virtualTocItems, setVirtualTocItems] = useState<VirtualTocItem[]>([]);
 
     // Tab 变为活跃时，立即根据 scroll 位置计算 activeBlockIndex
     useEffect(() => {
@@ -277,6 +274,7 @@ const ReadingArea = memo(
           <TOCErrorBoundary>
             <FloatingTOC
               scrollContainerRef={scrollContainerRef}
+              items={useVirtual ? virtualTocItems : undefined}
               onScrollToBlock={(tocIndex) => {
                   const SCROLL_OFFSET = config.toc.scrollOffset;
                   // 取消上一次的校准任务
@@ -286,28 +284,22 @@ const ReadingArea = memo(
 
                   if (useVirtual) {
                     const targetVirtualTocItem = virtualTocItems[tocIndex];
-                    if (targetVirtualTocItem?.blockIndex !== undefined) {
-                      virtualMarkdownRef.current?.scrollToBlockIndex(
-                        targetVirtualTocItem.blockIndex,
-                      );
-                      requestAnimationFrame(() => {
-                        scrollContainerRef.current?.scrollBy({
-                          top: -SCROLL_OFFSET,
-                          behavior: "smooth",
-                        });
-                        // initial scroll done, schedule correction
-                        const headingId = targetVirtualTocItem.id;
-                        const container = scrollContainerRef.current;
-                        if (headingId && container) {
-                          const isLayoutStable =
-                            Date.now() - docOpenTimeRef.current > 1500;
-                          cancelCorrectionRef.current = scheduleScrollCorrection({
-                            container,
-                            headingId,
-                            scrollOffset: SCROLL_OFFSET,
-                            delays: isLayoutStable ? [200, 500] : [200, 500, 1100],
-                          });
-                        }
+                    const blockIndex = targetVirtualTocItem?.blockIndex;
+                    const headingId = targetVirtualTocItem?.id;
+                    const container = scrollContainerRef.current;
+                    if (blockIndex !== undefined && headingId && container) {
+                      // 近似滚动（smooth）先把目标滚入渲染窗口，再由收敛循环精确校正：
+                      // scrollToIndex 用估算高度，误差大时落点远离目标、目标块未渲染，
+                      // 此时重发 scrollToIndex（测量数据随渲染 refine）而非静默放弃
+                      virtualMarkdownRef.current?.scrollToBlockIndex(blockIndex);
+                      cancelCorrectionRef.current = jumpToHeadingWithRetry({
+                        container,
+                        headingId,
+                        scrollOffset: SCROLL_OFFSET,
+                        onTargetMissing: () =>
+                          virtualMarkdownRef.current?.scrollToBlockIndex(
+                            blockIndex,
+                          ),
                       });
                     }
                   } else {
@@ -386,6 +378,7 @@ const ReadingArea = memo(
                   ref={virtualMarkdownRef}
                   content={content}
                   scrollContainerRef={scrollContainerRef}
+                  onTocReady={setVirtualTocItems}
                   onActiveBlockChange={(index) => {
                     // 正在执行 TOC 跳转滚动时，忽略 IntersectionObserver 的回调
                     if (isScrollingRef.current) return;

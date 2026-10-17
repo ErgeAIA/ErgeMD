@@ -198,25 +198,15 @@ export const useFileStore = create<FileState>()(
         const filtered = state.tabs.filter((t) => t.id !== tabId);
         const updated = { ...tab, pinned: newPinned };
 
-        if (newPinned) {
-          let lastPinnedIndex = -1;
-          for (let i = filtered.length - 1; i >= 0; i--) {
-            if (filtered[i].pinned) {
-              lastPinnedIndex = i;
-              break;
-            }
+        // 固定/取消固定都插到最后一个固定项之后（审计 L6：原 if/else 两分支本完全相同）
+        let lastPinnedIndex = -1;
+        for (let i = filtered.length - 1; i >= 0; i--) {
+          if (filtered[i].pinned) {
+            lastPinnedIndex = i;
+            break;
           }
-          filtered.splice(lastPinnedIndex + 1, 0, updated);
-        } else {
-          let lastPinnedIndex = -1;
-          for (let i = filtered.length - 1; i >= 0; i--) {
-            if (filtered[i].pinned) {
-              lastPinnedIndex = i;
-              break;
-            }
-          }
-          filtered.splice(lastPinnedIndex + 1, 0, updated);
         }
+        filtered.splice(lastPinnedIndex + 1, 0, updated);
 
         set({ tabs: filtered });
       },

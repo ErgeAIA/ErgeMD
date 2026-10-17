@@ -233,3 +233,19 @@ description: >
 - **背景**：AI 协作开发中同义词漂移导致类型/字段/Store 命名不一致
 - **决策**：建立命名字典并全局遵守：类型 `TabInfo`/`ReadingProgress`/`RecentFile`/`FileNode`/`TocItem`/`ThemeMode`/`Language`（不用 Tab/TOCItem/Theme）；Store `useFileStore`/`useReaderStore`/`useSettingsStore`；跨语言字段显式映射（user_id ↔ userId）
 - **验证**：规范已并入 AGENTS.md Conventions「类型与 Store 命名」行
+
+## DEC-031: TOC 单一解析源（大文档跳过 extractTOC，虚拟模式 TOC 由块解析器产出）
+
+- **日期**：2026-10-17
+- **背景**：审计 M1/M2——大文档打开时 extractTOC 全文扫描 + ReadingArea 全文 parseMarkdownBlocks + chunked 初始解析三路并行；且 FloatingTOC 展示用 toc.ts 列表、跳转用 parseMarkdownBlocks 列表，两套标题检测正则有差异，存在索引错位风险
+- **决策**：① 大文档（行数 ≥ virtualThreshold）App 跳过 extractTOC，store tocItems 置空；② ReadingArea 移除自有的全文 parseMarkdownBlocks，virtualTocItems 改由 VirtualMarkdownView 经 onTocReady 上行（chunked 初始解析覆盖 5000~20000 行，绝大多数文档即完整）；③ FloatingTOC 新增 items 注入属性，虚拟模式下展示与跳转共用同一份列表
+- **验证**：lint 通过；待实机验证（大小文档 TOC 显示/跳转/高亮、chunked 渐进 TOC）
+- **已知取舍**：toc.ts 的中文标题 fallback（「第一章 / 一、」等，仅在没有 Markdown 标题时触发）在大文档下不再生效；如遇真实场景再将 fallback 下沉为共享模块
+
+## DEC-032: 阅读区按需常驻（活动 + 固定 + 最近 3 个 Tab）
+
+- **日期**：2026-10-17
+- **背景**：审计 M3——所有 Tab 的 ReadingArea 常驻挂载，各持解析结果与完整 DOM，内存随 Tab 数线性增长
+- **决策**：常驻窗口 = 最近活动的 3 个 + 全部固定 Tab；超出者卸载阅读区，切回时经 percentageCache 恢复滚动位置
+- **验证**：lint 通过；待多 Tab 大文档实测（切换流畅度、滚动恢复）
+- **已知取舍**：非常驻 Tab 切回需重新解析与渲染（首次切换有成本）；固定 Tab 永远常驻，不受上限约束

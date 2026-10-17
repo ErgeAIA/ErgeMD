@@ -29,7 +29,9 @@ interface FileTreeNodeProps {
  */
 const FileTreeNode: React.FC<FileTreeNodeProps> = memo(
   ({ node, depth, onFileSelect }) => {
-    const [isExpanded, setIsExpanded] = useState(true);
+    // 默认折叠（审计 L7）：仅根层（depth 0）默认展开，更深层级按需展开，
+    // 避免大工作区一次性渲染全部节点
+    const [isExpanded, setIsExpanded] = useState(depth === 0);
     const hasChildren = node.children && node.children.length > 0;
     const nodeRef = useRef<HTMLDivElement>(null);
     const {

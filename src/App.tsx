@@ -20,6 +20,7 @@ import SearchBar from "./components/reader/SearchBar";
 import AboutPage from "./components/welcome/AboutPage";
 import EasterEgg from "./components/welcome/EasterEgg";
 import WelcomePage from "./components/welcome/WelcomePage";
+import { useActiveConfig } from "./hooks/useActiveConfig";
 import { useAutoHide } from "./hooks/useAutoHide";
 import { useContextMenu } from "./hooks/useContextMenu";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
@@ -32,13 +33,20 @@ import type { FileNode, TabInfo } from "./types";
 import { exportHtml } from "./utils/export";
 import { exportDocx } from "./utils/exportDocx";
 import { exportPdf, exportPdfGrayscale } from "./utils/exportPdf";
-import { flushAllReadingProgress } from "./utils/readingProgress";
+import { queryActiveMarkdownBody } from "./utils/domUtils";
+import { cacheWordCount, flushAllReadingProgress } from "./utils/readingProgress";
 import { extractTOC } from "./utils/toc";
 import { countWords } from "./utils/wordCount";
+
+/** 常驻 Tab 上限（审计 M3）：活动 + 固定 + 最近活动的 N 个常驻，超出者卸载阅读区 */
+const MAX_RESIDENT_TABS = 3;
 
 function App() {
   // 主题切换 — 自动同步 data-theme 属性到 <html>
   useTheme();
+
+  // 阅读器配置（虚拟滚动阈值等，与 ReadingArea 同一来源）
+  const readerConfig = useActiveConfig();
 
   // 右键菜单
   const {
@@ -87,6 +95,9 @@ function App() {
 
   // 数据库就绪状态（解决 init_database 与 get_recent_files 的竞态条件）
   const [dbReady, setDbReady] = useState(false);
+
+  // 最近活动的 Tab 记录（常驻窗口用，审计 M3）
+  const [recentTabIds, setRecentTabIds] = useState<string[]>([]);
 
   // 初始化数据库（最近文件、阅读进度等持久化功能依赖）
   useEffect(() => {
@@ -177,6 +188,17 @@ function App() {
     };
   }, []);
 
+  // 记录最近活动的 Tab（常驻窗口用，审计 M3）
+  useEffect(() => {
+    if (!activeTabId) return;
+    setRecentTabIds((prev) =>
+      [activeTabId, ...prev.filter((id) => id !== activeTabId)].slice(
+        0,
+        MAX_RESIDENT_TABS,
+      ),
+    );
+  }, [activeTabId]);
+
   // 关窗 / 页面隐藏时 flush 所有 Tab 的阅读进度到数据库
   useEffect(() => {
     const flushAll = () => {
@@ -193,7 +215,8 @@ function App() {
     };
   }, []);
 
-  // TOC：所有文档都由 App.tsx 用 extractTOC 生成
+  // TOC：小文档用 extractTOC 生成；
+  // 大文档（虚拟模式）跳过全文扫描——TOC 由 VirtualMarkdownView 的解析器单源产出（审计 M1/M2）
   useEffect(() => {
     if (!currentContent) {
       setTOCItems([]);
@@ -201,10 +224,17 @@ function App() {
       return;
     }
 
+    const lineCount = currentContent.split(/\r?\n/).length;
+    if (lineCount >= readerConfig.performance.virtualThreshold) {
+      setTOCItems([]);
+      setTOCMeta({ totalLogicalLength: Math.max(lineCount, 1) });
+      return;
+    }
+
     const { items, meta } = extractTOC(currentContent);
     setTOCItems(items);
     setTOCMeta(meta);
-  }, [currentContent, setTOCItems, setTOCMeta]);
+  }, [currentContent, setTOCItems, setTOCMeta, readerConfig.performance.virtualThreshold]);
 
   // 阅读进度
   const { percentage, isScrolling } = useReadingProgress(
@@ -217,6 +247,13 @@ function App() {
     () => countWords(currentContent),
     [currentContent],
   );
+
+  // 字数写入进度缓存，供 flush 时持久化真实 wordCount（审计 L4）
+  useEffect(() => {
+    if (currentFilePath) {
+      cacheWordCount(currentFilePath, wordCount);
+    }
+  }, [currentFilePath, wordCount]);
 
   // StatusBar 透明度控制：鼠标移到底部时显示，离开时淡出
   const [statusBarHovered, setStatusBarHovered] = useState(false);
@@ -363,7 +400,7 @@ function App() {
           if (hasSelection) navigator.clipboard.writeText(selectedText);
         },
         onSelectAll: () => {
-          const markdownBody = document.querySelector(".markdown-body");
+          const markdownBody = queryActiveMarkdownBody();
           if (markdownBody) {
             const range = document.createRange();
             range.selectNodeContents(markdownBody);
@@ -636,6 +673,17 @@ function App() {
     onToggleSidebar: () => setLeftPanelOpen((v) => !v),
   });
 
+  // 常驻 Tab 集合：最近活动的 N 个 + 全部固定 Tab（固定是用户显式保留意图）；
+  // 非常驻 Tab 的阅读区卸载，滚动位置经 percentageCache 在切回时恢复（审计 M3）
+  const residentTabs = React.useMemo(() => {
+    if (!activeTabId) return [];
+    const residentIds = new Set(recentTabIds);
+    for (const tab of tabs) {
+      if (tab.pinned) residentIds.add(tab.id);
+    }
+    return tabs.filter((tab) => residentIds.has(tab.id));
+  }, [tabs, activeTabId, recentTabIds]);
+
   return (
     <AppLayout>
       {/* 窗口边缘拉伸触发区域 */}
@@ -726,7 +774,7 @@ function App() {
         style={{ display: hasOpenFile && !isRestoring ? "block" : "none" }}
       >
         {!isRestoring &&
-          tabs.map((tab) => (
+          residentTabs.map((tab) => (
             <ReadingArea
               key={tab.id}
               filePath={tab.file_path}

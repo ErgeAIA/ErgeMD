@@ -34,7 +34,7 @@
         "frame-src": "'self' blob:"
       },
       "assetProtocol": {
-        "enable": true,
+        "enable": false,
         "scope": [
           "**"
         ]

@@ -17,17 +17,23 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main
-- **阶段**：docs/.ai 历史资产蒸馏与迁移（experience/ 建立 + 三份文档迁入）
+- **当前分支**：fix/audit-round-1（从 main 切出）
+- **阶段**：vibe-audit 修复轮 1（正确性 → 单一解析源 → 按需常驻 → 卫生项）
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
-- **最后更新**：2026-10-17 docs/.ai 资产处置完成
-  - experience/ 建成 5 域 28 条（mermaid / tauri / frontend / markdown / workflow），原料为 ERROR_LOG 53 节 + session-lessons 8 份
-  - ERROR_LOG.md 全本 / TECH-SPEC.md / naming-consistency-guide.md 迁入 docs/agents/
-  - AGENTS.md 指针全部改向 docs/agents；lessons 指针被 experience/ 覆盖后移除（N6 去重）
-  - docs/.ai/ 原文件保留，待用户确认后删除；届时 agents 为唯一过程文档目录
-- **下一步**：用户审核 diff 后提交并双平台推送；确认无误后删除 docs/.ai/
-- **本阶段禁止**：改动项目源码、.trae/rules/、docs/phase/
+- **最后更新**：2026-10-17 审计修复轮 1 代码改动完成（未提交）
+  - H1 chunk 缓存键加文档指纹 + FIFO 淘汰；H2 isTableLine 收紧（BUG-030 修复恢复）；H3 新增 queryActiveMarkdownBody 替换 4 处裸 querySelector
+  - M1/M2 单一解析源：大文档跳过 extractTOC；virtualTocItems 改由 VirtualMarkdownView 经 onTocReady 上行；FloatingTOC 新增 items 注入（DEC-031）
+  - M3 常驻 Tab 上限 = 活动 + 固定 + 最近 3 个，超出者卸载（DEC-032）
+  - L1 关闭零使用 assetProtocol；L2 移除 workspaces 死表；L4 wordCount 真实持久化 + 吞错改 console.error；L6 pinTab 死分支合并；L8 恢复 BUG-028 中部索引
+  - 留痕：debug-log BUG-059~062；decision-log DEC-031/032
+  - lint 全绿（9 个改动文件）；未跑构建/测试，待用户实机验证
+  - 验证通过（用户授权）：pnpm lint 0 错误（36 个存量 warning 均不在改动文件）、tsc --noEmit 通过、vitest 24/24 通过、cargo check 通过
+  - L7 默认折叠完成：FileTreeNode 仅根层（depth 0）默认展开，更深层级按需展开
+  - BUG-063 修复（用户实测反馈）：虚拟模式 TOC 跳转改收敛循环（scrollToHeading.ts 新增 jumpToHeadingWithRetry：目标未渲染重发 scrollToIndex，已渲染按实测位置 auto 校正至收敛），替换原定点补救
+- **下一步**：用户本地验证（`pnpm tauri dev`：多 Tab 搜索/切换、大小文档 TOC、大文档打开速度）→ 提交到 fix/audit-round-1 → 合并 main → 双平台推送
+- **本阶段禁止**：改动 .trae/rules/、docs/phase/
+- **本轮有意 deferred**：L3 db_pool 直注（需 cargo check，构建需授权）、L5 App.tsx 拆分（独立重构）、L7 文件树虚拟化（UX 变更待定）、H3 后半「搜索走数据层」（功能级改动）
 
 ## 已知未决事项（迁移时从历史交接文档回收，均待处理）
 

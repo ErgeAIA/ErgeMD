@@ -71,7 +71,16 @@ function isListStart(line: string): boolean {
 
 function isTableLine(line: string): boolean {
   const trimmed = line.trim();
-  return /^\|/.test(trimmed) || /\|/.test(trimmed);
+  // BUG-030：不能凭"含 | 字符"判定表格——普通文本中的管道符（a | b、shell 管道）
+  // 曾把段落误并入表格块导致 block 膨胀。要求以 | 开头/结尾，
+  // 或去掉行内代码后仍至少有 2 个 |。
+  if (/^\|/.test(trimmed) || /\|$/.test(trimmed)) return true;
+  const pipeCount = (trimmed.match(/\|/g) || []).length;
+  if (pipeCount >= 2) {
+    const stripped = stripInlineCode(trimmed);
+    return (stripped.match(/\|/g) || []).length >= 2;
+  }
+  return false;
 }
 
 function isHtmlBlockStart(line: string): {
@@ -509,15 +518,22 @@ export function parseMarkdownBlocks(markdown: string): {
 }
 
 const CHUNK_PARSE_CACHE = new Map<string, MarkdownBlock[]>();
+const CHUNK_CACHE_MAX_SIZE = 50;
 
+/**
+ * chunk 缓存键：文档指纹 + 行范围 + 首末行长度。
+ * 文档指纹（行数 + 总字符数）是必须的——缺少它时，不同文档在相同行范围
+ * 且首末行长度相同会命中同一条目，返回对方的 blocks（跨文档碰撞）。
+ */
 function buildChunkCacheKey(
   lines: string[],
   startLine: number,
   endLine: number,
+  docFingerprint: string,
 ): string {
   const firstLine = lines[startLine] ?? "";
   const lastLine = lines[endLine] ?? "";
-  return `${startLine}-${endLine}:${firstLine.length}:${lastLine.length}`;
+  return `${docFingerprint}:${startLine}-${endLine}:${firstLine.length}:${lastLine.length}`;
 }
 
 function parseChunk(
@@ -526,13 +542,14 @@ function parseChunk(
   endLine: number,
   slugger: GithubSlugger,
   baseBlockIndex: number,
+  docFingerprint: string,
 ): {
   blocks: MarkdownBlock[];
   tocItems: VirtualTocItem[];
   refDefLines: string[];
   nextLine: number;
 } {
-  const cacheKey = buildChunkCacheKey(lines, startLine, endLine);
+  const cacheKey = buildChunkCacheKey(lines, startLine, endLine, docFingerprint);
   const cached = CHUNK_PARSE_CACHE.get(cacheKey);
   if (cached) {
     const tocItems: VirtualTocItem[] = [];
@@ -921,6 +938,11 @@ function parseChunk(
   }
 
   CHUNK_PARSE_CACHE.set(cacheKey, blocks);
+  // FIFO 淘汰：Map 保持插入顺序，超容量时删最旧条目，防止无上限增长
+  if (CHUNK_PARSE_CACHE.size > CHUNK_CACHE_MAX_SIZE) {
+    const oldestKey = CHUNK_PARSE_CACHE.keys().next().value;
+    if (oldestKey !== undefined) CHUNK_PARSE_CACHE.delete(oldestKey);
+  }
 
   return { blocks, tocItems, refDefLines: refDefs, nextLine: i };
 }
@@ -948,6 +970,8 @@ export function parseMarkdownBlocksChunked(
   if (typeof markdown !== "string") markdown = "";
   const lines = markdown.split(/\r?\n/);
   const totalLines = lines.length;
+  // 文档指纹：行数 + 总字符数（+1 补每行换行）。仅用于隔离 chunk 缓存，不做内容寻址
+  const docFingerprint = `${lines.length}:${lines.reduce((sum, l) => sum + l.length + 1, 0)}`;
   const config = options?.performanceConfig ?? DefaultReaderConfig.performance;
   const initialLinesCount = options?.initialLines ?? config.initialParseLines;
   const chunkSize = options?.chunkSize ?? config.chunkSize;
@@ -959,7 +983,7 @@ export function parseMarkdownBlocksChunked(
     blocks: initialBlocks,
     tocItems: initialTocItems,
     refDefLines,
-  } = parseChunk(lines, 0, initialEndLine, slugger, 0);
+  } = parseChunk(lines, 0, initialEndLine, slugger, 0, docFingerprint);
 
   let currentParseLine = initialEndLine + 1;
   const accumulatedSlugger = slugger;
@@ -987,6 +1011,7 @@ export function parseMarkdownBlocksChunked(
       endLine,
       accumulatedSlugger,
       currentBlockCount,
+      docFingerprint,
     );
 
     currentParseLine = nextLine;
