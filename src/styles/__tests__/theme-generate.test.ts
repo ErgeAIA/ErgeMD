@@ -3,7 +3,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import light from "../../../scripts/theme/sources/light.js";
 import dark from "../../../scripts/theme/sources/dark.js";
-import { ROOT, STYLES, parseDeclarations } from "./theme-test-utils";
+import { buildTokens, render } from "../../../scripts/theme/generate-themes.js";
+import { ROOT, STYLES, parseDeclarations, readTheme } from "./theme-test-utils";
 
 /**
  * 收集 src 下消费的 token：
@@ -82,6 +83,54 @@ describe("theme generate", () => {
     it(`${theme}: 源色表透传值全部逐字出现在生成物中（黄金往返）`, () => {
       for (const [key, value] of Object.entries(src.passthrough)) {
         expect(defined[key], `${theme} 缺透传 ${key}`).toBe(value);
+      }
+    });
+  }
+
+  it("生成物与脚本输出逐字一致（--check 的 vitest 等价门禁，手改即红）", () => {
+    for (const [src, name] of [
+      [light, "light"],
+      [dark, "dark"],
+    ] as const) {
+      const current = readFileSync(join(STYLES, "themes", `${name}.css`), "utf8");
+      const eol = current.includes("\r\n") ? "\r\n" : "\n";
+      expect(current, `${name}.css 与源色表不一致`).toBe(
+        render(name, buildTokens(src), eol),
+      );
+    }
+  });
+});
+
+describe("全部 14 套主题的 chart-text-on-fill 存在性", () => {
+  const allThemes = readdirSync(join(STYLES, "themes"))
+    .filter((f) => f.endsWith(".css"))
+    .map((f) => f.replace(/\.css$/, ""));
+
+  /** 族 base：light/solarized-light 走亮色 base，其余 12 套走暗色 base */
+  const baseOf = (theme: string) =>
+    ["light", "solarized-light"].includes(theme)
+      ? parseDeclarations(readFileSync(join(STYLES, "themes/core/theme-light-base.css"), "utf8"))
+      : parseDeclarations(readFileSync(join(STYLES, "themes/core/theme-dark-base.css"), "utf8"));
+
+  /** 有效值：主题自有 → 族 base，解析一层 var() 间接 */
+  const effective = (theme: string, key: string, depth = 0): string | undefined => {
+    if (depth > 4) return undefined;
+    for (const layer of [readTheme(theme), baseOf(theme)]) {
+      const v = layer[key];
+      if (v === undefined) continue;
+      const m = v.match(/^var\(--([a-z0-9-]+)\)$/);
+      return m ? effective(theme, m[1], depth + 1) : v;
+    }
+    return undefined;
+  };
+
+  for (const theme of allThemes) {
+    it(`${theme}: chart-text-on-fill-0..7 均有效定义`, () => {
+      for (let i = 0; i < 8; i++) {
+        expect(
+          effective(theme, `chart-text-on-fill-${i}`),
+          `${theme} 缺 chart-text-on-fill-${i}（var() 将解析为空 → 消费方退化为硬编码兜底）`,
+        ).toBeDefined();
       }
     });
   }

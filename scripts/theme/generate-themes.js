@@ -7,13 +7,18 @@
  *
  * 派生规则见 docs/theme-token-contract-design.md 第 6 节，及 SDD 台账裁决
  * R11（派生范围）/ R12（分隔线统一派生）/ R13（fillBand 出处）。
+ *
+ * 模块同时导出 buildTokens/render 供 vitest 一致性门禁使用（不产生副作用）；
+ * 仅当被直接执行时才运行 CLI。
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import * as cs from "./color-science.js";
 import light from "./sources/light.js";
 import dark from "./sources/dark.js";
+
+export { buildTokens, render };
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -162,26 +167,34 @@ function render(name, tokens, eol) {
 }
 
 const THEMES = [light, dark];
-const check = process.argv.includes("--check");
-let ok = true;
-for (const src of THEMES) {
-  const tokens = buildTokens(src);
-  const count = Object.keys(tokens).length;
-  const path = join(ROOT, "src/styles/themes", `${src.name}.css`);
-  // 沿用文件现行换行符，避免无意义的全量 diff
-  const current = existsSync(path) ? readFileSync(path, "utf8") : "";
-  const eol = current.includes("\r\n") ? "\r\n" : "\n";
-  const css = render(src.name, tokens, eol);
-  if (check) {
-    if (current !== css) {
-      console.error(`[theme:generate] ${src.name}.css 与源色表不一致——请运行 pnpm theme:generate`);
-      ok = false;
-    } else {
-      console.log(`[theme:generate] ${src.name}.css 一致（${count} tokens）`);
-    }
-  } else {
-    writeFileSync(path, css);
-    console.log(`[theme:generate] 已生成 ${src.name}.css（${count} tokens）`);
-  }
+
+/** 是否被直接执行（node scripts/theme/generate-themes.js） */
+function isMain() {
+  return process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 }
-process.exit(ok ? 0 : 1);
+
+if (isMain()) {
+  const check = process.argv.includes("--check");
+  let ok = true;
+  for (const src of THEMES) {
+    const tokens = buildTokens(src);
+    const count = Object.keys(tokens).length;
+    const path = join(ROOT, "src/styles/themes", `${src.name}.css`);
+    // 沿用文件现行换行符，避免无意义的全量 diff
+    const current = existsSync(path) ? readFileSync(path, "utf8") : "";
+    const eol = current.includes("\r\n") ? "\r\n" : "\n";
+    const css = render(src.name, tokens, eol);
+    if (check) {
+      if (current !== css) {
+        console.error(`[theme:generate] ${src.name}.css 与源色表不一致——请运行 pnpm theme:generate`);
+        ok = false;
+      } else {
+        console.log(`[theme:generate] ${src.name}.css 一致（${count} tokens）`);
+      }
+    } else {
+      writeFileSync(path, css);
+      console.log(`[theme:generate] 已生成 ${src.name}.css（${count} tokens）`);
+    }
+  }
+  process.exit(ok ? 0 : 1);
+}

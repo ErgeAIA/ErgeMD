@@ -969,6 +969,15 @@ function getMermaidThemeSignature(): string {
     "--mermaid-mindmap-branch-line-2",
     "--mermaid-mindmap-branch-line-3",
     "--mermaid-mindmap-branch-line-4",
+    // 思维导图节点文字直接消费 text-on-fill（经 l*-text 链），入签名保证缓存正确失效
+    "--chart-text-on-fill-0",
+    "--chart-text-on-fill-1",
+    "--chart-text-on-fill-2",
+    "--chart-text-on-fill-3",
+    "--chart-text-on-fill-4",
+    "--chart-text-on-fill-5",
+    "--chart-text-on-fill-6",
+    "--chart-text-on-fill-7",
     // Mermaid Sequence
     "--mermaid-sequence-actor-bg",
     "--mermaid-sequence-actor-border",
