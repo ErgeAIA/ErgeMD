@@ -1,144 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { useFileStore } from "@/stores/fileStore";
+import { useReaderStore } from "@/stores/readerStore";
 import { renderMermaidForExport } from "@/components/reader/MermaidDiagram";
 import { decodeBlockDataRaw } from "@/utils/quickEditLines";
+import { buildExportStyles } from "./exportStyles";
 
 export interface ExportHtmlOptions {
   inlineCss?: boolean;
   sectionId?: string;
   grayscale?: boolean;
-}
-
-const CSS_VARIABLE_NAMES = [
-  "bg-page",
-  "bg-reader",
-  "bg-sidebar",
-  "bg-code",
-  "text-primary",
-  "text-secondary",
-  "text-muted",
-  "text-heading",
-  "h2-color",
-  "h3-color",
-  "h4-color",
-  "accent-cyan",
-  "accent-pink",
-  "accent-purple",
-  "accent-green",
-  "accent-yellow",
-  "accent-orange",
-  "accent-red",
-  "divider",
-  "hover-bg",
-];
-
-const GRAYSCALE_OVERRIDES: Record<string, string> = {
-  "bg-page": "#ffffff",
-  "bg-reader": "#ffffff",
-  "bg-sidebar": "#f5f5f5",
-  "bg-code": "#f5f5f5",
-  "text-primary": "#1a1a1a",
-  "text-secondary": "#4a4a4a",
-  "text-muted": "#808080",
-  "text-heading": "#000000",
-  "h2-color": "#1a1a1a",
-  "h3-color": "#1a1a1a",
-  "h4-color": "#1a1a1a",
-  "accent-cyan": "#0066cc",
-  "accent-pink": "#cc3366",
-  "accent-purple": "#6633cc",
-  "accent-green": "#2d7d46",
-  "accent-yellow": "#998800",
-  "accent-orange": "#cc6600",
-  "accent-red": "#cc3333",
-  "divider": "#cccccc",
-  "hover-bg": "#e8e8e8",
-};
-
-function collectCssVariables(
-  grayscale: boolean,
-): Record<string, string> {
-  const computedStyle = getComputedStyle(document.documentElement);
-  const result: Record<string, string> = {};
-
-  for (const name of CSS_VARIABLE_NAMES) {
-    if (grayscale) {
-      result[name] = GRAYSCALE_OVERRIDES[name] ?? "#888888";
-    } else {
-      result[name] = computedStyle.getPropertyValue(`--${name}`).trim();
-    }
-  }
-
-  return result;
-}
-
-function buildInlineStyles(
-  cssVariables: Record<string, string>,
-  inlineCss: boolean,
-  forPdf: boolean = false,
-): string {
-  if (!inlineCss) return "";
-
-  const pageRules = forPdf
-    ? `@page { size: A4; margin: 15mm 20mm; }`
-    : "";
-
-  const bodyExtra = forPdf
-    ? `    print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
-    background-color: var(--bg-page) !important;
-    color: var(--text-primary) !important;`
-    : "";
-
-  const pdfCodeStyles = forPdf
-    ? `  pre {
-    background: var(--bg-code);
-    border-radius: 8px;
-    padding: 1em;
-    white-space: pre-wrap !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    overflow-x: visible !important;
-  }
-  pre code {
-    white-space: pre-wrap !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-  }`
-    : `  pre { background: var(--bg-code); border-radius: 8px; padding: 1em; overflow-x: auto; }`;
-
-  return `<style>
-  ${pageRules}
-  :root {
-    ${CSS_VARIABLE_NAMES.map((name) => `--${name}: ${cssVariables[name]};`).join("\n    ")}
-  }
-  *, *::before, *::after {
-    ${forPdf ? `print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;` : ""}
-  }
-  html, body {
-    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
-    background-color: var(--bg-page) !important;
-    color: var(--text-primary) !important;
-    line-height: 1.8;
-    max-width: 800px;
-    margin: 2em auto;
-    padding: 0 2em;
-${bodyExtra}
-  }
-  ${pdfCodeStyles}
-  code { font-family: "Cascadia Code", "Fira Code", Consolas, monospace; }
-  a { color: var(--accent-cyan); }
-  blockquote { border-left: 3px solid var(--accent-purple); padding: 0.5em 1em; color: var(--text-secondary); }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid var(--divider); padding: 0.5em 1em; }
-  img { max-width: 100%; page-break-inside: avoid; }
-  h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
-  pre, table { page-break-inside: avoid; }
-</style>`;
 }
 
 function extractHtmlContent(
@@ -161,12 +32,11 @@ function extractHtmlContent(
 }
 
 /**
- * 导出前补救渲染未渲染的 mermaid block。
+ * 导出前补救渲染未渲染的 mermaid block（安全网）。
  *
- * 虚拟滚动 + IntersectionObserver 懒加载场景下，不可见区域的 mermaid block
- * 在 DOM 中只有 placeholder（无 SVG），直接复制 innerHTML 导出会丢失图表。
- * 此函数遍历所有 `data-block-type="mermaid"` 元素，对未渲染（不含 svg）的
- * block 从 `data-raw` 提取 chart 代码并同步渲染，将 SVG 注入 DOM。
+ * 当 exportMode 为真时，VirtualMarkdownView 会渲染全部 block，且 MermaidDiagram
+ * 会立即渲染（跳过 IntersectionObserver），绝大多数 mermaid 已在 DOM 中带 svg。
+ * 此函数作为兜底：对仍然缺 svg 的 mermaid block 从 data-raw 提取 chart 同步渲染。
  */
 async function renderUnrenderedMermaidBlocks(): Promise<void> {
   const mermaidBlocks = document.querySelectorAll<HTMLDivElement>(
@@ -175,8 +45,17 @@ async function renderUnrenderedMermaidBlocks(): Promise<void> {
   const renderTasks: Promise<void>[] = [];
 
   mermaidBlocks.forEach((block) => {
-    // 已渲染（包含 svg）则跳过
-    if (block.querySelector("svg")) return;
+    // 已正常渲染则跳过；无 svg（错误占位）或 mermaid 解析失败的错误炸弹图
+    // （svg 文本含 "Syntax error in text" / "mermaid version"）都视为未渲染，
+    // 需要重渲染补救，避免错误炸弹进入导出产物。
+    const existingSvg = block.querySelector("svg");
+    if (existingSvg) {
+      const svgText = existingSvg.textContent ?? "";
+      const isErrorBomb =
+        svgText.includes("Syntax error in text") ||
+        svgText.includes("mermaid version");
+      if (!isErrorBomb) return;
+    }
 
     const rawAttr = block.getAttribute("data-raw");
     if (!rawAttr) return;
@@ -225,17 +104,69 @@ function safeDecodeUri(s: string): string {
   }
 }
 
+/**
+ * 等待离屏/懒渲染的图表（mermaid、plantuml）完成渲染。
+ * 代码高亮为同步渲染，无需在此等待。
+ */
+async function waitForExportRender(timeoutMs = 15000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const blocks = document.querySelectorAll(
+      '[data-block-type="mermaid"], [data-block-type="plantuml"]',
+    );
+    let pending = 0;
+    blocks.forEach((b) => {
+      if (!b.querySelector("svg")) pending++;
+    });
+    if (pending === 0) return;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+}
+
+/**
+ * 复制应用根节点（documentElement）的主题相关属性到导出 <html>。
+ * 应用 CSS 中的主题作用域规则（如 .dark、[data-theme="..."]）依赖这些属性，
+ * 不复制则注入的 CSSOM 中对应规则无法命中。
+ */
+function buildRootAttributes(): string {
+  const el = document.documentElement;
+  let attrs = "";
+  const cls = el.getAttribute("class");
+  if (cls) attrs += ` class="${cls}"`;
+  const theme = el.getAttribute("data-theme");
+  if (theme) attrs += ` data-theme="${theme}"`;
+  return attrs;
+}
+
+/**
+ * 从捕获到的 DOM 片段中剔除 data-raw 属性。
+ *
+ * data-raw 只服务 App 内的快捷编辑（行号 + 源码定位），浏览器里毫无用处：
+ * 1. 它会把原始 Markdown 源码（含 mermaid 图表源码）带进导出产物——体积膨胀，
+ *    且外部阅读器可能读取它、用它自己的 mermaid 重新渲染（表现为"版本号错误炸弹"）；
+ * 2. 属于阅读器内部元数据，不应出现在交付物里。
+ * 用克隆节点处理，不影响 App 自身的 DOM（快捷编辑仍可用）。
+ */
+function stripInternalMetadata(html: string): string {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  template.content.querySelectorAll("[data-raw]").forEach((el) => {
+    el.removeAttribute("data-raw");
+  });
+  return template.innerHTML;
+}
+
 function generateHtmlContent(
   containerSelector: string = ".markdown-body",
   options: ExportHtmlOptions = {},
 ): string {
   const { inlineCss = true, sectionId, grayscale = false } = options;
-  const htmlContent = extractHtmlContent(containerSelector, sectionId);
-  const cssVariables = collectCssVariables(grayscale);
-  const inlineStyles = buildInlineStyles(cssVariables, inlineCss, false);
+  const rawHtml = extractHtmlContent(containerSelector, sectionId);
+  const htmlContent = stripInternalMetadata(rawHtml);
+  const inlineStyles = buildExportStyles({ inlineCss, grayscale, forPdf: false });
 
   return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN"${buildRootAttributes()}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -243,7 +174,9 @@ function generateHtmlContent(
   ${inlineStyles}
 </head>
 <body>
+  <div class="markdown-body">
   ${htmlContent}
+  </div>
 </body>
 </html>`;
 }
@@ -257,10 +190,30 @@ export async function exportHtml(
     ? fileStore.currentFilePath.split(/[/\\]/).pop()?.replace(/\.[^.]+$/, "") || "export"
     : "export";
 
-  // 补救渲染虚拟滚动下未渲染的 mermaid block，避免导出 HTML 丢失图表
-  await renderUnrenderedMermaidBlocks();
+  // 进入导出模式：VirtualMarkdownView 渲染全部 block，CodeBlock / MermaidDiagram /
+  // PlantUMLDiagram 跳过 IntersectionObserver 立即渲染，确保离屏内容（尤其 mermaid）
+  // 进入导出产物，且代码块同步高亮。
+  const readerStore = useReaderStore.getState();
+  readerStore.setExportMode(true);
 
-  const fullHtml = generateHtmlContent(containerSelector, options);
+  let fullHtml: string;
+  try {
+    // 等待 React 提交完整（非虚拟化的）渲染
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    // 等待异步图表（mermaid / plantuml）渲染完成
+    await waitForExportRender();
+
+    // 安全网：补救任何仍未渲染的 mermaid block（含错误炸弹图）
+    await renderUnrenderedMermaidBlocks();
+
+    fullHtml = generateHtmlContent(containerSelector, options);
+  } finally {
+    // 退出导出模式，恢复阅读视图（VirtualMarkdownView 会复原滚动位置）。
+    // finally 保证即使捕获阶段抛异常也不会卡死在导出模式。
+    readerStore.setExportMode(false);
+  }
 
   const filePath = await save({
     filters: [{ name: "HTML", extensions: ["html"] }],

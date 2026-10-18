@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
 import { sanitizeSvg } from "../../utils/sanitizeSvg";
+import { useReaderStore } from "@/stores/readerStore";
 
 import vizGlobalUrl from "@plantuml/core/viz-global.js?url";
 
@@ -215,6 +216,7 @@ const PlantUMLDiagram: React.FC<PlantUMLDiagramProps> = memo(
     const lastContextMenuTime = useRef(0);
     const { getResolvedTheme } = useTheme();
     const { t } = useTranslation();
+    const exportMode = useReaderStore((s) => s.exportMode);
 
     const resolvedTheme = getResolvedTheme();
     const isDark = isDarkByTheme(resolvedTheme);
@@ -226,6 +228,11 @@ const PlantUMLDiagram: React.FC<PlantUMLDiagramProps> = memo(
     });
 
     useEffect(() => {
+      // 导出模式：跳过 IntersectionObserver 懒渲染，立即渲染（离屏图表必须进入产物）
+      if (exportMode) {
+        setIsVisible(true);
+        return;
+      }
       const el = containerRef.current;
       if (!el) return;
 
@@ -241,7 +248,7 @@ const PlantUMLDiagram: React.FC<PlantUMLDiagramProps> = memo(
 
       observer.observe(el);
       return () => observer.disconnect();
-    }, []);
+    }, [exportMode]);
 
     useEffect(() => {
       if (!isVisible) return;

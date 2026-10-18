@@ -1,7 +1,7 @@
 ---
 author: B站🔥宝藏二哥AIA
 description: ErgeMD Markdown 阅读器的完整语法测试文档，用于验证标题、段落、列表、代码块、表格、引用、Mermaid 图表等所有支持的 Markdown 特性在多主题下的渲染效果。
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # Markdown 完整语法测试文档
@@ -939,7 +939,7 @@ gitGraph
 
 ### 6.13 [思维导图](https://mermaid.js.org/syntax/mindmap.html)
 
-检查要点：多级节点配色统一；中心节点文字与背景对比充足（历史踩坑点，切换主题复查）。
+检查要点：多级节点配色统一；中心节点文字与背景对比充足（历史踩坑点，切换主题复查）；布局默认为发散（放射），可在阅读选项中切换为层级树——mermaid 12 的思维导图布局受顶层 layout 配置影响，应用已按设置放行（默认 radial / 可选 dagre 层级树）。
 
 ```mermaid
 mindmap

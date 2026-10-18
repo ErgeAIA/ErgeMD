@@ -49,6 +49,9 @@ export type ThemeMode =
 type Language = "zh-CN" | "en-US" | "auto";
 
 // ===== 阅读设置类型 =====
+// ===== Mermaid 思维导图布局：radial=发散放射（cose-bilkent）/ tree=层级树（dagre） =====
+export type MindmapLayout = "radial" | "tree";
+
 export interface ReadingSettings {
   fontFamily: string;
   fontSize: number;
@@ -59,6 +62,7 @@ export interface ReadingSettings {
   theme: ThemeMode;
   language: Language;
   autoSaveProgress: boolean;
+  mindmapLayout: MindmapLayout;
 }
 
 // ===== Toast 消息类型（Phase 4 Task 1） =====

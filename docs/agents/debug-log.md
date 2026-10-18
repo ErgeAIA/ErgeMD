@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-10-17
+updated: 2026-10-18
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -544,3 +544,11 @@ description: >
 - **修复**：缓存键 `_version` v36 → v37 一次性作废旧键；`look: "classic"` 钉位（阅读 + 导出两处 initialize）对全部图表类型彻底消除阴影（浏览器实测验证）
 - **验证限制**：需实机确认切 Tab 无残留、14 主题下各类图无污影
 - **教训**：渲染引擎大版本升级必须同步 bump 自建渲染缓存的版本键，否则旧配置产出的缓存会跨版本复用；外观类默认值变更（neo / redux-color）要以钉位冻结，并在真实浏览器用 `getComputedStyle` 验证，不能只读文档
+
+## BUG-066: HTML 导出丢内容与丢样式（mermaid 整段缺失 / 代码无高亮 / Properties 布局塌陷）
+- **日期**：2026-10-18（用户实测报告；当日定位并修复）
+- **现象**：`MarkdownSyntaxExample.md` 导出 HTML 后：① mermaid 章节整段缺失（全文 0 个 `<svg>`）；② 代码块（YAML 等）退化为单色纯文本；③ 标题/列表/表格/引用等主题排版大量丢失；④ Obsidian frontmatter「Properties」键与值换行堆叠；⑤ 中途一次导出全部 mermaid 变成 `Syntax error in text — mermaid version 11.16.0` 错误炸弹图
+- **根因**：四层叠加。① `VirtualMarkdownView` 用 `@tanstack/react-virtual`，离屏块不进 DOM，而 `export.ts` 直接复制 `.markdown-body` 的 `innerHTML`；旧 `renderUnrenderedMermaidBlocks` 只能救「已在 DOM 但无 svg」的块，对已被卸载的块无效。② `CodeBlock` / `MermaidDiagram` / `PlantUMLDiagram` 均以 IntersectionObserver 门控渲染，即便把块挂上 DOM，离屏也不会渲染。③ 导出 `<style>` 是手写的 22 个 CSS 变量 + 少量基础规则：`--code-keyword/string/number/comment/function` 不在白名单（`.hljs-*` 配色全靠它们），`markdown.css` 与组件级 CSS（`obsidian.css`）均未注入。④ 批量导出一次挂载 31 张图并行首渲染，存在懒加载图表模块竞态导致 parse 失败并产出错误炸弹 svg，而就绪轮询只判断「有无 svg」，把炸弹当成功捕获
+- **修复**：① `readerStore` 新增 `exportMode`；`VirtualMarkdownView` 导出模式改为对 `content` 全量解析并渲染全部 block（绕开 chunk 增量），进出时保存/恢复滚动位置；② 三个懒渲染组件在导出模式跳过 IO 立即渲染；③ `exportHtml`：置 `exportMode` → 双 rAF → `waitForExportRender` 轮询 svg 就绪 → 补救未渲染块 → 复制 → `finally` 复原（异常也不卡死）；④ 新增 `utils/exportStyles.ts`：`collectAllCssVariables` 全量收集 `documentElement` 与 `.markdown-body` 的 `--*`，`serializeAppStylesheets` 序列化整个 CSSOM 注入，shell 中和应用全局样式副作用（`overflow`/`height`/`user-select`），导出 `<html>` 复制根节点 `class`/`data-theme`；⑤ `MermaidDiagram` 渲染失败做最多 2 次退避重试（走完整主题管线，配色不漂移）；⑥ 导出侧把含 `Syntax error in text` 的错误炸弹 svg 也视为未渲染并触发重渲染；⑦ PDF 路径 `generateExportHtml.ts` 复用同一套全量变量与 markdown.css
+- **验证限制**：实机已核一轮（`MarkdownSyntaxExample2.html`：31 张图齐全、0 炸弹、15 个 hljs 代码块分色、Properties 同行）；仍待实机确认多主题、超大文档导出耗时（轮询上限 15s）与产物体积接受度（当前约 3MB，来自全量 CSSOM）
+- **教训**：DOM 复制导出的三条硬约束——(a) 内容必须先在 DOM 全部挂载并解除懒渲染门控，复制才有意义；(b) CSS 必须来自 CSSOM 全量而非手写白名单，任何组件级 CSS（本次是 `obsidian.css`）都会漏；(c) 就绪判定不能只看「有没有 svg」，错误炸弹也是 svg。另：大批量渲染存在瞬时竞态，退避重试优于放任失败；改前不要用「第三方产物观感」当基准（同期对比的 Tabbit 浏览器导出为独立渲染器产物，无 ErgeMD 主题/高亮/Properties，属残缺而非更优）

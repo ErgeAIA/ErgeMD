@@ -87,10 +87,11 @@ interface CodeBlockProps {
 
 const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
   const interactionConfig = useInteractionConfig();
+  const exportMode = useReaderStore((s) => s.exportMode);
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editCode, setEditCode] = useState(code);
-  const [isHighlighted, setIsHighlighted] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(exportMode);
   const codeRef = useRef<HTMLDivElement>(null);
   const {
     menuState,
@@ -101,6 +102,11 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
   } = useContextMenu();
 
   useEffect(() => {
+    // 导出模式：跳过 IntersectionObserver 懒渲染，立即高亮（离屏代码块也需上色）
+    if (exportMode) {
+      setIsHighlighted(true);
+      return;
+    }
     const el = codeRef.current;
     if (!el) return;
 
@@ -119,7 +125,7 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [exportMode]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

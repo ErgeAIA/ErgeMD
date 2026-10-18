@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-10-17
+updated: 2026-10-18
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -257,3 +257,19 @@ description: >
 - **决策**：① mermaid 11.16.1 → 12.2.0，@mermaid-js/mermaid-zenuml 0.2.3 → 1.0.1（peer 已支持 ^12，导出形态仍为 default，注册代码兼容）；② 两处 `mermaid.initialize`（阅读 + 导出）钉 `layout: "dagre"` + `look: "classic"`，冻结 12.0 的默认布局/外观变更——本项目三层主题适配与 SVG 后处理按 11.x 的 DOM 结构校准，ELK/neo 的尝鲜另行单独评估；③ 已知代价并已在变更日志声明：新引擎要求 Safari 17.4+，macOS 12 Monterey（2021）起正常，macOS 11 Big Sur（2020）及更早图表不可用（用户确认 macOS 用户量少，接受降级；minimumSystemVersion 暂维持 10.15 不变）；mermaid chunk 6MB → 8.2MB（ELK 内置且无法从标准包导入剔除，动态加载，gzip 约 2.2MB），`chunkSizeWarningLimit` 调至 8500
 - **验证**：lint 0 错误、tsc 通过、vitest 24/24、vite build 通过（无 chunk 警告）；ZenUML 注册与导出形态已核查兼容
 - **待办**：14 主题 × 图表类型视觉回归需用户实机确认（MarkdownSyntaxExample.md 全图表走查）；通过后再走一轮 vibe-distill 更新 experience/mermaid 的版本前提
+
+## DEC-035: 主题色板契约重构（三层分权 + 源色表 + 图表四层 + 对比度门禁）
+
+- **日期**：2026-10-18
+- **背景**：用户提出从第一性原理审查配色体系——14 套主题手写约 60 变量漂移不可控；cyberpunk 类主题高彩度/发光长读疲劳（用户实证）；图表 fill 与文字色无绑定，实测暗色下思维导图 18 个彩色节点对比度无一达 4.5:1；导出公众号要求内联字面量。经两轮可视化对比（思维导图配色规则、正文元素分界）与用户逐屏确认（均选 A）
+- **决策**：完整方案见 `docs/theme-token-contract-design.md`（待评审）。核心：① 三层分权（UI 外壳高唤醒 / 正文画布低唤醒 / 代码高亮保留 VS Code 原配）；② 标题为主题身份主战场，六级保留色相但过 ≥4.5:1 护栏；功能位（链接/行内代码/表头/引用/序号）带色过护栏，正文与分隔线近中性；③ 图表色板扩第四层 text-on-fill-N，类别色相封顶 6（仅限承载文字的并置类别）、层级用明度；④ 每主题只交源色（画布阶/墨色阶/主强调/标题色阶/代码原配），其余规则推导；⑤ 对比度门禁进 vitest（解析 CSS 源文本 + 自实现 WCAG，不新增依赖）；⑥ 第一阶段 = 契约表 + 公式 + 门禁 + light/dark 基准，完成即停
+- **验证**：设计文档经独立 builder 检查（7 问，6 问已在项目约束内定断并记录于文档第 11 节）；1 项开放问题（派生色构建期生成 vs 运行时注入）待用户定夺后进入计划阶段
+- **已知取舍**：门禁不覆盖 UI 外壳（D1 授权高唤醒，显式豁免清单）；主题文件可能变为生成物（取决于开放问题的答案，需为 AGENTS.md「禁整文件重写」开生成物例外）
+
+## DEC-034: mindmap 布局按设置放行（radial 默认 / dagre 层级树可选）
+
+- **日期**：2026-10-18
+- **背景**：DEC-033 全局钉 `layout: "dagre"` 冻结布局后，用户反馈 6.13 思维导图从升级前的发散放射状变成层级树。核查 12.2.0 源码：mindmap 渲染器仅在顶层 `layout` **未被用户定义**时才启用默认的 `cose-bilkent` 放射布局（`getUserDefinedConfig().layout === undefined` 判断），全局钉 dagre 使该默认失效、mindmap 落入 dagre TB 层级树
+- **决策**：新增阅读设置 `ReadingSettings.mindmapLayout`（`"radial" | "tree"`，默认 `"radial"` 即升级前观感），阅读与导出两处 `mermaid.initialize` 对 mindmap 放行 `cose-bilkent`，其余图表维持 dagre 钉定不变；布局参与 MermaidDiagram 缓存键，切换即重渲染
+- **验证**：tsc 通过、eslint 无错误、vitest 33/33；两种布局的实际观感与导出一致性待用户实机
+- **已知取舍**：cose-bilkent 为 mermaid 动态 import 的独立 chunk（构建自动分包，Tauri 离线可用）；ELK 作第三种布局暂不提供，待需求出现再评估

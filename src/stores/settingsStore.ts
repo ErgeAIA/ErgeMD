@@ -36,6 +36,7 @@ const defaultReadingSettings: ReadingSettings = {
   theme: "cyberpunk",
   language: "auto",
   autoSaveProgress: true,
+  mindmapLayout: "radial",
 };
 
 // ===== 默认配置级别 =====

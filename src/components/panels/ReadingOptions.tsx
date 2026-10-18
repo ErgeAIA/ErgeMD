@@ -1,6 +1,6 @@
 import { ConfigLevelSelector } from "@/components/settings/ConfigLevelSelector";
 import { useSettingsStore } from "@/stores/settingsStore";
-import type { ThemeMode } from "@/types";
+import type { MindmapLayout, ThemeMode } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -212,6 +212,15 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
     const handlePageWidthChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         updateReadingSettings({ pageWidth: Number(e.target.value) });
+      },
+      [updateReadingSettings],
+    );
+
+    const handleMindmapLayoutChange = useCallback(
+      (e: React.ChangeEvent<HTMLSelectElement>) => {
+        updateReadingSettings({
+          mindmapLayout: e.target.value as MindmapLayout,
+        });
       },
       [updateReadingSettings],
     );
@@ -504,6 +513,35 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
               accentColor: "var(--accent-cyan)",
             }}
           />
+        </div>
+
+        {/* Mermaid 思维导图布局 */}
+        <div>
+          <label
+            htmlFor="reading-mindmap-layout"
+            className="block"
+            style={labelStyle}
+          >
+            {t("settings.mindmapLayout")}
+          </label>
+          <select
+            id="reading-mindmap-layout"
+            value={readingSettings.mindmapLayout}
+            onChange={handleMindmapLayoutChange}
+            style={{
+              width: "100%",
+              padding: "6px 12px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              background: "var(--bg-code)",
+              color: "var(--text-primary)",
+              border: "1px solid var(--divider)",
+              outline: "none",
+            }}
+          >
+            <option value="radial">{t("settings.mindmapLayoutRadial")}</option>
+            <option value="tree">{t("settings.mindmapLayoutTree")}</option>
+          </select>
         </div>
 
         {/* 配置级别 */}

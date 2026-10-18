@@ -2,42 +2,14 @@ import DOMPurify from "dompurify";
 import { parseMarkdownBlocks } from "./markdownBlocks";
 import { renderMermaidForExport } from "@/components/reader/MermaidDiagram";
 import { renderPlantUmlForExport } from "@/components/reader/PlantUMLDiagram";
+import { collectAllCssVariables, markdownCss } from "./exportStyles";
 
 export interface ExportHtmlOptions {
   grayscale?: boolean;
   fontSize?: number;
 }
 
-const CSS_VARIABLE_NAMES = [
-  "bg-page", "bg-reader", "bg-code",
-  "text-primary", "text-secondary", "text-muted", "text-heading",
-  "h2-color", "h3-color", "h4-color",
-  "accent-cyan", "accent-pink", "accent-purple", "accent-green",
-  "accent-yellow", "accent-orange", "accent-red",
-  "divider", "hover-bg",
-];
 
-const GRAYSCALE_OVERRIDES: Record<string, string> = {
-  "bg-page": "#ffffff", "bg-reader": "#ffffff", "bg-code": "#f5f5f5",
-  "text-primary": "#1a1a1a", "text-secondary": "#4a4a4a",
-  "text-muted": "#808080", "text-heading": "#000000",
-  "h2-color": "#1a1a1a", "h3-color": "#1a1a1a", "h4-color": "#1a1a1a",
-  "accent-cyan": "#0066cc", "accent-pink": "#cc3366",
-  "accent-purple": "#6633cc", "accent-green": "#2d7d46",
-  "accent-yellow": "#998800", "accent-orange": "#cc6600",
-  "accent-red": "#cc3333", "divider": "#cccccc", "hover-bg": "#e8e8e8",
-};
-
-function collectCssVariables(grayscale: boolean): Record<string, string> {
-  const computedStyle = getComputedStyle(document.documentElement);
-  const result: Record<string, string> = {};
-  for (const name of CSS_VARIABLE_NAMES) {
-    result[name] = grayscale
-      ? (GRAYSCALE_OVERRIDES[name] ?? "#888888")
-      : computedStyle.getPropertyValue(`--${name}`).trim();
-  }
-  return result;
-}
 
 function escapeForHtml(text: string): string {
   return text
@@ -372,9 +344,11 @@ export async function generateExportHtml(
   const { grayscale = false, fontSize = 16 } = options;
 
   const { blocks } = parseMarkdownBlocks(content);
-  const cssVariables = collectCssVariables(grayscale);
+  const cssVariables = collectAllCssVariables(grayscale);
 
-  const cssVarsString = CSS_VARIABLE_NAMES.map((name) => `    --${name}: ${cssVariables[name]};`).join("\n");
+  const cssVarsString = Object.entries(cssVariables)
+    .map(([name, value]) => `    ${name}: ${value};`)
+    .join("\n");
 
   const bodyHtmlParts = await Promise.all(
     blocks.map((block) => renderBlockToHtml(block)),
@@ -395,6 +369,7 @@ export async function generateExportHtml(
   :root {
 ${cssVarsString}
   }
+${markdownCss}
   *, *::before, *::after {
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;

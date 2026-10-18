@@ -18,6 +18,9 @@ interface ReaderState {
   // 文件变更提示
   fileChanged: string | null;
 
+  // 导出模式：HTML 导出时置 true，强制渲染全部 block 并跳过 IntersectionObserver 懒渲染
+  exportMode: boolean;
+
   // QuickEdit 触发信号（右键菜单"编辑此段落"使用）
   quickEditSignal: number;
   // 右键菜单触发的编辑目标元素
@@ -42,6 +45,7 @@ interface ReaderState {
   removeToast: (id: string) => void;
   setPreviewImage: (url: string | null) => void;
   setFileChanged: (path: string | null) => void;
+  setExportMode: (value: boolean) => void;
   triggerQuickEdit: () => void;
   setContextMenuEditTarget: (el: HTMLElement | null) => void;
   quickEditLineRange: { startLine: number; endLine: number } | null;
@@ -66,6 +70,7 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
   toasts: [],
   previewImage: null,
   fileChanged: null,
+  exportMode: false,
   quickEditSignal: 0,
   contextMenuEditTarget: null,
   isQuickEditing: false,
@@ -166,6 +171,10 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
 
   setFileChanged: (path) => {
     set({ fileChanged: path });
+  },
+
+  setExportMode: (value) => {
+    set({ exportMode: value });
   },
 
   triggerQuickEdit: () => {

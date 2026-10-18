@@ -14,6 +14,7 @@ import React, {
   useState,
 } from "react";
 import MarkdownBlockView from "./MarkdownBlockView";
+import { useReaderStore } from "@/stores/readerStore";
 
 // ── 公开接口 ──────────────────────────────────────────
 
@@ -35,6 +36,7 @@ const VirtualMarkdownView = React.forwardRef<
   VirtualMarkdownViewProps
 >(({ content, scrollContainerRef, onTocReady, onActiveBlockChange }, ref) => {
   const config = useActiveConfig();
+  const exportMode = useReaderStore((s) => s.exportMode);
   const lines = useMemo(() => content.split(/\r?\n/), [content]);
   const totalLines = lines.length;
 
@@ -91,6 +93,12 @@ const VirtualMarkdownView = React.forwardRef<
       isParsingRef.current = false;
     });
   }, [blocks.length]);
+
+  // 导出模式下按需全量解析，确保离屏 block（尤其 mermaid）也进入产物
+  const exportParse = useMemo(
+    () => (exportMode ? parseMarkdownBlocks(content) : null),
+    [exportMode, content],
+  );
 
   // ── 虚拟列表 ──
   const parentRef = useRef<HTMLDivElement>(null);
@@ -193,6 +201,21 @@ const VirtualMarkdownView = React.forwardRef<
     [virtualizer],
   );
 
+  // ── 导出模式：进入时保存滚动位置，退出时恢复，避免阅读视图跳动 ──
+  const savedScrollTop = useRef(0);
+  const didEnterExport = useRef(false);
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    if (exportMode) {
+      savedScrollTop.current = container.scrollTop;
+      didEnterExport.current = true;
+    } else if (didEnterExport.current) {
+      container.scrollTop = savedScrollTop.current;
+      didEnterExport.current = false;
+    }
+  }, [exportMode, scrollContainerRef]);
+
   // ── 渲染 ──
   const totalSize = virtualizer.getTotalSize();
 
@@ -213,37 +236,49 @@ const VirtualMarkdownView = React.forwardRef<
         minHeight: "100%",
       }}
     >
-      <div
-        style={{
-          height: `${totalSize}px`,
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
-          const block = blocks[virtualItem.index];
+      {exportMode && exportParse ? (
+        <div>
+          {exportParse.blocks.map((block, index) => (
+            <MarkdownBlockView
+              key={index}
+              block={block}
+              referenceDefinitions={exportParse.referenceDefinitions}
+            />
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            height: `${totalSize}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const block = blocks[virtualItem.index];
 
-          return (
-            <div
-              key={virtualItem.key}
-              data-index={virtualItem.index}
-              ref={virtualizer.measureElement}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            >
-              <MarkdownBlockView
-                block={block}
-                referenceDefinitions={referenceDefinitions}
-              />
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <div
+                key={virtualItem.key}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              >
+                <MarkdownBlockView
+                  block={block}
+                  referenceDefinitions={referenceDefinitions}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 });

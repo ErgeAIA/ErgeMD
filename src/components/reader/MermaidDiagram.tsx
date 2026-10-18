@@ -2,6 +2,8 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
+import { useReaderStore } from "@/stores/readerStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 /**
  * Mermaid 渲染结果缓存（内存级别，页面刷新失效）。
@@ -66,12 +68,19 @@ export function renderMermaidForExport(chart: string): Promise<string> {
 
         await ensureZenumlRegistered(mermaid);
 
+        // 与阅读路径保持一致：钉 dagre + classic，避免导出与文档观感漂移；
+        // mindmap 按用户设置放行放射布局（cose-bilkent），导出与阅读视图同步
+        const mindmapLayout =
+          useSettingsStore.getState().readingSettings.mindmapLayout ?? "radial";
+        const isMindmapChart = normalizeChartType(chart) === "mindmap";
         mermaid.initialize({
           startOnLoad: false,
           theme: "default",
           securityLevel: "strict",
-          // 与阅读路径保持一致：钉 dagre + classic，避免导出与文档观感漂移
-          layout: "dagre",
+          layout:
+            isMindmapChart && mindmapLayout !== "tree"
+              ? "cose-bilkent"
+              : "dagre",
           look: "classic",
           flowchart: { useMaxWidth: false, htmlLabels: true },
         });
@@ -1173,6 +1182,10 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
     const lastContextMenuTime = useRef(0);
     const { getResolvedTheme } = useTheme();
     const { t } = useTranslation();
+    const exportMode = useReaderStore((s) => s.exportMode);
+    // 思维导图布局偏好（radial=发散放射 / tree=层级树），旧持久化数据由 merge 兜底
+    const mindmapLayout =
+      useSettingsStore((s) => s.readingSettings.mindmapLayout) ?? "radial";
 
     const resolvedTheme = getResolvedTheme();
 
@@ -1181,12 +1194,19 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       theme: resolvedTheme,
       signature: themeSignature,
       chart,
+      // 思维导图布局参与缓存键：切换布局后旧 SVG 立即失效重渲染
+      mindmapLayout,
       // v37：mermaid 12 升级轮。v36 及以前的缓存可能含 neo 外观的 drop-shadow
       // 残留（未钉 look 时渲染产出），升版一次性作废旧键（BUG-065）
       _version: "v37",
     });
 
     useEffect(() => {
+      // 导出模式：跳过 IntersectionObserver 懒渲染，立即渲染（离屏图表必须进入产物）
+      if (exportMode) {
+        setIsVisible(true);
+        return;
+      }
       const el = containerRef.current;
       if (!el) return;
 
@@ -1202,7 +1222,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
 
       observer.observe(el);
       return () => observer.disconnect();
-    }, []);
+    }, [exportMode]);
 
     useEffect(() => {
       if (!isVisible) return;
@@ -1215,6 +1235,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       }
 
       let cancelled = false;
+      let renderRetryCount = 0;
       if (!svgHtml) setIsLoading(true);
 
       const queueTask = async () => {
@@ -1793,8 +1814,11 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             themeCSS: erThemeCSS,
             // mermaid 12 起 ELK 成为默认布局、neo 成为默认外观，会改变全部图表
             // 的布局与观感；本项目主题适配体系按 11.x 的 DOM 结构校准，先钉回
-            // dagre + classic 冻结现状，ELK/neo 的评估另行单独进行
-            layout: "dagre",
+            // dagre + classic 冻结现状，ELK/neo 的评估另行单独进行。
+            // mindmap 例外：12.x 仅当顶层 layout 未被用户定义时才用默认放射
+            // 布局 cose-bilkent，钉 dagre 会把它压成层级树——按用户设置放行
+            layout:
+              isMindmap && mindmapLayout !== "tree" ? "cose-bilkent" : "dagre",
             look: "classic",
             flowchart: {
               useMaxWidth: false,
@@ -2352,6 +2376,17 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             } else {
               console.error("Mermaid render error:", err);
               if (!svgHtml) {
+                // 批量渲染（如导出模式一次性挂载全部图表）时存在瞬时竞态：
+                // 懒加载的图表模块尚未就绪导致 parse/render 失败。
+                // 有限次退避重试（走完整主题管线，配色不漂移），仍失败才展示错误。
+                if (renderRetryCount < 2) {
+                  renderRetryCount += 1;
+                  setIsLoading(true);
+                  window.setTimeout(() => {
+                    if (!cancelled) enqueueMermaidRender(queueTask);
+                  }, 400 * renderRetryCount);
+                  return;
+                }
                 setError(true);
               }
             }
