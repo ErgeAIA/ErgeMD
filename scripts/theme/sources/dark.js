@@ -42,8 +42,9 @@ export default {
   chartHues: ["#7AA2F7", "#BB9AF7", "#9ECE6A", "#E0AF68", "#F7768E", "#FF9E64"],
   // 数据序列种子（= theme-dark-base 现行 chart-series-0..5）
   seriesHues: ["#7DCFFF", "#9ECE6A", "#E0AF68", "#F7768E", "#BB9AF7", "#FF9E64"],
-  // 图表填充带（OKLCH）：theme-dark-base 现行 fill-0..5 的 L 0.22~0.25 / C 0.05~0.08 取中值
-  fillBand: { l: 0.22, c: 0.08 },
+  // 图表填充带（OKLCH）：按 theme-dark-base 现行 fill-0..5 的内联 oklch 区间
+  // （L 0.22~0.24 / C 0.06~0.08）取中位值；派生值与现行值允许有契约预期内的微小差异
+  fillBand: { l: 0.23, c: 0.07 },
   // 代码高亮（VSCode Dark+ 原配透传）
   code: {
     keyword: "#569CD6",
@@ -79,8 +80,10 @@ export default {
     series6: "#7AA2F7",
     series7: "#C586C0",
   },
-  // 透传组：键为 CSS token 名，值为现行字面量（dark.css 全量，accent-*-dim/glow 除外）
+  // 透传组：键为 CSS token 名，值为现行字面量（dark.css 全量，accent-*-dim/glow 除外；
+  // divider/table-border/border-subtle 按 R12 统一走 mixWith 派生，不在此透传）
   passthrough: {
+    "brand-gradient": "linear-gradient(135deg, #569CD6, #C586C0)",
     "toc-hover-bg": "rgba(46, 46, 56, 0.92)",
     "toc-hover-shadow": "0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)",
     "toc-text-active": "rgba(86, 156, 214, 1)",
@@ -88,7 +91,6 @@ export default {
     "hover-bg": "rgba(255, 255, 255, 0.06)",
     "selected-bg": "rgba(86, 156, 214, 0.18)",
     "active-border": "rgba(86, 156, 214, 0.40)",
-    divider: "rgba(255, 255, 255, 0.10)",
     "selection-bg": "rgba(86, 156, 214, 0.25)",
     "selection-text": "#EBEBEB",
     "search-highlight": "rgba(220, 220, 170, 0.25)",
@@ -101,13 +103,11 @@ export default {
     "inline-code-text": "#C586C0",
     "table-header-bg": "rgba(86, 156, 214, 0.08)",
     "table-header-text": "#569CD6",
-    "table-border": "rgba(255, 255, 255, 0.08)",
     "table-hover-bg": "rgba(255, 255, 255, 0.03)",
     "hover-bg-subtle": "rgba(86, 156, 214, 0.03)",
     "hover-bg-light": "rgba(255, 255, 255, 0.05)",
     "hover-bg-medium": "rgba(255, 255, 255, 0.10)",
     "hover-close-bg": "rgba(244, 71, 71, 0.6)",
-    "border-subtle": "rgba(255, 255, 255, 0.05)",
     "shadow-popup": "0 4px 24px rgba(0, 0, 0, 0.5)",
     "shadow-menu": "0 4px 16px rgba(0, 0, 0, 0.4)",
     "overlay-bg": "rgba(0, 0, 0, 0.85)",

@@ -44,7 +44,8 @@ export default {
   chartHues: ["#2666F0", "#7B38ED", "#179E49", "#B87F00", "#DB2777", "#E35410"],
   // 数据序列种子（= 现行 chart-series-0..5，为六色相的重排）
   seriesHues: ["#2666F0", "#179E49", "#B87F00", "#DB2777", "#7B38ED", "#E35410"],
-  // 图表填充带（OKLCH）：现行 fill-0..5 的 L 0.92~0.94 / C 0.02~0.05 取中值
+  // 图表填充带（OKLCH）：按现行 fill-0..5 的内联 oklch 区间（L 0.93~0.94 / C 0.03~0.05）
+  // 取代表性值；派生值与现行值允许有契约预期内的微小差异（色相不变、明度彩度入带）
   fillBand: { l: 0.94, c: 0.04 },
   // 代码高亮（现行值原配透传）
   code: {
@@ -83,6 +84,7 @@ export default {
   },
   // 透传组：键为 CSS token 名，值为现行字面量
   passthrough: {
+    "brand-gradient": "linear-gradient(135deg, #2666F0, #7B38ED)",
     "status-bar-bg": "rgba(255, 255, 255, 0.60)",
     "reader-bg-elevated": "#F2F2F2",
     "titlebar-gradient":

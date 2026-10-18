@@ -22,7 +22,7 @@ describe("theme sources", () => {
       }
     });
 
-    it(`${name}: 结构完整（画布6/墨色4/标题6/类别6/序列6/代码8/中性7/备用6/填充带）`, () => {
+    it(`${name}: 结构完整（画布6/墨色4/标题6/类别6/序列6/代码8/中性7/备用6/填充带/滚动条3/品牌3）`, () => {
       expect(Object.keys(src.canvas)).toHaveLength(6);
       expect(Object.keys(src.ink)).toHaveLength(4);
       expect(src.headingHues).toHaveLength(6);
@@ -31,8 +31,19 @@ describe("theme sources", () => {
       expect(Object.keys(src.code)).toHaveLength(8);
       expect(Object.keys(src.chartNeutral)).toHaveLength(7);
       expect(Object.keys(src.chartSpare)).toHaveLength(6);
+      expect(Object.keys(src.scrollbar)).toHaveLength(3);
+      expect(Object.keys(src.brand)).toHaveLength(3);
       expect(typeof src.fillBand.l).toBe("number");
       expect(typeof src.fillBand.c).toBe("number");
+    });
+
+    it(`${name}: name 与主题名一致，透传组非空`, () => {
+      expect(src.name).toBe(name);
+      expect(Object.keys(src.passthrough).length).toBeGreaterThan(0);
+    });
+
+    it(`${name}: brand-gradient 已收录（漏收将致 logo 渐变回落到 core 兜底）`, () => {
+      expect(src.passthrough["brand-gradient"]).toMatch(/^linear-gradient\(/);
     });
 
     it(`${name}: callout 13 色齐全`, () => {
