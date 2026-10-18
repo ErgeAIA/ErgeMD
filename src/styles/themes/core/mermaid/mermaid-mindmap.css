@@ -7,37 +7,45 @@ ErgeMD 主题系统 - mermaid-mindmap.css
 优先级：Mermaid 层
 
 设计原则：
-- 节点背景必须使用 --chart-fill-*（承载文字的安全填充色）
-- 分支线颜色使用 --chart-stroke-*（装饰性连线）
-- 文字颜色使用 --chart-text
-
-重要：branch 色不能用于节点背景，节点背景与分支线必须分开
+- 节点背景必须使用 --chart-fill-*（承载文字的安全填充色），文字配 --chart-text-on-fill-*
+- 分支线（mermaid cScaleInv / lineColor）使用 --chart-stroke-*（装饰性连线，视觉身份所在）
+- 历史问题：branch 色（stroke，高饱和）曾被直接用作 cScale 节点背景且文字共用 --chart-text，
+  暗色主题下对比度低至 1.8:1（思维导图不可读）。主题契约第一阶段已修正：
+  节点背景走 fill × text-on-fill 硬指标，分支线保留 stroke 的鲜明色相。
 ================================================================================
 */
 
 [data-theme] {
 
-  /* === Mindmap 节点背景（承载文字）===
-     使用 chart-fill 而非 branch 色
-     L 值 15-25%，C 值 0.05-0.15，克制饱和度 */
+  /* === Mindmap 节点背景（承载文字，→ mermaid cScale）===
+     使用 chart-fill 而非 branch 色；文字用同索引 text-on-fill 配对 */
   --mermaid-mindmap-center-bg: var(--chart-fill-0);
-  --mermaid-mindmap-center-text: var(--chart-text);
+  --mermaid-mindmap-center-text: var(--chart-text-on-fill-0);
 
   --mermaid-mindmap-l1-bg: var(--chart-fill-1);
-  --mermaid-mindmap-l1-text: var(--chart-text);
+  --mermaid-mindmap-l1-text: var(--chart-text-on-fill-1);
 
   --mermaid-mindmap-l2-bg: var(--chart-fill-2);
-  --mermaid-mindmap-l2-text: var(--chart-text);
+  --mermaid-mindmap-l2-text: var(--chart-text-on-fill-2);
 
   --mermaid-mindmap-l3-bg: var(--chart-fill-3);
-  --mermaid-mindmap-l3-text: var(--chart-text);
+  --mermaid-mindmap-l3-text: var(--chart-text-on-fill-3);
 
-  /* === Mindmap 分支线颜色 ===
-     使用 chart-stroke，可比节点背景更鲜艳
-     C 值 0.15-0.25，用于装饰性连线 */
-  --mermaid-mindmap-branch-0: var(--chart-stroke-0);
-  --mermaid-mindmap-branch-1: var(--chart-stroke-1);
-  --mermaid-mindmap-branch-2: var(--chart-stroke-2);
-  --mermaid-mindmap-branch-3: var(--chart-stroke-3);
-  --mermaid-mindmap-branch-4: var(--chart-stroke-4);
+  --mermaid-mindmap-l4-bg: var(--chart-fill-4);
+  --mermaid-mindmap-l4-text: var(--chart-text-on-fill-4);
+
+  /* === Mindmap 节点背景序列（→ mermaid cScale0..11，与上方 l*/center 同索引）=== */
+  --mermaid-mindmap-branch-0: var(--chart-fill-0);
+  --mermaid-mindmap-branch-1: var(--chart-fill-1);
+  --mermaid-mindmap-branch-2: var(--chart-fill-2);
+  --mermaid-mindmap-branch-3: var(--chart-fill-3);
+  --mermaid-mindmap-branch-4: var(--chart-fill-4);
+
+  /* === Mindmap 分支线（→ mermaid cScaleInv / lineColor，装饰性连线）===
+     使用 chart-stroke，可比节点背景更鲜艳；主题的鲜明色相保留在连线上 */
+  --mermaid-mindmap-branch-line-0: var(--chart-stroke-0);
+  --mermaid-mindmap-branch-line-1: var(--chart-stroke-1);
+  --mermaid-mindmap-branch-line-2: var(--chart-stroke-2);
+  --mermaid-mindmap-branch-line-3: var(--chart-stroke-3);
+  --mermaid-mindmap-branch-line-4: var(--chart-stroke-4);
 }

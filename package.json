@@ -15,6 +15,8 @@
     "test:rust": "cd src-tauri && cargo test",
     "tauri": "tauri",
     "sync-version": "node scripts/sync-version.js",
+    "theme:generate": "node scripts/theme/generate-themes.js",
+    "theme:generate:check": "node scripts/theme/generate-themes.js --check",
     "tauri:build": "pnpm sync-version && pnpm tauri build && node scripts/rename-bundle.js"
   },
   "dependencies": {

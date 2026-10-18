@@ -173,13 +173,17 @@ interface ChartColors {
   mindmap: {
     centerColor: string;
     centerText: string;
+    /** 节点背景序列（chart-fill，承载文字，→ mermaid cScale） */
     branches: string[];
+    /** 分支线序列（chart-stroke，装饰性连线，→ mermaid cScaleInv / lineColor） */
+    branchLines: string[];
     level1Bg: string;
     level1Text: string;
     level2Bg: string;
     level2Text: string;
     level3Bg: string;
     level3Text: string;
+    level4Text: string;
   };
   xychart: {
     backgroundColor: string;
@@ -496,12 +500,20 @@ function getMermaidColors(): {
       mindmap: {
         centerColor: mindmapCenterBg,
         centerText: mindmapCenterText,
+        // 节点背景走 fill（承载文字）；分支线走 stroke（视觉身份）
         branches: [
           getCSSVar("--mermaid-mindmap-branch-0", accentCyan),
           getCSSVar("--mermaid-mindmap-branch-1", accentPink),
           getCSSVar("--mermaid-mindmap-branch-2", accentYellow),
           getCSSVar("--mermaid-mindmap-branch-3", accentGreen),
           getCSSVar("--mermaid-mindmap-branch-4", accentOrange),
+        ],
+        branchLines: [
+          getCSSVar("--mermaid-mindmap-branch-line-0", accentCyan),
+          getCSSVar("--mermaid-mindmap-branch-line-1", accentPink),
+          getCSSVar("--mermaid-mindmap-branch-line-2", accentYellow),
+          getCSSVar("--mermaid-mindmap-branch-line-3", accentGreen),
+          getCSSVar("--mermaid-mindmap-branch-line-4", accentOrange),
         ],
         level1Bg: getCSSVar("--mermaid-mindmap-l1-bg", accentCyan),
         level1Text: getCSSVar(
@@ -513,6 +525,10 @@ function getMermaidColors(): {
         level3Bg: getCSSVar("--mermaid-mindmap-l3-bg", accentYellow),
         level3Text: getCSSVar(
           "--mermaid-mindmap-l3-text",
+          isLight ? "#1F2937" : backgroundColor,
+        ),
+        level4Text: getCSSVar(
+          "--mermaid-mindmap-l4-text",
           isLight ? "#1F2937" : backgroundColor,
         ),
       },
@@ -1378,18 +1394,23 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.git0 = mindmapColors.centerColor;
             vars.gitBranchLabel0 = mindmapColors.centerText;
 
+            // 节点背景（cScale）= fill（承载文字），文字（cScaleLabel）= 同索引 text-on-fill；
+            // 连线（cScaleInv / lineColor）= stroke（视觉身份）。详见 mermaid-mindmap.css
             const branches = mindmapColors.branches;
-            for (let i = 0; i < branches.length && i < 12; i++) {
-              vars[`cScale${i}`] = branches[i % branches.length];
-              vars[`cScaleLabel${i}`] =
-                i === 0
-                  ? mindmapColors.level1Text
-                  : i === 1
-                    ? mindmapColors.level2Text
-                    : i === 2
-                      ? mindmapColors.level3Text
-                      : colors.primaryTextColor;
-              vars[`cScaleInv${i}`] = mindmapColors.centerText;
+            const branchLines = mindmapColors.branchLines;
+            const nodeInks = [
+              mindmapColors.centerText,
+              mindmapColors.level1Text,
+              mindmapColors.level2Text,
+              mindmapColors.level3Text,
+              mindmapColors.level4Text,
+            ];
+            for (let i = 0; i < 12; i++) {
+              const slot = i % branches.length;
+              vars[`cScale${i}`] = branches[slot];
+              vars[`cScaleLabel${i}`] = nodeInks[slot];
+              vars[`cScaleInv${i}`] = branchLines[slot];
+              vars[`lineColor${i}`] = branchLines[slot];
             }
 
             vars.textColor = colors.primaryTextColor;

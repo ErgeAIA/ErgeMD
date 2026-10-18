@@ -2,13 +2,17 @@
 title: AGENTS.md Changelog
 type: agents-changelog
 project: ErgeMD
-updated: 2026-10-17
+updated: 2026-10-18
 description: >
   AGENTS.md 的变更记录，AGENTS.md 每改动一次就追加一行，不随日常开发更新。
   只追加，不删除或改写历史。AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
 ---
 
 # AGENTS.md Changelog
+
+## 2026-10-18 主题色板契约（DEC-035）配套例外
+
+- `<Conventions「写文件方式」> → append → <新增「生成物例外」句：src/styles/themes/*.css 中标注 GENERATED 的文件由 pnpm theme:generate 脚本重写，人工修改必须走源色表 scripts/theme/sources/*.js，一致性由 pnpm theme:generate:check 校验>`
 
 > **AGENTS.md 每改动一次，必须在此追加一行**；无对应记录即视为静默丢失。
 > 模式：已初始化优化（初始化状态机 D：AGENTS.md 与 CLAUDE.md 并存，含受控迁移）
