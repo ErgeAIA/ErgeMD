@@ -3,16 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import light from "../../../scripts/theme/sources/light.js";
 import dark from "../../../scripts/theme/sources/dark.js";
-
-const ROOT = join(__dirname, "..", "..", "..");
-const STYLES = join(ROOT, "src/styles");
-
-/** 解析 CSS 文本中的全部 --token: value; 声明 */
-function parseDeclarations(css: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const m of css.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) out[m[1]] = m[2].trim();
-  return out;
-}
+import { ROOT, STYLES, parseDeclarations } from "./theme-test-utils";
 
 /**
  * 收集 src 下消费的 token：
