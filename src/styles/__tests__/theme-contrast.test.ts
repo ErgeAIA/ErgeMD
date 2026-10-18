@@ -19,6 +19,8 @@ const MIGRATED_THEMES = [
   "forest",
   "monochrome",
   "ocean",
+  "tokyo-night",
+  "solarized-light",
 ];
 
 describe("主题对比度门禁", () => {

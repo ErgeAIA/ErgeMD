@@ -45,14 +45,14 @@ ErgeMD 主题系统 - theme-derived.css
   --hover-bg-medium: rgba(255, 255, 255, 0.10);
   --selected-bg: rgba(var(--accent-cyan-rgb), 0.15);
   --active-border: rgba(var(--accent-cyan-rgb), 0.30);
-  --divider: rgba(var(--accent-cyan-rgb), 0.10);
+  /* --divider / --table-border：R14 收口后由主题生成物按契约派生（画布明度固定差），
+     不在派生层重复定义——派生层导入晚于主题文件，会覆盖契约值 */
   --danger-hover-bg: rgba(var(--accent-red-rgb), 0.15);
   --hover-close-bg: rgba(var(--accent-red-rgb), 0.6);
 
   /* === 表格 === */
   --table-header-bg: rgba(var(--accent-cyan-rgb), 0.05);
   --table-header-text: var(--accent-cyan);
-  --table-border: rgba(var(--accent-cyan-rgb), 0.08);
   --table-hover-bg: rgba(var(--accent-cyan-rgb), 0.03);
 
   /* === 引用块 === */
@@ -132,14 +132,13 @@ ErgeMD 主题系统 - theme-derived.css
   --hover-bg-medium: rgba(0, 0, 0, 0.06);
   --selected-bg: rgba(var(--brand-primary-rgb), 0.10);
   --active-border: rgba(var(--brand-primary-rgb), 0.30);
-  --divider: rgba(0, 0, 0, 0.08);
+  /* --divider / --table-border：同暗色块，交由主题生成物派生（见 R14） */
   --danger-hover-bg: rgba(var(--accent-red-rgb), 0.10);
   --hover-close-bg: rgba(var(--accent-red-rgb), 0.6);
 
   /* === 表格 === */
   --table-header-bg: rgba(var(--brand-primary-rgb), 0.04);
   --table-header-text: var(--brand-primary);
-  --table-border: rgba(0, 0, 0, 0.08);
   --table-hover-bg: rgba(0, 0, 0, 0.02);
 
   /* === 引用块 === */

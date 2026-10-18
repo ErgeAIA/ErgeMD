@@ -13,6 +13,8 @@ import falcon from "../../../scripts/theme/sources/falcon.js";
 import forest from "../../../scripts/theme/sources/forest.js";
 import monochrome from "../../../scripts/theme/sources/monochrome.js";
 import ocean from "../../../scripts/theme/sources/ocean.js";
+import tokyoNight from "../../../scripts/theme/sources/tokyo-night.js";
+import solarizedLight from "../../../scripts/theme/sources/solarized-light.js";
 import { buildTokens, render } from "../../../scripts/theme/generate-themes.js";
 import { ROOT, STYLES, parseDeclarations, readTheme } from "./theme-test-utils";
 
@@ -75,6 +77,8 @@ describe("theme generate", () => {
     [forest, "forest"],
     [monochrome, "monochrome"],
     [ocean, "ocean"],
+    [tokyoNight, "tokyo-night"],
+    [solarizedLight, "solarized-light"],
   ] as const) {
     const css = readFileSync(join(STYLES, "themes", `${theme}.css`), "utf8");
     const defined = parseDeclarations(css);
@@ -121,6 +125,8 @@ describe("theme generate", () => {
       [forest, "forest"],
       [monochrome, "monochrome"],
       [ocean, "ocean"],
+      [tokyoNight, "tokyo-night"],
+      [solarizedLight, "solarized-light"],
     ] as const) {
       const current = readFileSync(join(STYLES, "themes", `${name}.css`), "utf8");
       const eol = current.includes("\r\n") ? "\r\n" : "\n";

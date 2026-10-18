@@ -27,6 +27,8 @@ import falcon from "./sources/falcon.js";
 import forest from "./sources/forest.js";
 import monochrome from "./sources/monochrome.js";
 import ocean from "./sources/ocean.js";
+import tokyoNight from "./sources/tokyo-night.js";
+import solarizedLight from "./sources/solarized-light.js";
 
 export { buildTokens, render };
 
@@ -190,6 +192,8 @@ const THEMES = [
   forest,
   monochrome,
   ocean,
+  tokyoNight,
+  solarizedLight,
 ];
 
 /** 是否被直接执行（node scripts/theme/generate-themes.js） */

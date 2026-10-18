@@ -11,6 +11,8 @@ import falcon from "../../../scripts/theme/sources/falcon.js";
 import forest from "../../../scripts/theme/sources/forest.js";
 import monochrome from "../../../scripts/theme/sources/monochrome.js";
 import ocean from "../../../scripts/theme/sources/ocean.js";
+import tokyoNight from "../../../scripts/theme/sources/tokyo-night.js";
+import solarizedLight from "../../../scripts/theme/sources/solarized-light.js";
 import { parseHex, contrastRatio } from "../../../scripts/theme/color-science.js";
 
 const walk = (obj: unknown, path = ""): [string, string][] =>
@@ -32,6 +34,8 @@ describe("theme sources", () => {
     ["forest", forest],
     ["monochrome", monochrome],
     ["ocean", ocean],
+    ["tokyo-night", tokyoNight],
+    ["solarized-light", solarizedLight],
   ] as const) {
     it(`${name}: 所有字符串值非空，# 开头的值均为合法 hex`, () => {
       for (const [key, value] of walk(src)) {
