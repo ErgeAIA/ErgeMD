@@ -17,17 +17,18 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：fix/audit-round-1（从 main 切出）
-- **阶段**：vibe-audit 修复轮 1（正确性 → 单一解析源 → 按需常驻 → 卫生项）
+- **当前分支**：main（v0.4.4 审计修复轮 1 已并入 main；2026-10-18 基线提交 e21b1c6）
+- **阶段**：主题色板契约重构（设计已批准，第一阶段实施待启动）
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
 - 2026-10-17 文档任务：丰富 docs/TestCase/MarkdownSyntaxExample.md——H1/H2/H3 共 69 个标题下补充测试范围与检查要点（Mermaid 28 种图表逐节标注回归重点，标注已知上游问题）；仅改文档，未动代码与构建配置，待用户实机验证
 - 2026-10-17 文档与测试（接上条）：MarkdownSyntaxExample.md 补入泳道图 / 用例图 / Cynefin 框架图三节（6.29~6.31，取官方最新语法），章节计数与文末清单同步为 31 种；修正 mermaid-zenuml.css 注释中的 zenuml 版本（0.2.3 → 1.0.1）；新增 src/components/reader/mermaidSyntaxDoc.test.ts 固化「文档全部 mermaid 块可 parse」回归（33/33 通过，含镜像站链接防护）；实测发现官方用例图示例 `usecase-beta direction LR`（同行）在 12.2.0 解析失败，direction 须独立成行，已在文档记录该坑
 - 2026-10-17 主题适配（接上条）：为泳道图 / 用例图 / Cynefin 框架图三种新图表补齐 Mermaid 主题变量适配——新增 mermaid-swimlane.css / mermaid-usecase.css / mermaid-cynefin.css（沿用 chart palette 令牌：surface 承载文字、stroke 描边、edge 连线、fill-N 语义着色），并在 ChartColors 接口、getMermaidColors、normalizeChartType 映射、themeVariables 注入块四处补齐；顺带修正 ishikawa 映射（关键字 ishikawa-beta 此前漏映射，石川图主题块从未命中）；vite.config.ts 注释 ZenUML 版本 0.2.3→1.0.1（用户授权改构建配置）。人类阅读性：五域按语义着色（复杂=紫/繁杂=蓝/清晰=绿/混沌=橙/混乱=中性），include/extend 虚线分色区分；用例图 actor 文字沿用 primaryTextColor 与 eventmodeling 同套 fill-N+text 配对原则。tsc --noEmit 通过、eslint 仅存量 as-any warning、回归测试 33/33。14 主题 × 三图视觉可读性仍待用户实机
-- 2026-10-17 主题适配（接上条）：为泳道图 / 用例图 / Cynefin 框架图三种新图表补齐 Mermaid 主题变量适配——新增 mermaid-swimlane.css / mermaid-usecase.css / mermaid-cynefin.css（沿用 chart palette 令牌：surface 承载文字、stroke 描边、edge 连线、fill-N 语义着色），并在 ChartColors 接口、getMermaidColors、normalizeChartType 映射、themeVariables 注入块四处补齐；顺带修正 ishikawa 映射（关键字 ishikawa-beta 此前漏映射，石川图主题块从未命中）；vite.config.ts 注释 ZenUML 版本 0.2.3→1.0.1（用户授权改构建配置）。人类阅读性：五域按语义着色（复杂=紫/繁杂=蓝/清晰=绿/混沌=橙/混乱=中性），include/extend 虚线分色区分；用例图 actor 文字沿用 primaryTextColor 与 eventmodeling 同套 fill-N+text 配对原则。tsc --noEmit 通过、eslint 仅存量 as-any warning、回归测试 33/33。14 主题 × 三图视觉可读性仍待用户实机
 - 2026-10-18 思维导图布局切换（见 DEC-034）：定位 6.13 观感变化根因——DEC-033 全局钉 dagre 使 mindmap 12.x 的默认放射布局 cose-bilkent 失效、落入层级树；新增阅读设置 mindmapLayout（radial 默认 / tree），阅读与导出两处 initialize 对 mindmap 放行放射布局，布局参与缓存键；设置面板 ReadingOptions 增选择器 + 双语 i18n；文档 6.13 检查要点同步。tsc --noEmit 通过、eslint 仅存量 as-any warning、vitest 全量 57/57；两种布局的实际观感与导出一致性待用户实机
 - 2026-10-18 主题契约重构设计阶段：与用户两轮可视化对比（浏览器伴侣）确认两条核心规则——思维导图配色（6 色相封顶 + 层级明度 + text-on-fill 绑定，现状 18 节点对比度无一达 4.5:1 → 规则版全部达标）与正文元素分界（标题/功能位带色过护栏、正文与分隔线中性）；产出 docs/theme-token-contract-design.md（待评审），经独立 builder 检查 7 问（6 问自行定断记录于文档第 11 节）；决策记录 DEC-035。开放问题 1 项待用户定夺：派生色构建期生成 vs 运行时注入。未动任何代码
-- **最后更新**：2026-10-17 审计修复轮 1 代码改动完成（未提交）
+- 2026-10-18 设计批准与基线提交：用户选定派生色「构建期生成」（方案 A），设计文档状态改已批准并补第 12/13 节（决议 + 三阶段划分）；按 writing-plans 技能产出 docs/superpowers/plans/2026-10-18-theme-token-contract.md（第一阶段 6 任务，TDD）；用户授权一次性提交全部未提交改动至 main（e21b1c6，20 文件：三种图表主题适配 / 思维导图布局切换 / HTML 导出链路重构 / 设计文档与实施计划 / 文档同步）；执行方式选 subagent-driven-development（本会话逐任务派发 + 评审）
+- 2026-10-18 主题契约第一阶段实施完成（分支 feature/theme-token-contract，DEC-036）：源色表 + 生成器（scripts/theme/）+ light/dark 生成物 + 三级测试门禁（结构/完整性/对比度）+ 思维导图 text-on-fill 接线；lint 0 错误 / tsc 通过 / vitest 98/98 / --check 幂等；每任务独立评审（R1-R16 裁定）；修复 BUG-067（bg-primary 无定义）；遗留缺口：分隔线派生被 derived 层覆盖（阶段 3 收口）、12 套主题未迁移、黄金往返不抓源色表笔误。待用户实机验收 light/dark（重点：思维导图节点文字与连线、六级标题、功能位）
+- **最后更新**：2026-10-18 主题契约第一阶段实施完成（分支 feature/theme-token-contract，待实机验收）
   - H1 chunk 缓存键加文档指纹 + FIFO 淘汰；H2 isTableLine 收紧（BUG-030 修复恢复）；H3 新增 queryActiveMarkdownBody 替换 4 处裸 querySelector
   - M1/M2 单一解析源：大文档跳过 extractTOC；virtualTocItems 改由 VirtualMarkdownView 经 onTocReady 上行；FloatingTOC 新增 items 注入（DEC-031）
   - M3 常驻 Tab 上限 = 活动 + 固定 + 最近 3 个，超出者卸载（DEC-032）

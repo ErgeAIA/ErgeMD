@@ -266,6 +266,15 @@ description: >
 - **验证**：设计文档经独立 builder 检查（7 问，6 问已在项目约束内定断并记录于文档第 11 节）；1 项开放问题（派生色构建期生成 vs 运行时注入）待用户定夺后进入计划阶段
 - **已知取舍**：门禁不覆盖 UI 外壳（D1 授权高唤醒，显式豁免清单）；主题文件可能变为生成物（取决于开放问题的答案，需为 AGENTS.md「禁整文件重写」开生成物例外）
 
+## DEC-036: 主题契约第一阶段落地（源色表 + 生成器 + 门禁 + mindmap 接线）
+
+- **日期**：2026-10-18
+- **背景**：DEC-035 的设计经用户批准（派生色构建期生成，方案 A）后，按 `docs/superpowers/plans/2026-10-18-theme-token-contract.md` 以 subagent-driven 方式实施第一阶段（实现内联 + 每任务独立评审，因环境无通用实现型 subagent，裁定 R6）
+- **决策落地**：① `scripts/theme/`：color-science（WCAG/OKLCH/text-on-fill/tuneForContrast，12 单测）+ sources（light/dark 源色表，现行值全量转录）+ generate-themes（派生全部 token，`--check` 供 CI）；② light/dark 改为 GENERATED 生成物（108/155 tokens），AGENTS.md 开生成物例外并登记 changelog；③ 三级测试门禁：源色表结构、生成物消费完整性（无兜底消费 ⊆ 定义 ∪ 豁免）+ 黄金往返、CI 对比度门禁（正文 ≥7:1，标题/图表文字 ≥4.5:1，反例守卫实证可抓红）；④ 思维导图接线：节点背景=cScale=fill + 文字=同索引 text-on-fill，连线色经 SVG 后处理按 `.section-edge-k` 覆盖为 stroke（渲染器连线实际由 cScale 上色，cScaleInv/lineColor 在 classic 外观下视觉无效——反编译实证）
+- **验证**：lint 0 错误、tsc 通过、vitest 98/98、`theme:generate --check` 幂等；每任务经独立评审（Task 1/2/3/5 有修复轮，共裁定 R1-R16）
+- **已知取舍/缺口**：① R12 的 divider/table-border 派生在运行时被 theme-derived.css 覆盖（12 套手写主题依赖派生层提供），阶段 3 全部主题生成后收口；② 黄金往返测试不抓源色表自身转录笔误（R15，由 Task 2 独立核对 + 实机验收兜底）；③ 12 套主题仍手写、无 text-on-fill；④ BUG-067（bg-primary 7 处无兜底消费从未定义）已修复并记入 debug-log
+- **待办**：light/dark 实机验收（重点：思维导图节点文字可读性与连线鲜明度、六级标题色相、功能位配色）；通过后阶段 2（高刺激组迁移）
+
 ## DEC-034: mindmap 布局按设置放行（radial 默认 / dagre 层级树可选）
 
 - **日期**：2026-10-18
