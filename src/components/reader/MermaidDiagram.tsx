@@ -949,6 +949,8 @@ function getMermaidThemeSignature(): string {
     "--mermaid-flowchart-edge",
     "--mermaid-flowchart-edge-label-bg",
     "--mermaid-flowchart-subgraph-border",
+    // 功能位（design D3：序号带主题色）
+    "--list-number",
     // Mermaid Mindmap
     "--mermaid-mindmap-center-bg",
     "--mermaid-mindmap-center-text",

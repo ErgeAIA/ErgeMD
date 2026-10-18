@@ -65,6 +65,13 @@ describe("主题对比度门禁", () => {
       }
     });
 
+    it(`${theme}: 有序列表序号（功能位） ≥ ${BODY}:1`, () => {
+      expect(
+        contrastRatio(parseHex(t["list-number"]), parseHex(t["bg-reader"])),
+        `${theme}.list-number=${t["list-number"]} × bg-reader=${t["bg-reader"]}`,
+      ).toBeGreaterThanOrEqual(BODY);
+    });
+
     it(`${theme}: 代码文字 ≥ ${BODY}:1`, () => {
       expect(
         contrastRatio(parseHex(t["code-text"]), parseHex(t["bg-code"])),

@@ -101,6 +101,16 @@ function buildTokens(s) {
     const { r, g, b } = cs.parseHex(s.brand[key]);
     set(`brand-${key}-rgb`, `${r}, ${g}, ${b}`);
   }
+  // 列表序号：功能位色（design D3：链接 / 行内代码 / 表头 / 引用 / 序号带主题色）。
+  // 与标题同口径——色相取品牌主色，明度按画布调校至 ≥4.5:1
+  // （solarized-light 的品牌蓝 #268bd2 在暖白底上仅 3.59:1，门禁实测抓出）
+  const listNumber = cs.tuneForContrast(s.brand.primary, s.canvas.reader, 4.5);
+  if (!listNumber.met) {
+    console.warn(
+      `[theme:generate] ${s.name}: list-number 未达标（${listNumber.ratio.toFixed(2)}:1），已取明度边界值`,
+    );
+  }
+  set("list-number", listNumber.hex);
 
   // ---- 图表四层 ----
   // fill-0..5：类别色相按填充带派生（色相不变，明度/彩度入带）；6/7 透传现行值

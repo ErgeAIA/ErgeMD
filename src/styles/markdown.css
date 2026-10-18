@@ -116,6 +116,12 @@
   color: var(--text-secondary);
 }
 
+/* 有序列表序号属「功能位」，按契约带主题色（--list-number 由主题生成物派生；
+   无该令牌的主题回退到中性墨色） */
+.markdown-body ol > li::marker {
+  color: var(--list-number, var(--text-secondary));
+}
+
 .markdown-body ul ul {
   list-style-type: circle;
 }
