@@ -41,8 +41,10 @@ ErgeMD 主题系统 - mermaid-mindmap.css
   --mermaid-mindmap-branch-3: var(--chart-fill-3);
   --mermaid-mindmap-branch-4: var(--chart-fill-4);
 
-  /* === Mindmap 分支线（→ mermaid cScaleInv / lineColor，装饰性连线）===
-     使用 chart-stroke，可比节点背景更鲜艳；主题的鲜明色相保留在连线上 */
+  /* === Mindmap 分支线（视觉身份）===
+     渲染器连线（.section-edge-N）实际由 cScale（节点背景）上色，cScaleInv/lineColor
+     在 classic 外观下视觉无效；故这些 stroke 令牌由 MermaidDiagram 的 SVG 后处理
+     按 .section-edge-k 显式覆盖到连线上（见该文件 isMindmap 块注释） */
   --mermaid-mindmap-branch-line-0: var(--chart-stroke-0);
   --mermaid-mindmap-branch-line-1: var(--chart-stroke-1);
   --mermaid-mindmap-branch-line-2: var(--chart-stroke-2);
