@@ -26,4 +26,8 @@ export function mixWith(base: RGB, other: RGB, ratio: number): RGB;
 export function rgbToOklch(rgb: RGB): OKLCH;
 export function oklchToRgb(oklch: OKLCH): RGB;
 export function pickTextColor(fillHex: string, inkHexes: string[]): { color: string; ratio: number };
-export function tuneForContrast(colorHex: string, bgHex: string, target?: number): string;
+export function tuneForContrast(
+  colorHex: string,
+  bgHex: string,
+  target?: number,
+): { hex: string; ratio: number; met: boolean };

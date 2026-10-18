@@ -51,13 +51,29 @@ describe("color-science", () => {
   });
 
   it("tuneForContrast 把不达标色调到达标（白底 4.5）", () => {
-    const tuned = tuneForContrast("#E84093", "#FFFFFF", 4.5);
-    expect(contrastRatio(parseHex(tuned), parseHex("#FFFFFF"))).toBeGreaterThanOrEqual(4.5);
+    const { hex, ratio, met } = tuneForContrast("#E84093", "#FFFFFF", 4.5);
+    expect(met).toBe(true);
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(parseHex(hex), parseHex("#FFFFFF"))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("tuneForContrast 暗底推进同样达标且色相不变（色域裁切回归）", () => {
+    const before = rgbToOklch(parseHex("#E84093"));
+    const { hex, met } = tuneForContrast("#E84093", "#12121f", 4.5);
+    expect(met).toBe(true);
+    const after = rgbToOklch(parseHex(hex));
+    expect(Math.abs(after.h - before.h)).toBeLessThan(2);
+  });
+
+  it("tuneForContrast 目标不可达时 met=false", () => {
+    // 同色底推向极值仍远不够 21:1 —— 必须如实报告失败而非静默返回
+    const { met } = tuneForContrast("#808080", "#808080", 21);
+    expect(met).toBe(false);
   });
 
   it("tuneForContrast 保持色相（OKLCH h 不变）", () => {
     const before = rgbToOklch(parseHex("#E84093"));
-    const after = rgbToOklch(parseHex(tuneForContrast("#E84093", "#FFFFFF", 4.5)));
+    const after = rgbToOklch(parseHex(tuneForContrast("#E84093", "#FFFFFF", 4.5).hex));
     expect(Math.abs(after.h - before.h)).toBeLessThan(2);
   });
 

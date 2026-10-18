@@ -104,23 +104,51 @@ export function pickTextColor(fillHex, inkHexes) {
   return { color: best, ratio: bestRatio };
 }
 
+/** 判断 (l, c, h) 是否落在 sRGB 色域内（线性空间，含微小容差） */
+function inGamut({ l, c, h }) {
+  const hr = (h * Math.PI) / 180;
+  const lin = oklabToLinearSrgb({ L: l, a: Math.cos(hr) * c, b2: Math.sin(hr) * c });
+  const eps = 1e-4;
+  return (
+    lin.r >= -eps && lin.r <= 1 + eps &&
+    lin.g >= -eps && lin.g <= 1 + eps &&
+    lin.b >= -eps && lin.b <= 1 + eps
+  );
+}
+
 /**
- * 调色至对比度达标：只在 OKLCH 空间沿明度轴推进，色相与彩度保持不变。
+ * 调色至对比度达标：沿 OKLCH 明度轴推进，色相精确不变；
+ * 彩度取该明度下 sRGB 色域内的最大值（越界即二分收敛，避免通道裁切导致色相漂移）。
  * 亮背景向暗推进、暗背景向亮推进；触及明度边界（0/1）即停止。
- * @returns {string} 调校后的 hex
+ * @param {string} colorHex 待调色
+ * @param {string} bgHex 背景色
+ * @param {number} target 目标对比度
+ * @returns {{hex: string, ratio: number, met: boolean}} met=false 表示达到明度边界仍不达标，调用方须自行处置
  */
 export function tuneForContrast(colorHex, bgHex, target = 4.5) {
   const bg = parseHex(bgHex);
   const bgL = relativeLuminance(bg);
   const dir = bgL > 0.4 ? -1 : 1;
-  let oklch = rgbToOklch(parseHex(colorHex));
+  const base = rgbToOklch(parseHex(colorHex));
+  const maxInGamutChroma = (l) => {
+    let lo = 0;
+    let hi = base.c;
+    for (let i = 0; i < 24; i++) {
+      const mid = (lo + hi) / 2;
+      if (inGamut({ ...base, l, c: mid })) lo = mid;
+      else hi = mid;
+    }
+    return lo;
+  };
+  let oklch = base;
   let rgb = oklchToRgb(oklch);
   let guard = 0;
   while (contrastRatio(rgb, bg) < target && guard++ < 64) {
-    const next = oklch.l + dir * 0.01;
-    if (next < 0 || next > 1) break;
-    oklch = { ...oklch, l: next };
+    const nextL = Math.max(0, Math.min(1, oklch.l + dir * 0.01));
+    oklch = { ...base, l: nextL, c: maxInGamutChroma(nextL) };
     rgb = oklchToRgb(oklch);
+    if (nextL === 0 || nextL === 1) break;
   }
-  return toHex(rgb);
+  const ratio = contrastRatio(rgb, bg);
+  return { hex: toHex(rgb), ratio, met: ratio >= target };
 }
