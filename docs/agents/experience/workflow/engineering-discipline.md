@@ -44,3 +44,21 @@
 - **How**：命名先查 `docs/agents/naming-consistency-guide.md` 字典；推送用 `git push origin main; git push gitee main`。
 - **反例**：`Tab`/`TabInfo` 混用；tag 只推了 GitHub，Gitee 用户找不到新版本。
 - **事实源**：DEC-030；AGENTS.md Conventions
+
+## W6: 对比度/可读性硬约束必须进自动化门禁 🔴
+
+- **主张**：设计契约里能用数值判定的硬性约束（如 WCAG 对比度阈值 4.5:1）必须写成自动化门禁（vitest），用自实现对比度计算（不新增依赖），而非靠人眼验收；门禁按主题逐个接入（迁一套、验一套），比一次性全量断言更符合渐进迁移。
+- **适用**：任何有「设计令牌 + 多主题 + 可读性要求」的项目；尤其主题体系正在渐进迁移时。
+- **Why**：人眼无法稳定判断 4.5:1 边界附近的对比度，且多主题下逐一肉眼核对成本极高、必漏；本次 14 主题全量实测即抓出 forest（`chart-fill-4`×`chart-text` 4.02:1）与 solar-flare（`chart-fill-5`×`chart-text` 4.19:1）两个漏网者，以及 solarized-light 列表序号色 3.59:1（低于 4.5 门槛）。门禁把「主观好看」变成「可重跑的客观断言」。
+- **How**：在 `src/styles/__tests__/theme-contrast.test.ts` 内自实现相对亮度 + 对比度公式（不引第三方），解析每个主题的 CSS 变量，算出「承载文字的填充 / 文字色」对比度并 `expect(ratio).toBeGreaterThanOrEqual(4.5)`；`src/styles/__tests__/theme-generate.test.ts` 内同类门禁守护派生令牌的自洽性。CI 跑 `pnpm test` 即覆盖。
+- **反例**：只测基准主题（light/dark）就宣布「全部达标」——实则 forest/solar-flare 等卫星主题填充与文字对比度落门槛下，长期未被发现（BUG-068）；手写色板时期 Fill 明度带未按对比度校准，迁移后才由门禁暴露。
+- **事实源**：BUG-067、BUG-068；DEC-035/036/037/038；`src/styles/__tests__/theme-contrast.test.ts`、`theme-generate.test.ts`
+
+## W7: 迁移只修不达标项、其余逐字节保留 🟡
+
+- **主张**：把既有体系（主题 / 配置 / 样式）迁移到新契约时，只修正「实测不达标」的项，达标的项逐字节保留、不重写源码；用生成器从源色表派生，避免手工批量替换引入新漂移。
+- **适用**：主题色板、配置 schema、样式令牌等「有黄金源、需多产物派生」的迁移。
+- **Why**：全量重写既引入无谓 diff，又可能把原本达标的项改坏（本次若手工替换 14 套主题的填充，极可能重蹈 BUG-060 的「修复漂移」）；逐字节保留让 review 聚焦在真正变化的少数 token 上。
+- **How**：`scripts/theme/generate-themes.js` 以 `scripts/theme/sources/<theme>.js` 为唯一源，light/dark 生成物只补「契约要求但源色表缺」的派生令牌（如 `bg-primary` 别名到 `canvas.secondary`），其余源色逐字节透传；CI `pnpm theme:generate:check` 校验生成物与源一致（幂等）。
+- **反例**：一次性把 14 套主题全部重写填充值 → diff 爆炸、引入新不一致、review 无从下手（同类教训见 BUG-060 重复实现致修复漂移）。
+- **事实源**：DEC-037、DEC-038；`scripts/theme/generate-themes.js`

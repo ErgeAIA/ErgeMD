@@ -12,3 +12,8 @@
 | F5 | 内联样式不响应 CSS 变量 | 🔴 | react-patterns.md |
 | F6 | Portal / 渲染器 hooks / persist merge | 🟡 | react-patterns.md |
 | F7 | flex 滚动、zIndex 层级、Tailwind 迁移 | 🟢 | css-layout.md |
+| F8 | token 消费完整性门禁 | 🔴 | theme-tokens.md |
+| F9 | 派生色按对比度调校到阈值边界 | 🟡 | theme-tokens.md |
+| F10 | 主题存在理由优先于机制统一 | 🟡 | theme-tokens.md |
+| F11 | CSS 派生层导入顺序陷阱 | 🟡 | theme-tokens.md |
+| F12 | 图表 hover 纯 CSS 高亮 | 🟡 | interaction.md |

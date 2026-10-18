@@ -2,7 +2,7 @@
 title: 可复用经验库
 type: experience-index
 project: ErgeMD
-updated: 2026-10-17
+updated: 2026-10-19
 description: >
   从本项目开发过程蒸馏出的可复用经验总索引。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -38,16 +38,18 @@ description: >
 | R9 | 导出链路独立管线，不复用含虚拟滚动的阅读组件；内容从 store 取不查 DOM | 见 `markdown/render-export.md` MD1 |
 | R10 | CI 失败先拉完整日志看每步耗时，0s 完成的步骤必有问题；同一症状打补丁不超过 2 次 | 见 `workflow/engineering-discipline.md` W1 |
 | R11 | 写代码前读本地文件确认接口，禁止凭文档或记忆猜测 | 见 `workflow/engineering-discipline.md` W3 |
+| R12 | 对比度/可读性硬约束必须进自动化门禁（vitest 自实现 WCAG），不能靠人眼验收 | 见 `workflow/engineering-discipline.md` W6 |
+| R13 | 设计令牌无兜底消费必须 ⊆（主题定义 ∪ 非主题 CSS 定义），否则门禁拦截 | 见 `frontend/theme-tokens.md` F8 |
 
 ## 主题索引
 
 | 主题 | 内容 | 条目数 |
 |---|---|---|
-| mermaid | Mermaid 图表主题适配：themeVariables、SVG 后处理、图表类型变量、缓存 | 🔴2 / 🟡3 / 🟢1 |
+| mermaid | Mermaid 图表主题适配：themeVariables、SVG 后处理、图表类型变量、缓存 | 🔴2 / 🟡4 / 🟢1 |
 | tauri | Tauri 桌面运行时：无边框窗口、IPC、CSP、文件关联、签名 | 🔴3 / 🟡1 / 🟢1 |
-| frontend | React 19 + TS + CSS：hooks 治理、事件、样式、布局 | 🔴3 / 🟡3 / 🟢1 |
+| frontend | React 19 + TS + CSS：hooks 治理、事件、样式、主题令牌、交互 | 🔴4 / 🟡5 / 🟢1 |
 | markdown | Markdown 渲染与导出：块解析、表格、标题、PNG/PDF 导出 | 🔴1 / 🟡3 / 🟢1 |
-| workflow | 工程纪律：CI 排查、交付校对、先读后写、提交规范 | 🔴3 / 🟡1 / 🟢1 |
+| workflow | 工程纪律：CI 排查、交付校对、先读后写、提交规范、门禁 | 🔴4 / 🟡2 / 🟢1 |
 
 ## 外送汇总的前置条件
 

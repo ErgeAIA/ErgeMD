@@ -93,3 +93,12 @@
 - **How**：`mindmapLevel1~3BgColor`/`TextColor`/`mindmapCenterBgColor`/`TextColor` 全部设同色；`cScale0~5 = 背景色`、`cScaleInv0~5 = 文字色`；`darkMode = isLight ? false : true`；SVG 后处理用 `[class*="mindmap"]` 覆盖 circle/rect/ellipse/text/连接线。
 - **反例**：把 `cScaleInv0` 设成背景色 → 中心节点文字与背景同色不可见（lessons 07）；只设 `primaryTextColor` → 中心文字不变（lessons 07）。
 - **事实源**：BUG-044；lessons 06/07
+
+## M7: 渲染引擎大版本升级必须 bump 自建渲染缓存版本键 🟡
+
+- **主张**：升级图表渲染引擎（如 Mermaid 大版本）时，必须同步 bump 项目自建渲染缓存的版本键（cacheKey 内的 `_version`），否则旧引擎配置产出的缓存会跨版本复用；外观类默认值变更（如 neo / redux-color）要以「钉位」冻结，并在真实浏览器用 `getComputedStyle` 验证，不能只读文档。
+- **适用**：任何有「自建渲染缓存 + 底层引擎可升级」的图表/渲染管线。
+- **Why**：mermaid 12 的 neo 外观给节点/边加 `drop-shadow` 灰影，但阴影只在未钉 `look` 的渲染中产生，产出写入模块级缓存；若缓存键未随升级 bump，切 Tab 重挂载会反复复用带影字符串（重启清缓存才干净）。文档不会告诉你 neo 默认开、也不会告诉你某类图 shadow 在 WebView 下可见。
+- **How**：缓存键 `_version` 随引擎升级 +1（如 v36→v37 作废旧键）；`look: "classic"` 钉位消除 neo 阴影（阅读 + 导出两处 initialize）；验证用真实浏览器 `getComputedStyle` 看 `filter` 是否含 `drop-shadow`，而非读文档。
+- **反例**：mermaid 12 升级后未 bump 缓存版本键 → 流程图/类图/状态图/ER/思维导图等带曲线连接的图表节点与曲线边缘带灰色半透明污影，切 Tab 残留、重启才消失（BUG-065）。
+- **事实源**：BUG-065；DEC-033（mermaid 12.2.0 升级钉 dagre+classic）；M4（缓存版本号基础规则）
