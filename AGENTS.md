@@ -59,7 +59,7 @@ YOU MUST 在 Trae IDE 工作时先读 .trae/rules/ 下适用规则
 | 经验库按领域分目录 | 可复用经验落 docs/agents/experience/<领域>/；正文可改写、历史靠 changelog.md，与 docs/agents 其余三份的「只追加」不同 |
 | AGENTS.md 杂音归宿 | 变更日志 → CHANGELOG.md（无则 decision-log.md）；人读说明 → README.md（无则不写）；决策叙事与踩坑 → decision-log.md 与 debug-log.md；执行流水 → init-report.md 与 project-progress.md |
 | 双平台托管 | 每次 push 必须 git push origin main; git push gitee main；多分支同步所有活跃分支 |
-| Git 操作须授权 | commit / push / branch / 删除文件 / 完整构建须经用户明确授权后执行；未经授权禁止 git push --force、git commit --amend、rm -rf、数据库迁移、部署、修改 CI 配置 |
+| Git 操作须授权 | 仅「合并到 main」与「向 main 推送」须经用户明确授权后执行；commit / 建分支 / 推送功能分支等常规操作无需单独授权（用户 2026-10-18 放宽）。无论是否授权，永远禁止 git push --force、git commit --amend、rm -rf、数据库迁移、部署、修改 CI 配置 |
 | 跨文件大改前查状态 | 跨 >3 文件或 >100 行变更前先跑 git status 并向用户说明影响范围 |
 | 提交信息用 Conventional Commits | type(scope): 描述；type 限 feat / fix / docs / style / refactor / test / chore；中文描述、动词开头、结尾不加句号；按实际 diff 生成，不虚构 |
 | 命名规范 | 组件文件 PascalCase；其他文件 camelCase；Rust 命令 snake_case；CSS 变量 kebab-case |

@@ -10,6 +10,10 @@ description: >
 
 # AGENTS.md Changelog
 
+## 2026-10-18 Git 授权规则放宽（用户指示）
+
+- `<Conventions「Git 操作须授权」> → update → <原「commit / push / branch / 删除文件 / 完整构建均须授权」改为「仅合并到 main 与向 main 推送须授权；commit / 建分支 / 推送功能分支无需单独授权」；永久禁止项（force push / amend / rm -rf / 数据库迁移 / 部署 / 改 CI 配置）不变>`
+
 ## 2026-10-18 主题色板契约（DEC-035）配套例外
 
 - `<Conventions「写文件方式」> → append → <新增「生成物例外」句：src/styles/themes/*.css 中标注 GENERATED 的文件由 pnpm theme:generate 脚本重写，人工修改必须走源色表 scripts/theme/sources/*.js，一致性由 pnpm theme:generate:check 校验>`
