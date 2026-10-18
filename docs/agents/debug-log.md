@@ -552,3 +552,11 @@ description: >
 - **修复**：① `readerStore` 新增 `exportMode`；`VirtualMarkdownView` 导出模式改为对 `content` 全量解析并渲染全部 block（绕开 chunk 增量），进出时保存/恢复滚动位置；② 三个懒渲染组件在导出模式跳过 IO 立即渲染；③ `exportHtml`：置 `exportMode` → 双 rAF → `waitForExportRender` 轮询 svg 就绪 → 补救未渲染块 → 复制 → `finally` 复原（异常也不卡死）；④ 新增 `utils/exportStyles.ts`：`collectAllCssVariables` 全量收集 `documentElement` 与 `.markdown-body` 的 `--*`，`serializeAppStylesheets` 序列化整个 CSSOM 注入，shell 中和应用全局样式副作用（`overflow`/`height`/`user-select`），导出 `<html>` 复制根节点 `class`/`data-theme`；⑤ `MermaidDiagram` 渲染失败做最多 2 次退避重试（走完整主题管线，配色不漂移）；⑥ 导出侧把含 `Syntax error in text` 的错误炸弹 svg 也视为未渲染并触发重渲染；⑦ PDF 路径 `generateExportHtml.ts` 复用同一套全量变量与 markdown.css
 - **验证限制**：实机已核一轮（`MarkdownSyntaxExample2.html`：31 张图齐全、0 炸弹、15 个 hljs 代码块分色、Properties 同行）；仍待实机确认多主题、超大文档导出耗时（轮询上限 15s）与产物体积接受度（当前约 3MB，来自全量 CSSOM）
 - **教训**：DOM 复制导出的三条硬约束——(a) 内容必须先在 DOM 全部挂载并解除懒渲染门控，复制才有意义；(b) CSS 必须来自 CSSOM 全量而非手写白名单，任何组件级 CSS（本次是 `obsidian.css`）都会漏；(c) 就绪判定不能只看「有没有 svg」，错误炸弹也是 svg。另：大批量渲染存在瞬时竞态，退避重试优于放任失败；改前不要用「第三方产物观感」当基准（同期对比的 Tabbit 浏览器导出为独立渲染器产物，无 ErgeMD 主题/高亮/Properties，属残缺而非更优）
+
+## BUG-067: `--bg-primary` 消费但从未定义（7 处弹层背景静默失效）
+- **日期**：2026-10-18（主题契约 Task 3 消费完整性测试首次暴露；当日修复）
+- **现象**：`--bg-primary` 被 7 处无兜底消费（`LinkEditModal`/`ImageEditModal` 的渐变终点与背景、`ReadingOptions` 两处），但从未被任何主题文件或 base 层定义——这些弹层的背景属性实际处于失效状态（透明/继承），长期未被发现
+- **根因**：token 命名漂移——历史消费方使用了 `--bg-primary`，而 ErgeMD 画布族命名是 `bg-page/reader/sidebar/code/secondary/tertiary`，无 `bg-primary`。CSS 自定义属性无兜底时属性直接失效且不报错，此类「消费了但没人定义」的缺陷在没有门禁的体系里是静默的
+- **修复**：主题契约生成器（`scripts/theme/generate-themes.js`）将 `bg-primary` 别名到 `canvas.secondary`（次级/elevated 表面语义），light/dark 生成物显式定义；不引入新源色，7 处失效背景恢复
+- **验证限制**：弹层在 light/dark 下与 reader 的区分度需实机确认；若希望弹层更突出，后续可改别名 `bg-tertiary` 或增设专用弹层 token（属设计决策，不在本修复范围）
+- **教训**：主题体系必须配「消费完整性门禁」——无兜底消费 ⊆（主题定义 ∪ 非主题 CSS 定义）；本次该门禁（`src/styles/__tests__/theme-generate.test.ts`）第一轮运行即抓出此缺陷，验证了门禁本身的价值

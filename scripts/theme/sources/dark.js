@@ -42,9 +42,10 @@ export default {
   chartHues: ["#7AA2F7", "#BB9AF7", "#9ECE6A", "#E0AF68", "#F7768E", "#FF9E64"],
   // 数据序列种子（= theme-dark-base 现行 chart-series-0..5）
   seriesHues: ["#7DCFFF", "#9ECE6A", "#E0AF68", "#F7768E", "#BB9AF7", "#FF9E64"],
-  // 图表填充带（OKLCH）：按 theme-dark-base 现行 fill-0..5 的内联 oklch 区间
-  // （L 0.22~0.24 / C 0.06~0.08）取中位值；派生值与现行值允许有契约预期内的微小差异
-  fillBand: { l: 0.23, c: 0.07 },
+  // 图表填充带（OKLCH）：按 theme-dark-base 现行 fill-0..5 实测中位校准（L 0.38 / C 0.021）。
+  // 注意：CSS 内联 oklch 注释为近似值（实测 #3A3A4A 为 L 0.36/C 0.028，注释写 0.22/0.08），
+  // 不作为依据；本带使派生 fill 与现行值肉眼一致（色相来自 chartHues，允许微小差异）
+  fillBand: { l: 0.38, c: 0.02 },
   // 代码高亮（VSCode Dark+ 原配透传）
   code: {
     keyword: "#569CD6",
