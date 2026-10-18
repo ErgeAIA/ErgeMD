@@ -24,6 +24,9 @@ import desertSunset from "./sources/desert-sunset.js";
 import aurora from "./sources/aurora.js";
 import cherryBlossom from "./sources/cherry-blossom.js";
 import falcon from "./sources/falcon.js";
+import forest from "./sources/forest.js";
+import monochrome from "./sources/monochrome.js";
+import ocean from "./sources/ocean.js";
 
 export { buildTokens, render };
 
@@ -184,6 +187,9 @@ const THEMES = [
   aurora,
   cherryBlossom,
   falcon,
+  forest,
+  monochrome,
+  ocean,
 ];
 
 /** 是否被直接执行（node scripts/theme/generate-themes.js） */

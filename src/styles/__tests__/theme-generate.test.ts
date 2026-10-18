@@ -10,6 +10,9 @@ import desertSunset from "../../../scripts/theme/sources/desert-sunset.js";
 import aurora from "../../../scripts/theme/sources/aurora.js";
 import cherryBlossom from "../../../scripts/theme/sources/cherry-blossom.js";
 import falcon from "../../../scripts/theme/sources/falcon.js";
+import forest from "../../../scripts/theme/sources/forest.js";
+import monochrome from "../../../scripts/theme/sources/monochrome.js";
+import ocean from "../../../scripts/theme/sources/ocean.js";
 import { buildTokens, render } from "../../../scripts/theme/generate-themes.js";
 import { ROOT, STYLES, parseDeclarations, readTheme } from "./theme-test-utils";
 
@@ -69,6 +72,9 @@ describe("theme generate", () => {
     [aurora, "aurora"],
     [cherryBlossom, "cherry-blossom"],
     [falcon, "falcon"],
+    [forest, "forest"],
+    [monochrome, "monochrome"],
+    [ocean, "ocean"],
   ] as const) {
     const css = readFileSync(join(STYLES, "themes", `${theme}.css`), "utf8");
     const defined = parseDeclarations(css);
@@ -112,6 +118,9 @@ describe("theme generate", () => {
       [aurora, "aurora"],
       [cherryBlossom, "cherry-blossom"],
       [falcon, "falcon"],
+      [forest, "forest"],
+      [monochrome, "monochrome"],
+      [ocean, "ocean"],
     ] as const) {
       const current = readFileSync(join(STYLES, "themes", `${name}.css`), "utf8");
       const eol = current.includes("\r\n") ? "\r\n" : "\n";

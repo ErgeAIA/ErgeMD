@@ -16,6 +16,9 @@ const MIGRATED_THEMES = [
   "aurora",
   "cherry-blossom",
   "falcon",
+  "forest",
+  "monochrome",
+  "ocean",
 ];
 
 describe("主题对比度门禁", () => {

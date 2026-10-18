@@ -8,6 +8,9 @@ import desertSunset from "../../../scripts/theme/sources/desert-sunset.js";
 import aurora from "../../../scripts/theme/sources/aurora.js";
 import cherryBlossom from "../../../scripts/theme/sources/cherry-blossom.js";
 import falcon from "../../../scripts/theme/sources/falcon.js";
+import forest from "../../../scripts/theme/sources/forest.js";
+import monochrome from "../../../scripts/theme/sources/monochrome.js";
+import ocean from "../../../scripts/theme/sources/ocean.js";
 import { parseHex, contrastRatio } from "../../../scripts/theme/color-science.js";
 
 const walk = (obj: unknown, path = ""): [string, string][] =>
@@ -26,6 +29,9 @@ describe("theme sources", () => {
     ["aurora", aurora],
     ["cherry-blossom", cherryBlossom],
     ["falcon", falcon],
+    ["forest", forest],
+    ["monochrome", monochrome],
+    ["ocean", ocean],
   ] as const) {
     it(`${name}: 所有字符串值非空，# 开头的值均为合法 hex`, () => {
       for (const [key, value] of walk(src)) {
