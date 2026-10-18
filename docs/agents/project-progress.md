@@ -17,7 +17,7 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（v0.4.4 审计修复轮 1 已并入 main；2026-10-18 基线提交 e21b1c6）
+- **当前分支**：main（v0.4.4 审计修复轮 1 已并入 main；2026-10-18 主题契约第一阶段已本地合并至 main @ 4e0007e，待推送双远端与实机验收）
 - **阶段**：主题色板契约重构（设计已批准，第一阶段实施待启动）
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
@@ -28,7 +28,8 @@ description: >
 - 2026-10-18 主题契约重构设计阶段：与用户两轮可视化对比（浏览器伴侣）确认两条核心规则——思维导图配色（6 色相封顶 + 层级明度 + text-on-fill 绑定，现状 18 节点对比度无一达 4.5:1 → 规则版全部达标）与正文元素分界（标题/功能位带色过护栏、正文与分隔线中性）；产出 docs/theme-token-contract-design.md（待评审），经独立 builder 检查 7 问（6 问自行定断记录于文档第 11 节）；决策记录 DEC-035。开放问题 1 项待用户定夺：派生色构建期生成 vs 运行时注入。未动任何代码
 - 2026-10-18 设计批准与基线提交：用户选定派生色「构建期生成」（方案 A），设计文档状态改已批准并补第 12/13 节（决议 + 三阶段划分）；按 writing-plans 技能产出 docs/superpowers/plans/2026-10-18-theme-token-contract.md（第一阶段 6 任务，TDD）；用户授权一次性提交全部未提交改动至 main（e21b1c6，20 文件：三种图表主题适配 / 思维导图布局切换 / HTML 导出链路重构 / 设计文档与实施计划 / 文档同步）；执行方式选 subagent-driven-development（本会话逐任务派发 + 评审）
 - 2026-10-18 主题契约第一阶段实施完成（分支 feature/theme-token-contract，DEC-036）：源色表 + 生成器（scripts/theme/）+ light/dark 生成物 + 三级测试门禁（结构/完整性/对比度）+ 思维导图 text-on-fill 接线；lint 0 错误 / tsc 通过 / vitest 98/98 / --check 幂等；每任务独立评审（R1-R16 裁定）；修复 BUG-067（bg-primary 无定义）；遗留缺口：分隔线派生被 derived 层覆盖（阶段 3 收口）、12 套主题未迁移、黄金往返不抓源色表笔误。待用户实机验收 light/dark（重点：思维导图节点文字与连线、六级标题、功能位）
-- **最后更新**：2026-10-18 主题契约第一阶段实施完成（分支 feature/theme-token-contract，待实机验收）
+- 2026-10-18 主题契约第一阶段整合：功能分支经 PR #3（github.com/ErgeAIA/ErgeMD/pull/3）流程评审后按用户授权合并入 main（FF，4e0007e），合并结果全量验证通过（lint 0 错误 / tsc / vitest 113/113 / --check 一致）；本地分支与 SDD 工作区已清理；AGENTS.md git 授权规则放宽（仅合并/推送 main 需授权，changelog 已登记）。待：推送 main 至 origin+gitee（需授权）、用户实机验收 light/dark、阶段 2 高刺激组迁移
+- **最后更新**：2026-10-18 主题契约第一阶段已合并入 main（待推送与实机验收）
   - H1 chunk 缓存键加文档指纹 + FIFO 淘汰；H2 isTableLine 收紧（BUG-030 修复恢复）；H3 新增 queryActiveMarkdownBody 替换 4 处裸 querySelector
   - M1/M2 单一解析源：大文档跳过 extractTOC；virtualTocItems 改由 VirtualMarkdownView 经 onTocReady 上行；FloatingTOC 新增 items 注入（DEC-031）
   - M3 常驻 Tab 上限 = 活动 + 固定 + 最近 3 个，超出者卸载（DEC-032）
