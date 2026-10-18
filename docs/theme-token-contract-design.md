@@ -90,6 +90,8 @@ description: >
 | 功能位族 | link / inline-code-bg+text / table-header-bg+text / blockquote-border / list-number | 链接、行内代码、表头、引用、序号 | 主强调色相推导 | ≥ 4.5:1 |
 | 图表四层 | chart-fill-N / chart-stroke-N / chart-series-N / **chart-text-on-fill-N** | 图表填充/描边/序列/填充上文字 | fill 源色推导；text-on-fill 公式选定 | 填充上文字 ≥ 4.5:1（大字 ≥ 3:1） |
 | 装饰族 | divider / table-border / border-subtle | 分割线、表格线 | 画布明度 ±4–6% 推导 | 不设文字门槛 |
+
+> **已知缺口（2026-10-18，评审发现）**：`theme-derived.css` 的导入顺序晚于主题文件且选择器特异性相同，它对全部 14 套主题重新定义了 `--divider`/`--table-border`——因此本契约生成物中的这两个派生值在**运行时被派生层覆盖**（`border-subtle` 派生层未定义，已生效）。12 套手写主题自身均不定义这三个 token（派生层是它们的唯一来源），现阶段从派生层移除会破坏它们，故推迟到阶段 3 处理：全部主题生成后，从派生层移除这三个 token（或改为「主题文件已定义则不覆盖」）。阶段 1 无回归：运行时观感与改动前完全一致。
 | 代码族 | code-keyword / string / number / comment / function | 语法高亮 | 源色·代码原配（VS Code 出身） | 代码文字 ≥ 4.5:1（原配已校准的除外，逐套校验） |
 
 ## 6. 推导规则（公式草案，常数待定）
@@ -158,7 +160,7 @@ description: >
 
 - **阶段 1**：源色表结构 + 生成脚本 + 推导公式（text-on-fill、标题调校、装饰线、surface/edge 派生）+ CI 门禁（vitest 解析 CSS 源文本断言对比度）+ light/dark 两套基准主题生成与验收。完成即停
 - **阶段 2**：cyberpunk / neon-cyberpunk / solar-flare / desert-sunset 高刺激组迁移（洗刺激保色相）
-- **阶段 3**：其余 10 套迁移 + 灰度导出覆盖表扩展 + 全主题导出实测
+- **阶段 3**：其余 10 套迁移 + 灰度导出覆盖表扩展 + 全主题导出实测 + **收口第 5 节「已知缺口」**（全部主题生成后，从 `theme-derived.css` 移除 divider/table-border/border-subtle 或改为「主题文件已定义则不覆盖」，使统一派生在运行时生效）
 
 ## 10. 关联文档
 

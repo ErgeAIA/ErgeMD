@@ -166,6 +166,7 @@ const check = process.argv.includes("--check");
 let ok = true;
 for (const src of THEMES) {
   const tokens = buildTokens(src);
+  const count = Object.keys(tokens).length;
   const path = join(ROOT, "src/styles/themes", `${src.name}.css`);
   // 沿用文件现行换行符，避免无意义的全量 diff
   const current = existsSync(path) ? readFileSync(path, "utf8") : "";
@@ -176,11 +177,11 @@ for (const src of THEMES) {
       console.error(`[theme:generate] ${src.name}.css 与源色表不一致——请运行 pnpm theme:generate`);
       ok = false;
     } else {
-      console.log(`[theme:generate] ${src.name}.css 一致（${Object.keys(tokens).length} tokens）`);
+      console.log(`[theme:generate] ${src.name}.css 一致（${count} tokens）`);
     }
   } else {
     writeFileSync(path, css);
-    console.log(`[theme:generate] 已生成 ${src.name}.css（${Object.keys(tokens).length} tokens）`);
+    console.log(`[theme:generate] 已生成 ${src.name}.css（${count} tokens）`);
   }
 }
 process.exit(ok ? 0 : 1);
