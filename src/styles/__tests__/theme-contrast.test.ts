@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readTheme } from "./theme-test-utils";
 import { parseHex, contrastRatio } from "../../../scripts/theme/color-science.js";
 
-const BODY = 4.5; // 标题/功能位/图表文字门槛
+const BODY = 4.5; // 标题/图表文字门槛
 const PROSE = 7; // 正文墨色门槛
 
 describe("主题对比度门禁", () => {
@@ -12,12 +12,14 @@ describe("主题对比度门禁", () => {
     it(`${theme}: 正文墨色 ≥ ${PROSE}:1`, () => {
       expect(
         contrastRatio(parseHex(t["text-primary"]), parseHex(t["bg-reader"])),
+        `${theme}.text-primary=${t["text-primary"]} × bg-reader=${t["bg-reader"]}`,
       ).toBeGreaterThanOrEqual(PROSE);
     });
 
     it(`${theme}: 次级文字 ≥ ${BODY}:1`, () => {
       expect(
         contrastRatio(parseHex(t["text-secondary"]), parseHex(t["bg-reader"])),
+        `${theme}.text-secondary=${t["text-secondary"]} × bg-reader=${t["bg-reader"]}`,
       ).toBeGreaterThanOrEqual(BODY);
     });
 
@@ -48,6 +50,7 @@ describe("主题对比度门禁", () => {
     it(`${theme}: 代码文字 ≥ ${BODY}:1`, () => {
       expect(
         contrastRatio(parseHex(t["code-text"]), parseHex(t["bg-code"])),
+        `${theme}.code-text=${t["code-text"]} × bg-code=${t["bg-code"]}`,
       ).toBeGreaterThanOrEqual(BODY);
     });
   }
