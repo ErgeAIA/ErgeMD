@@ -18,6 +18,9 @@ import * as cs from "./color-science.js";
 import light from "./sources/light.js";
 import dark from "./sources/dark.js";
 import cyberpunk from "./sources/cyberpunk.js";
+import neonCyberpunk from "./sources/neon-cyberpunk.js";
+import solarFlare from "./sources/solar-flare.js";
+import desertSunset from "./sources/desert-sunset.js";
 
 export { buildTokens, render };
 
@@ -168,7 +171,7 @@ function render(name, tokens, eol) {
 }
 
 /** 已迁移到契约的主题（按阶段推进：阶段 1 = light/dark，阶段 2 = 高刺激组） */
-const THEMES = [light, dark, cyberpunk];
+const THEMES = [light, dark, cyberpunk, neonCyberpunk, solarFlare, desertSunset];
 
 /** 是否被直接执行（node scripts/theme/generate-themes.js） */
 function isMain() {

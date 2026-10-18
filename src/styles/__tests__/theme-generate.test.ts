@@ -4,6 +4,9 @@ import { join } from "node:path";
 import light from "../../../scripts/theme/sources/light.js";
 import dark from "../../../scripts/theme/sources/dark.js";
 import cyberpunk from "../../../scripts/theme/sources/cyberpunk.js";
+import neonCyberpunk from "../../../scripts/theme/sources/neon-cyberpunk.js";
+import solarFlare from "../../../scripts/theme/sources/solar-flare.js";
+import desertSunset from "../../../scripts/theme/sources/desert-sunset.js";
 import { buildTokens, render } from "../../../scripts/theme/generate-themes.js";
 import { ROOT, STYLES, parseDeclarations, readTheme } from "./theme-test-utils";
 
@@ -57,6 +60,9 @@ describe("theme generate", () => {
     [light, "light"],
     [dark, "dark"],
     [cyberpunk, "cyberpunk"],
+    [neonCyberpunk, "neon-cyberpunk"],
+    [solarFlare, "solar-flare"],
+    [desertSunset, "desert-sunset"],
   ] as const) {
     const css = readFileSync(join(STYLES, "themes", `${theme}.css`), "utf8");
     const defined = parseDeclarations(css);
@@ -94,6 +100,9 @@ describe("theme generate", () => {
       [light, "light"],
       [dark, "dark"],
       [cyberpunk, "cyberpunk"],
+      [neonCyberpunk, "neon-cyberpunk"],
+      [solarFlare, "solar-flare"],
+      [desertSunset, "desert-sunset"],
     ] as const) {
       const current = readFileSync(join(STYLES, "themes", `${name}.css`), "utf8");
       const eol = current.includes("\r\n") ? "\r\n" : "\n";

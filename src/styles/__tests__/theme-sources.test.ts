@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import light from "../../../scripts/theme/sources/light.js";
 import dark from "../../../scripts/theme/sources/dark.js";
 import cyberpunk from "../../../scripts/theme/sources/cyberpunk.js";
+import neonCyberpunk from "../../../scripts/theme/sources/neon-cyberpunk.js";
+import solarFlare from "../../../scripts/theme/sources/solar-flare.js";
+import desertSunset from "../../../scripts/theme/sources/desert-sunset.js";
 import { parseHex, contrastRatio } from "../../../scripts/theme/color-science.js";
 
 const walk = (obj: unknown, path = ""): [string, string][] =>
@@ -14,6 +17,9 @@ describe("theme sources", () => {
     ["light", light],
     ["dark", dark],
     ["cyberpunk", cyberpunk],
+    ["neon-cyberpunk", neonCyberpunk],
+    ["solar-flare", solarFlare],
+    ["desert-sunset", desertSunset],
   ] as const) {
     it(`${name}: 所有字符串值非空，# 开头的值均为合法 hex`, () => {
       for (const [key, value] of walk(src)) {

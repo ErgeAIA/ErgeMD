@@ -6,7 +6,14 @@ const BODY = 4.5; // 标题/图表文字门槛
 const PROSE = 7; // 正文墨色门槛
 
 /** 已迁移到契约的主题（随阶段 2/3 推进逐套加入，迁一套验一套） */
-const MIGRATED_THEMES = ["light", "dark", "cyberpunk"];
+const MIGRATED_THEMES = [
+  "light",
+  "dark",
+  "cyberpunk",
+  "neon-cyberpunk",
+  "solar-flare",
+  "desert-sunset",
+];
 
 describe("主题对比度门禁", () => {
   for (const theme of MIGRATED_THEMES) {
