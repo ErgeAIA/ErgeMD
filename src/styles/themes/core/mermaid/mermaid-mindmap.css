@@ -31,7 +31,7 @@ ErgeMD 主题系统 - mermaid-mindmap.css
   --mermaid-mindmap-l3-bg: var(--chart-fill-3);
   --mermaid-mindmap-l3-text: var(--chart-text-on-fill-3);
 
-  --mermaid-mindmap-l4-bg: var(--chart-fill-4);
+  /* 第 5 槽位文字（cScale4 的 text-on-fill；l4-bg 无消费者，不定义） */
   --mermaid-mindmap-l4-text: var(--chart-text-on-fill-4);
 
   /* === Mindmap 节点背景序列（→ mermaid cScale0..11，与上方 l*/center 同索引）=== */

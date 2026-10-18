@@ -958,11 +958,17 @@ function getMermaidThemeSignature(): string {
     "--mermaid-mindmap-l2-text",
     "--mermaid-mindmap-l3-bg",
     "--mermaid-mindmap-l3-text",
+    "--mermaid-mindmap-l4-text",
     "--mermaid-mindmap-branch-0",
     "--mermaid-mindmap-branch-1",
     "--mermaid-mindmap-branch-2",
     "--mermaid-mindmap-branch-3",
     "--mermaid-mindmap-branch-4",
+    "--mermaid-mindmap-branch-line-0",
+    "--mermaid-mindmap-branch-line-1",
+    "--mermaid-mindmap-branch-line-2",
+    "--mermaid-mindmap-branch-line-3",
+    "--mermaid-mindmap-branch-line-4",
     // Mermaid Sequence
     "--mermaid-sequence-actor-bg",
     "--mermaid-sequence-actor-border",
@@ -1395,7 +1401,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.gitBranchLabel0 = mindmapColors.centerText;
 
             // 节点背景（cScale）= fill（承载文字），文字（cScaleLabel）= 同索引 text-on-fill；
-            // 连线（cScaleInv / lineColor）= stroke（视觉身份）。详见 mermaid-mindmap.css
+            // 连线（cScaleInv / lineColor）= stroke（视觉身份）。详见 mermaid-mindmap.css。
+            // 注意：branches / branchLines / nodeInks 三个序列必须等长（当前均为 5），
+            // 新增分支时三处与 mermaid-mindmap.css 的 branch/branch-line 令牌需同步扩充
             const branches = mindmapColors.branches;
             const branchLines = mindmapColors.branchLines;
             const nodeInks = [
@@ -2327,48 +2335,23 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (isMindmap) {
             const mindmapColors = colors.charts.mindmap;
 
-            const mindmapStyle = `
-              /* ===== Mindmap 节点背景 - 使用 levelBg 而非 branch 色 ===== */
-              .mindmap .root rect {
-                fill: ${mindmapColors.centerColor} !important;
-              }
-              .mindmap .node rect {
-                fill: ${mindmapColors.level1Bg} !important;
-              }
-              .mindmap .node.depth-1 rect {
-                fill: ${mindmapColors.level2Bg} !important;
-              }
-              .mindmap .node.depth-2 rect {
-                fill: ${mindmapColors.level3Bg} !important;
-              }
-              .mindmap .node.depth-3 rect {
-                fill: ${mindmapColors.level3Bg} !important;
-              }
-
-              /* ===== Mindmap 文字颜色 - 使用 level 语义色 ===== */
-              .mindmap .root text,
-              .mindmap .node text {
-                fill: ${mindmapColors.centerText} !important;
-              }
-
-              /* ===== Mindmap 分支线 - 使用 branches 颜色 ===== */
-              .mindmap path,
-              .mindmap .branch-0 path {
-                stroke: ${mindmapColors.branches[0]} !important;
-              }
-              .mindmap .branch-1 path {
-                stroke: ${mindmapColors.branches[1]} !important;
-              }
-              .mindmap .branch-2 path {
-                stroke: ${mindmapColors.branches[2]} !important;
-              }
-              .mindmap .branch-3 path {
-                stroke: ${mindmapColors.branches[3]} !important;
-              }
-              .mindmap .branch-4 path {
-                stroke: ${mindmapColors.branches[4]} !important;
-              }
-            `;
+            // mermaid 12.2.0 思维导图渲染器语义（反编译 mindmap-definition chunk 核实）：
+            // - 节点背景（cScale）/ 文字（cScaleLabel）由 themeVariables 注入，已按契约接线
+            //   （fill 承载文字 + 同索引 text-on-fill；根节点 section--1 ↔ cScale0 = fill-0）
+            // - 分支连线（.section-edge-N，curve=basis 的 path）由 cScale 上色，即连线色跟随
+            //   节点背景色——fill 化后浅色主题下连线将不可见
+            // - cScaleInv 仅作用于 line 元素（classic 外观不产生），lineColor 为死变量
+            // 故连线色在此用 SVG 后处理显式覆盖为 stroke 色（主题视觉身份所在）。
+            // 选择器索引：渲染器 CSS 规则 .section-edge-(i-1) 与 cScale(i) 配对，
+            // 即 section-edge-k 对应 branches[(k+1) % 5]，stroke 取同索引 branchLines。
+            const branchLines = mindmapColors.branchLines;
+            let mindmapStyle = "";
+            for (let k = 0; k < 11; k++) {
+              mindmapStyle += `
+              .section-edge-${k} {
+                stroke: ${branchLines[(k + 1) % branchLines.length]} !important;
+              }`;
+            }
 
             svg = svg.replace("<style>", `<style>${mindmapStyle}`);
           }
