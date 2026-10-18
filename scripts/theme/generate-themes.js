@@ -17,6 +17,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import * as cs from "./color-science.js";
 import light from "./sources/light.js";
 import dark from "./sources/dark.js";
+import cyberpunk from "./sources/cyberpunk.js";
 
 export { buildTokens, render };
 
@@ -166,7 +167,8 @@ function render(name, tokens, eol) {
   return `${header}${eol}${body}${eol}}${eol}`;
 }
 
-const THEMES = [light, dark];
+/** 已迁移到契约的主题（按阶段推进：阶段 1 = light/dark，阶段 2 = 高刺激组） */
+const THEMES = [light, dark, cyberpunk];
 
 /** 是否被直接执行（node scripts/theme/generate-themes.js） */
 function isMain() {

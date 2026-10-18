@@ -314,6 +314,10 @@ ErgeMD 主题系统 - theme-dark-base.css
   --chart-series-7: #C586C0;
   /* oklch(0.58 0.18 320) - 紫红 */
 
+  /* bg-primary：历史消费方（LinkEditModal/ImageEditModal/ReadingOptions，7 处无兜底）
+     从未被手写主题定义（BUG-067）；生成物主题自行派生，其余暗色主题在此补默认值 */
+  --bg-primary: var(--bg-secondary);
+
   /* === Chart text-on-fill（承载文字的填充上的文字色）===
      默认 = chart-text（与 fill 的既有配对）；生成物主题（dark）在其后导入并覆盖。
      未迁移的 11 套手写主题经此默认获得定义，避免 var() 解析为空（BUG 类：暗字暗底） */

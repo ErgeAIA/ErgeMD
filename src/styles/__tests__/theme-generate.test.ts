@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import light from "../../../scripts/theme/sources/light.js";
 import dark from "../../../scripts/theme/sources/dark.js";
+import cyberpunk from "../../../scripts/theme/sources/cyberpunk.js";
 import { buildTokens, render } from "../../../scripts/theme/generate-themes.js";
 import { ROOT, STYLES, parseDeclarations, readTheme } from "./theme-test-utils";
 
@@ -55,6 +56,7 @@ describe("theme generate", () => {
   for (const [src, theme] of [
     [light, "light"],
     [dark, "dark"],
+    [cyberpunk, "cyberpunk"],
   ] as const) {
     const css = readFileSync(join(STYLES, "themes", `${theme}.css`), "utf8");
     const defined = parseDeclarations(css);
@@ -91,6 +93,7 @@ describe("theme generate", () => {
     for (const [src, name] of [
       [light, "light"],
       [dark, "dark"],
+      [cyberpunk, "cyberpunk"],
     ] as const) {
       const current = readFileSync(join(STYLES, "themes", `${name}.css`), "utf8");
       const eol = current.includes("\r\n") ? "\r\n" : "\n";
