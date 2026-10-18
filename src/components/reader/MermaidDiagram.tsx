@@ -4,6 +4,7 @@ import { useTheme } from "../../hooks/useTheme";
 import SVGPreview from "./SVGPreview";
 import { useReaderStore } from "@/stores/readerStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { MERMAID_HOVER_CSS } from "./mermaidHoverCss";
 
 /**
  * Mermaid 渲染结果缓存（内存级别，页面刷新失效）。
@@ -2365,6 +2366,18 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             }
 
             svg = svg.replace("<style>", `<style>${mindmapStyle}`);
+          }
+
+          // hover 高亮：纯 CSS 注入（同类图元淡出、悬停项保持不透明），与主题注入同一机制。
+          // 放在最后注入 → 出现在 <style> 最前面；因规则用 :has()/:not(:hover) 提升特异性，
+          // 且只声明 opacity/transition，不会与主题规则冲突
+          if (svg.includes("<style>")) {
+            svg = svg.replace("<style>", `<style>${MERMAID_HOVER_CSS}`);
+          } else {
+            svg = svg.replace(
+              /<svg([^>]*)>/,
+              `<svg$1><style>${MERMAID_HOVER_CSS}</style>`,
+            );
           }
 
           if (!cancelled) {
