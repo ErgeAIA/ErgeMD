@@ -17,8 +17,8 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（主题契约三阶段全部完成并推送双远端 @ 2610c92；待用户全主题实机验收）
-- **阶段**：主题色板契约重构（设计已批准，第一阶段实施待启动）
+- **当前分支**：main（主题契约三阶段全部完成并推送双远端 @ da63ea5；2026-10-19 用户全主题视觉验收通过）
+- **阶段**：主题色板契约重构**已验收交付**（设计 → 三阶段实施 → 14/14 迁移 → 实机验收闭环）；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
 - 2026-10-17 文档任务：丰富 docs/TestCase/MarkdownSyntaxExample.md——H1/H2/H3 共 69 个标题下补充测试范围与检查要点（Mermaid 28 种图表逐节标注回归重点，标注已知上游问题）；仅改文档，未动代码与构建配置，待用户实机验证
@@ -28,6 +28,7 @@ description: >
 - 2026-10-18 主题契约重构设计阶段：与用户两轮可视化对比（浏览器伴侣）确认两条核心规则——思维导图配色（6 色相封顶 + 层级明度 + text-on-fill 绑定，现状 18 节点对比度无一达 4.5:1 → 规则版全部达标）与正文元素分界（标题/功能位带色过护栏、正文与分隔线中性）；产出 docs/theme-token-contract-design.md（待评审），经独立 builder 检查 7 问（6 问自行定断记录于文档第 11 节）；决策记录 DEC-035。开放问题 1 项待用户定夺：派生色构建期生成 vs 运行时注入。未动任何代码
 - 2026-10-18 设计批准与基线提交：用户选定派生色「构建期生成」（方案 A），设计文档状态改已批准并补第 12/13 节（决议 + 三阶段划分）；按 writing-plans 技能产出 docs/superpowers/plans/2026-10-18-theme-token-contract.md（第一阶段 6 任务，TDD）；用户授权一次性提交全部未提交改动至 main（e21b1c6，20 文件：三种图表主题适配 / 思维导图布局切换 / HTML 导出链路重构 / 设计文档与实施计划 / 文档同步）；执行方式选 subagent-driven-development（本会话逐任务派发 + 评审）
 - 2026-10-18 主题契约第一阶段实施完成（分支 feature/theme-token-contract，DEC-036）：源色表 + 生成器（scripts/theme/）+ light/dark 生成物 + 三级测试门禁（结构/完整性/对比度）+ 思维导图 text-on-fill 接线；lint 0 错误 / tsc 通过 / vitest 98/98 / --check 幂等；每任务独立评审（R1-R16 裁定）；修复 BUG-067（bg-primary 无定义）；遗留缺口：分隔线派生被 derived 层覆盖（阶段 3 收口）、12 套主题未迁移、黄金往返不抓源色表笔误。待用户实机验收 light/dark（重点：思维导图节点文字与连线、六级标题、功能位）
+- 2026-10-19 **视觉验收通过（项目闭环）**：用户逐套实机确认 14 套主题全部通过——含两套赛博（cyberpunk / neon-cyberpunk）的冲击力保留、monochrome 纯灰度层次、solarized-light 暖黄底上的标题与序号、各套 6.13 思维导图的节点文字清晰度与连线鲜明度。主题契约项目至此交付完成。遗留三项非阻塞清理（未启动，等用户排期）：① `level*Bg` 字段与 `--mermaid-mindmap-l1..l3-bg` 令牌无消费者；② `globals.css` 遗留高饱和默认块（含 mindmap l*-bg）整体清理；③ 导出兜底路径 `renderMermaidForExport` 不带 themeVariables。今后改主题 = 改 `scripts/theme/sources/<theme>.js` + `pnpm theme:generate`
 - 2026-10-18 主题契约阶段 3 完成（14/14 全量迁移，均在 main）：aurora / cherry-blossom / falcon（eb5af81）→ forest / monochrome / ocean → tokyo-night / solarized-light + R14 分隔线收口（91ed401）→ --list-number 功能位令牌 + 灰度导出覆盖表扩展（2610c92）。最终状态：14 套主题各一份源色表 + .d.ts，全部由 scripts/theme/generate-themes.js 生成；对比度门禁覆盖 14 套（正文 ≥7:1、标题/序号/图表文字 ≥4.5:1）；BUG-068（forest 4.02 / solar-flare 4.19）随迁移自愈；monochrome 实测填充最大彩度 0.000（纯灰度守住）。验证 tsc / eslint / vitest 295/295 / --check 十四主题一致。遗留（非阻塞）：level*Bg 与 l1..l3-bg 无消费者、globals.css 遗留高饱和默认块、导出兜底路径不带 themeVariables。待用户全主题实机验收
 - 2026-10-18 主题契约阶段 2（高刺激组四套迁移，分支 feature/theme-phase2）：cyberpunk 已在 main（ab529de），neon-cyberpunk / solar-flare / desert-sunset 三套在阶段 2 分支（2dc0fa4）。四套均按「源色表现行值转录 + 填充带实测校准 + 标题调校 + fill 类别着色 + text-on-fill 绑定」迁移，结果仅不达标项被修正：cyberpunk H6 2.78→4.51、neon-cyberpunk H6 3.09→4.61、solar-flare H6 3.09→4.61、desert-sunset H6 3.02→4.68，其余标题色（霓虹青 / 品红 / 橙 / 绿 / 沙金 / 珊瑚等）全部原样保留；图表填充改为按类别色相着色并绑定文字色。对比度门禁覆盖 6 套已迁移主题；验证 tsc / eslint / vitest 169/169 / --check 六主题一致。待用户实机验收四套视觉效果后合并入 main
 - 2026-10-18 主题契约第一阶段整合：功能分支经 PR #3（github.com/ErgeAIA/ErgeMD/pull/3）流程评审后按用户授权合并入 main（FF，4e0007e），合并结果全量验证通过（lint 0 错误 / tsc / vitest 113/113 / --check 一致）；本地分支与 SDD 工作区已清理；AGENTS.md git 授权规则放宽（仅合并/推送 main 需授权，changelog 已登记）。待：推送 main 至 origin+gitee（需授权）、用户实机验收 light/dark、阶段 2 高刺激组迁移
