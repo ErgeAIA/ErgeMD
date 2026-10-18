@@ -21,6 +21,9 @@ import cyberpunk from "./sources/cyberpunk.js";
 import neonCyberpunk from "./sources/neon-cyberpunk.js";
 import solarFlare from "./sources/solar-flare.js";
 import desertSunset from "./sources/desert-sunset.js";
+import aurora from "./sources/aurora.js";
+import cherryBlossom from "./sources/cherry-blossom.js";
+import falcon from "./sources/falcon.js";
 
 export { buildTokens, render };
 
@@ -171,7 +174,17 @@ function render(name, tokens, eol) {
 }
 
 /** 已迁移到契约的主题（按阶段推进：阶段 1 = light/dark，阶段 2 = 高刺激组） */
-const THEMES = [light, dark, cyberpunk, neonCyberpunk, solarFlare, desertSunset];
+const THEMES = [
+  light,
+  dark,
+  cyberpunk,
+  neonCyberpunk,
+  solarFlare,
+  desertSunset,
+  aurora,
+  cherryBlossom,
+  falcon,
+];
 
 /** 是否被直接执行（node scripts/theme/generate-themes.js） */
 function isMain() {

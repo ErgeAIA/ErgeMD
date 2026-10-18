@@ -13,6 +13,9 @@ const MIGRATED_THEMES = [
   "neon-cyberpunk",
   "solar-flare",
   "desert-sunset",
+  "aurora",
+  "cherry-blossom",
+  "falcon",
 ];
 
 describe("主题对比度门禁", () => {
