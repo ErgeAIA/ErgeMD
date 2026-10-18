@@ -91,7 +91,7 @@ description: >
 | 图表四层 | chart-fill-N / chart-stroke-N / chart-series-N / **chart-text-on-fill-N** | 图表填充/描边/序列/填充上文字 | fill 源色推导；text-on-fill 公式选定 | 填充上文字 ≥ 4.5:1（大字 ≥ 3:1） |
 | 装饰族 | divider / table-border / border-subtle | 分割线、表格线 | 画布明度 ±4–6% 推导 | 不设文字门槛 |
 
-> **已知缺口（2026-10-18，评审发现）**：`theme-derived.css` 的导入顺序晚于主题文件且选择器特异性相同，它对全部 14 套主题重新定义了 `--divider`/`--table-border`——因此本契约生成物中的这两个派生值在**运行时被派生层覆盖**（`border-subtle` 派生层未定义，已生效）。12 套手写主题自身均不定义这三个 token，其运行时有效来源是派生层（base 层另有过时的 rgba 值）；现阶段从派生层移除会使它们回落到 base 旧值而非契约派生值，故推迟到阶段 3 处理：全部主题生成后，从派生层移除这三个 token（或改为「主题文件已定义则不覆盖」）。阶段 1 无回归：运行时观感与改动前完全一致。
+> **已收口（2026-10-18 阶段 3）**：该缺口的触发条件是「全部主题均为生成物」——现 14 套主题已全部迁移，`--divider`/`--table-border` 已从 `theme-derived.css` 移除，契约派生值在运行时生效（`--border-subtle` 本就不在派生层，更早即已生效）。历史记录：评审发现 `theme-derived.css` 导入晚于主题文件且特异性相同，其重定义会覆盖契约值；当时 12 套手写主题依赖派生层提供这两个 token，提前移除会使其回落到 base 旧值，故按条件推迟。
 | 代码族 | code-keyword / string / number / comment / function | 语法高亮 | 源色·代码原配（VS Code 出身） | 代码文字 ≥ 4.5:1（原配已校准的除外，逐套校验） |
 
 ## 6. 推导规则（公式草案，常数待定）
@@ -161,6 +161,8 @@ description: >
 - **阶段 1**：源色表结构 + 生成脚本 + 推导公式（text-on-fill、标题调校、装饰线、surface/edge 派生）+ CI 门禁（vitest 解析 CSS 源文本断言对比度）+ light/dark 两套基准主题生成与验收。完成即停
 - **阶段 2**：cyberpunk / neon-cyberpunk / solar-flare / desert-sunset 高刺激组迁移（洗刺激保色相）
 - **阶段 3**：其余 10 套迁移 + 灰度导出覆盖表扩展 + 全主题导出实测 + **收口第 5 节「已知缺口」**（全部主题生成后，从 `theme-derived.css` 移除 divider/table-border/border-subtle 或改为「主题文件已定义则不覆盖」，使统一派生在运行时生效）
+
+> **阶段 3 已完成（2026-10-18）**：14 套主题全部迁移为生成物（每套一份源色表 + `.d.ts`），对比度门禁覆盖全部 14 套，R14 缺口收口，`--list-number` 功能位令牌落地并被门禁守护，灰度导出覆盖表随契约扩展。遗留：`level*Bg` 字段与 `l1..l3-bg` 令牌无消费者（保留作色板文档与缓存键敏感项），`globals.css` 遗留高饱和默认块整体待清理，导出兜底路径（`renderMermaidForExport`）不带 themeVariables——均非阻塞。
 
 ## 10. 关联文档
 

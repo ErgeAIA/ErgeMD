@@ -283,6 +283,14 @@ description: >
 - **验证**：四套迁移后对比度门禁全绿；实测前后数据见 project-progress 阶段 2 条目
 - **已知取舍**：类别着色使图表节点底色从「统一定制色」变为「类别色相淡/暗色」，这是契约的预期变化（类别用色相、层级用明度），cyberpunk 已由用户实机确认满意；若某套主题希望保留统一定制底色，需为该主题单设 fillBand 例外（当前无此类需求）
 
+## DEC-038: 全量迁移收口（14/14）+ 功能位与灰度随契约扩展
+
+- **日期**：2026-10-18（阶段 3 完成）
+- **背景**：阶段 2 后仍有 8 套手写主题；此外设计 §5/§11.3 的 `--list-number` 功能位令牌、§11.6 的灰度导出覆盖表扩展、R14 的分隔线收口均待办
+- **决策**：① 按阶段 2 同一流程批量迁移剩余 8 套（aurora / cherry-blossom / falcon / forest / monochrome / ocean / tokyo-night / solarized-light），每套一份源色表 + `.d.ts`，填充带一律按现行值实测校准（不抄 CSS 内联 oklch 注释）；② monochrome 的 `fillBand.c` 固定为 0 以守住「纯灰度」这一主题存在理由（实测生成物 fill 最大彩度 0.000）；③ solarized-light 属亮色族，填充带 L 0.957 / C 0.019——与 dark 族方向相反，同一套派生公式在明暗两模式各自成立；④ 14 套全部生成后从 `theme-derived.css` 移除 `--divider`/`--table-border` 完成 R14 收口；⑤ `--list-number` 按「色相取品牌主色 + 明度调校至 ≥4.5:1」派生（与标题同口径），并加入门禁；⑥ 灰度导出覆盖表补齐 h1/h5/h6（深色主题浅色标题在灰底会不可见）、bg-primary、table-border/border-subtle、chart 填充与文字，描边/序列与代码高亮一样保留主题色
+- **验证**：门禁新断言实测抓出 solarized-light 序号色 3.59:1 不达标，改调校派生后达标——功能位色必须过护栏，不能只取原始品牌色。最终 tsc / eslint / vitest 295/295 / `--check` 十四主题一致
+- **已知取舍**：`level*Bg` 字段与 `l1..l3-bg` 令牌在旧后处理规则移除后无消费者（保留作色板文档与缓存键敏感项）；`globals.css` 遗留高饱和默认块整体待清理；导出兜底路径 `renderMermaidForExport` 不带 themeVariables（既有问题，仅影响未渲染块的补救路径）
+
 ## DEC-034: mindmap 布局按设置放行（radial 默认 / dagre 层级树可选）
 
 - **日期**：2026-10-18
