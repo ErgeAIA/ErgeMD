@@ -24,6 +24,7 @@
     "exportHtml": "导出 HTML",
     "exportWord": "导出 Word",
     "toggleSidebar": "切换侧边栏",
+    "pinToc": "固定目录",
     "goHome": "回到欢迎页",
     "search": "搜索",
     "toggleTheme": "切换主题",
@@ -69,6 +70,13 @@
     "mindmapLayout": "思维导图布局",
     "mindmapLayoutRadial": "发散（放射）",
     "mindmapLayoutTree": "层级树",
+    "mindmapLayoutLogic": "横向逻辑图",
+    "pinToc": "固定目录",
+    "mindmapStyle": "思维导图样式",
+    "mindmapStyleBrand": "品牌分支（强调色实底）",
+    "mindmapStyleDepth": "层级分色（逐层换色）",
+    "mindmapStyleOutline": "素雅描边（透明底）",
+    "mindmapStyleClassic": "经典（低饱和底）",
     "theme": "主题",
     "language": "语言",
     "autoSaveProgress": "自动保存阅读进度",
@@ -94,8 +102,8 @@
   },
   "theme": {
     "cyberpunk": "赛博朋克",
-    "dark": "暗色",
-    "light": "亮色",
+    "dark": "夜灯",
+    "light": "晨光",
     "system": "跟随系统",
     "falcon": "猎鹰",
     "aurora": "极光",
@@ -111,11 +119,12 @@
   },
   "themeCategory": {
     "builtin": "内置主题",
-    "dark": "暗色主题",
     "system": "系统"
   },
   "toc": {
-    "navigation": "目录导航"
+    "navigation": "目录导航",
+    "pin": "固定目录",
+    "unpin": "取消固定"
   },
   "chart": {
     "clickToZoom": "点击图表放大查看"

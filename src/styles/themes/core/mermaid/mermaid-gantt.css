@@ -7,10 +7,12 @@ ErgeMD 主题系统 - mermaid-gantt.css
 优先级：Mermaid 层
 
 设计原则：
-- Section 背景使用 --chart-surface-3
-- Task 背景使用 --chart-surface-1（承载文字）
+- Section 背景使用 --chart-surface-3（淡表面，作行底色）
+- Task 背景使用 --chart-series-0（品牌主色/最高识别度——任务条是甘特图的数据主体，
+  必须从淡表面分区中清晰跳出；早期用 chart-surface-1/chart-fill-0 都是低饱和淡色，
+  与分区几乎同色、全主题发模糊，故改用品牌主色）。文字对比色由渲染后处理按填充计算
 - Task 边框使用 --chart-stroke-0
-- Milestone 使用 --chart-fill-0
+- Milestone 使用 --chart-series-1（与 Task 的 series-0 区分）
 ================================================================================
 */
 
@@ -20,12 +22,12 @@ ErgeMD 主题系统 - mermaid-gantt.css
   --mermaid-gantt-section-bg: var(--chart-surface-3);
   --mermaid-gantt-section-line: var(--chart-edge);
 
-  /* === Gantt Task（任务条，承载文字）=== */
-  --mermaid-gantt-task-bg: var(--chart-surface-1);
+  /* === Gantt Task（任务条，数据主体，需高识别度）=== */
+  --mermaid-gantt-task-bg: var(--chart-series-0);
   --mermaid-gantt-task-border: var(--chart-stroke-0);
   --mermaid-gantt-task-text: var(--chart-text);
 
   /* === Gantt Milestone（里程碑）=== */
-  --mermaid-gantt-milestone-bg: var(--chart-fill-0);
+  --mermaid-gantt-milestone-bg: var(--chart-series-1);
   --mermaid-gantt-milestone-border: var(--chart-stroke-0);
 }

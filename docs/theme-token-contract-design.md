@@ -2,7 +2,7 @@
 title: 主题色板契约重构设计（Theme Token Contract）
 type: design
 project: ErgeMD
-updated: 2026-10-18
+updated: 2026-10-19
 status: 已批准（2026-10-18 用户选定方案 A）
 description: >
   从第一性原理重构 ErgeMD 主题配色体系：三层分权、源色契约表、图表四层色板
@@ -136,7 +136,7 @@ description: >
 2. **门禁边界**（原问：只管正文画布还是全部 token）
    → 我的决定：门禁 = 正文画布 token × 画布背景 + 图表四层承载文字处；外壳变量显式豁免清单（D1 已授权高唤醒）。
 3. **契约表未列 token 的处置**（原问：bg-secondary/tertiary、surface-1..3、edge、text-muted、callout-13、rgb 三元组等）
-   → 我的决定：`--accent-*-rgb`/`--brand-*-rgb` 保留，由源色 hex 机械转换生成（theme-derived.css 的 rgba 合成不断链）；surface/edge/text-muted 归入推导规则（画布阶与墨色阶的机械派生）；`--obsidian-callout-*` 13 色归语义状态族，全主题统一（不随主题漂移，语义色要求一致）；`list-number` 为**新增 token**（代码中不存在，需 markdown.css 落地 ol/ul 序号着色）；其余未列 token 在迁移中逐套登记"删除 / 推导 / 保留为源色"三选一，不允许无登记存活。
+   → 我的决定：`--accent-*-rgb`/`--brand-*-rgb` 保留，由源色 hex 机械转换生成（theme-derived.css 的 rgba 合成不断链）；`--bg-page-rgb` 同规则新增（BUG-074 登记：供「画布色 + alpha」机械合成，如 toc-hover-bg 随主题画布；生成器由 canvas.page 转换，各主题一份）；`--toc-line-dim`/`--toc-line-glow` 为派生 token（BUG-075 登记：brand-primary-rgb × 固定 alpha 0.35/0.6，浮动章节指示线随品牌色，UI 外壳豁免门禁）；surface/edge/text-muted 归入推导规则（画布阶与墨色阶的机械派生）；`--obsidian-callout-*` 13 色归语义状态族，全主题统一（不随主题漂移，语义色要求一致）；`list-number` 为**新增 token**（代码中不存在，需 markdown.css 落地 ol/ul 序号着色）；其余未列 token 在迁移中逐套登记"删除 / 推导 / 保留为源色"三选一，不允许无登记存活。
 4. **推导执行层**（原问：构建期生成还是运行时计算）
    → **待用户定夺**，见第 12 节。
 5. **CI 校验机制**（原问：jsdom 读不到 CSS 变量）

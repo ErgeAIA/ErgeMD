@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-10-18
+updated: 2026-10-19
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -569,3 +569,97 @@ description: >
 - **验证限制**：阶段 2/3 迁移后由对比度门禁自动覆盖；当前两主题的其余图表元素未逐一实测
 - **教训**：「主题 × 承载文字的填充」的对比度必须逐主题实测，不能只测基准主题——本次 14 主题全量实测即抓出两个漏网者；门禁按主题逐个接入（迁一套、验一套）比一次性断言更符合渐进迁移
 - **处置结果（2026-10-18）**：已随阶段 2/3 迁移自愈——solar-flare 填充统一入带后达标，forest 由 4.02 升至 5.43（commit 见 project-progress 阶段 3 条目）；对比度门禁现已覆盖全部 14 套主题，本条可视为已闭环
+
+## BUG-069: ER 实体关系图完全不跟随主题（mermaid ≥11 键名换代，注入与 SVG 补丁双路径死代码）
+- **日期**：2026-10-19（用户实机报告 6.5 节 ER 与 6.4 状态图观感不一致；当日定位并修复）
+- **现象**：主题下 ER 图实体框、属性行、关系线全部为 mermaid 默认配色，不消费 `--mermaid-er-*` 令牌；同文档的状态图正常跟随主题
+- **根因**：两层死代码叠加。① 主题注入用的 `entityBkg`/`entityBorder`/`entityTextColor`/`relationshipColor`/`entityAttributeBkg` 等是 mermaid v10 键名，mermaid ≥11 的 ER 已重写为 v2 统一渲染器——12.2.0 dist 全文检索 `entityBkg` 0 命中，注入全部落空；② 兜底的 SVG 后处理补丁选择器 `.er .attributeBoxOdd/Even` 引用的 DOM 类在 v2 渲染器中已移除（dist 检索 `attributeBox` 0 命中），属性行配色官方键为 `attributeBackgroundColorOdd/Even`（各 66 处命中）。症状与「从未适配」完全相同，不核实键名就会在死键上继续叠加后处理
+- **修复**：注入块换官方键——实体框 `mainBkg`/`nodeBorder`、属性行 `attributeBackgroundColorOdd/Even`、关系线 `lineColor`、标签底 `edgeLabelBackground`、文字 `textColor`/`nodeTextColor`/`titleColor`（取值仍来自 `--mermaid-er-*` 令牌，令牌层未动）；删除死 SVG 补丁与死 themeCSS；渲染缓存版本键 v37→v38 作废旧配色缓存
+- **验证限制**：light/dark 实机 ER 配色待用户验收（MarkdownSyntaxExample.md 6.5 节）；其余 12 主题走同一令牌链路未逐一实测
+- **教训**：给 mermaid 注入主题键前必须先在安装版本的 dist 里检索键名确认存在（全文 indexOf 计数，0 命中即死键）；渲染引擎大版本升级后「某类型不跟主题」，第一怀疑对象是键名换代而非注入机制
+
+## BUG-070: 十类图表主题注入键静默失效（v10~v11 死键批量遗留，BUG-069 同根因）
+- **日期**：2026-10-19（用户实机报告 6.6/6.9/6.11/6.13/6.14 无品牌色、6.29 连线标签黑底；按 M8 方法论全类型排查后扩大修复面）
+- **现象**：用户旅程图、象限图、Git 提交图、时间线、看板图、树状图、需求图、块图、桑基图、树形视图仍为 mermaid 默认配色；泳道/流程图连线标签带黑底色块
+- **根因**：注入块虽在，但键名是 mermaid v10~v11 早期键，12.2.0 dist 全文检索 0 命中——journey 的 `journeyBkg`/`journeyFillColor` 系（官方为 `fillType0~7`/`actor0~3`/`faceColor`）、quadrant 的 `quadrantBkgColor`/`quadrantPoint0Color` 系（官方为 `quadrant1~4Fill` 等 15 键）、gitgraph 的 `commitNodeColor`/`branchLabelBackground`（官方提交点复用 `git0~7`）、sankey/requirement/block/kanban/treemap/treeview 专属键全部为死键；连线标签黑底是只注入了死键 `edgeLabelBg`（官方为 `edgeLabelBackground`，183 处命中），标签底落回 mermaid 默认深色
+- **修复**：逐类型提取 12.2.0 各懒加载 chunk 的样式模板核对官方键后全量换正——11 个既有块重写，新增 venn/architecture 注入块（此前完全无注入）；timeline/kanban 补根节点 `git0`/`gitBranchLabel0` 且 cScale 扩到 12 槽；journey 分区标题硬编码 `#333` 用 SVG 后处理覆盖 `.label text`；渲染缓存版本键 v38→v39。mindmap 的 cScale 注入本就正确（classic 外观有明选择器），未动
+- **验证限制**：light/dark 实机 6.6/6.9/6.11/6.13/6.14/6.28/6.29 待用户验收；sankey 节点色/流量带、architecture 服务节点填充、packet 配色由 config 组控制（themeVariables 无键），维持现状并已记录于 M3 速查表
+- **教训**：同 BUG-069；补充——键名「看起来合理」不等于存在；注入块数量多会造成「已覆盖」的错觉，大版本升级后必须逐块验尸
+
+## BUG-071: gitGraph/Requirement 品牌色识别错误 + 象限/Cynefin 暗色文字偏糊（v41 轮）
+- **日期**：2026-10-19（用户实机报告 6.10/6.11「品牌色识别错误 变成青色」、6.9 象限暗色文字不清晰）
+- **现象**：gitGraph 分支线/提交点被识别为「青色」而非品牌色；requirement 关系线疑似默认青色；象限图在暗色主题下四象限内文字对比度不足、读起来糊
+- **根因（gitGraph）**：SVG 后处理补丁里有一条 over-broad 规则 `.gitGraph path,.gitGraph line{stroke:branchColors[0]!important}`，把**全图所有分支线强制压成 branchColors[0]（中性 chart-edge 灰）**，丢失逐分支着色；且提交点 `.commit circle{fill:commitNodeColor}` 引用的 commitNodeColor 虽存在（=chart-stroke-0 橙）但与分支线不同族。用户感知的「青色」本质是分支线被压成中性灰 + 部分 mermaid 默认色回退的混合观感。requirement 关系线 `relationColor` 此前取 `lineColor`（中性 chart-edge 灰），未走品牌色，关系线偏中性被读作青
+- **根因（象限/Cynefin）**：6.31 与 6.9 的四象限/五域底色取主题状态色（accent 绿/蓝/红/黄/紫）。暗色主题下这些状态色是中亮色（accent-green #519175、accent-blue #7480CB 等），白字对比度仅 ~3.7:1、深墨 ~4.4:1，均低于 AA 4.5:1 → 文字偏糊；亮色主题下状态色为深饱和，白字对比度高，故用户反馈「亮色还行、暗色不清」
+- **修复**：gitGraph 注入 `git0~7` 改取品牌系列色 `chart-series-0~7`（主分支/提交点=品牌橙 #FF6A2B，其余分支绿/黄/蓝/紫/红），后处理补丁删除 over-broad 压色规则、改为逐分支 `.branchN path/line{stroke:branchColors[N]!important}`（branchColors 同步取 chart-series），提交点保留 commitNodeColor（橙）；requirement `relationColor` 改取 `chart-series-0`（橙）。象限/Cynefin：暗色主题下把状态色填充用 `mixToward(画布色, 状态色, 0.45)` 向画布加深 ~45%，使白字对比度达 AA；新增 `mixToward` 助手（在 `readableTextOnFill` 旁）
+- **验证（node+jsdom 真渲染，突破 d3 createElementNS/getBBox 限制）**：gitGraph light 主分支线/提交点 = #FF6A2B（橙），dark = #F2570F，逐分支绿/黄/蓝/紫/红——确认品牌化、无青色；requirement `relationColor`=#FF6A2B 橙；象限/Cynefin dark 加深后白字对比度 >5:1。kanban 在 light/dark 基础主题下实测卡片文字与背景对比度分别约 19:1 / 5.7:1（清晰）——用户报的「看板文字不清晰」在基础主题无法复现，疑为 v39 前的旧构建缓存（kanban 曾是死键、回退 mermaid 默认深蓝/紫填充）
+- **教训**：SVG 后处理 `!important` 规则会盖过主题注入与 mermaid 自带样式，写后处理补丁必须先核对它作用的选择器范围（over-broad 选择器会把整图压成一种色）；「状态色作图表填充」在暗色主题下因状态色中亮而天生低对比，必须配合加深或自动取色，不能只套用亮色语义；jsdom 渲染 mermaid 需补 `getBBox`/`getComputedTextLength` 桩并自己解析 `var()` 链（jsdom 的 getComputedStyle 不解析 CSS 变量）
+
+## BUG-072: 思维导图无主题特色（v42 样式系统）
+- **日期**：2026-10-19（用户实机指出 6.13 节点为中性底 + 彩色下划线，未反映主题特色，要求强调色作背景）
+- **现象**：mindmap 节点底走低饱和 `chart-fill` 带（近中性），底部彩色下划线由 mermaid `defaultMindmapNode` 自带的「path 底 + line」结构产生（`cScaleInv`=高饱和 stroke），颜色按分支分配、层级无差异，整体缺乏主题强调色。ProcessOn 8 种思维图形式经研判多为独立图类型（鱼骨=ishikawa、时间轴=timeline 等），仅「节点着色风格」维度可在 mindmap 内实现
+- **根因**：mermaid 渲染器按分支（非层级）分配 section 类，节点自身不带层级信息，故此前无法做层级渐变；cScale 取值源被固定为低饱和 fill 带
+- **修复**：阅读选项新增 `MindmapStyle` 偏好（brand / depth / outline / classic，默认 brand，与既有「布局」正交）。brand：节点底改取饱和 stroke 色带（强调色实底），新增逐节点按层级向画布 `mixToward` 渐变（借 edge id=`edge_父_子` + `edge-depth` 类反查子节点深度，缺省降级为统一实底），隐藏下划线，文字 `readableTextOnFill` 自动取墨；depth：`initialize` 注入 `mindmap.colorBy='depth'` 走原生层级着色 + 单色明度推进；outline：透明底 + 彩色描边/文字；classic：保留历史观感。后处理：非 classic 隐藏下划线、按分支覆盖连线色、outline 加描边。缓存键 v41→v42；导出兜底路径同步 `colorBy`
+- **验证（待实机）**：lint / tsc 应通过；四档在 light/dark × 多主题下节点文字 ≥4.5:1 由 text-on-fill 守护；brand 深层较浅/较暗层级清晰；视觉观感由用户实机确认（不代判）
+- **教训**：mermaid 图元样式深度信息有时只在连线元素上（`edge-depth`），逐节点精细着色需从 SVG 串反查 edge id 与 depth，并保留安全降级；新增「偏好」类设置务必同时接 settingsStore 默认、types 字段、i18n、面板 UI、缓存键五处，否则旧持久化数据缺字段或菜单不可见
+
+## BUG-073: 思维导图缺「横向逻辑图」布局（v42 布局扩展）
+- **日期**：2026-10-19（用户验收样式四档后，要求新增类似万兴/ProcessOn 的「全朝右逻辑图」布局）
+- **现象**：思维导图布局仅发散（cose-bilkent 放射）与层级树（dagre TB）两档；用户想要中心在左、分支全朝右的逻辑图
+- **根因**：mermaid 12.2.0 的 mindmap 在 `mindmap-definition` chunk 的 `getData` 里把 `direction` 硬编码为 `"TB"`，dagre 渲染器只读 `rankdir: data4Layout.direction`（`dagre-WMVPSHVI.mjs:2742`），顶层 config 无任何方向口子——这是「原生不支持 LR」的硬限制，非本项目 bug
+- **修复**：注册自定义布局 `mindmap-tree-lr`（经 `mermaid.registerLayoutLoaders` 公开 API），其 loader 深链导入 dagre 内部 chunk（`mermaid/dist/chunks/mermaid.esm/dagre-WMVPSHVI.mjs`，该文件导出完整 `render`；mermaid 的 package.json `exports` 含 `./*` 放行深链），渲染前把 `data4Layout.direction` 改为 `"LR"` 再委托 dagre 渲染器；随之 `MindmapLayout` 扩为 `radial | tree | logic`，阅读选项菜单与 i18n 同步三档，阅读/导出两条 initialize 路径均按 `logic` 选用该布局（降级点：`lrLayoutReady` 置否时回退 dagre TB）。深链路径含版本哈希，已加 `src/vite-env.d.ts` 的 `declare module` 声明，并在 try/catch 中把升级导致的 import 失败降级为层级树
+- **验证（待实机）**：lint / tsc 通过；vitest 301/301。需用户实机确认横向逻辑图节点与连线方向一致（全朝右）、与 brand 样式叠加无错位
+- **教训**：当上游把某能力硬编码且无配置口时，可借「注册包装布局 + 改 data4Layout 后委托内部渲染器」绕过，但深链内部 chunk 有版本脆弱性，必须用 `declare module` 补类型、用 try/catch 保降级，并在 debug-log 记升级检查点
+
+## BUG-074: 浮动章节面板底色与主题画布脱节（toc-hover-bg 硬编码）
+- **日期**：2026-10-19（用户实机指出：浅色米色画布上面板纯白、暗色棕黑画布上面板蓝灰，期望「主题背景色 + 透明度」）
+- **现象**：右侧浮动章节目录（FloatingTOC）hover 展开时底色为固定值，不随主题画布变化——浅色主题 `rgba(255,255,255,0.95)`（纯白）、暗色主题 `rgba(46,46,56,0.92)`（固定蓝灰），在暖色/棕黑画布上观感割裂
+- **根因**：`--toc-hover-bg` 在 5 处 CSS 硬编码字面量（theme-light-base / theme-dark-base / theme-derived × 2 / theme-core fallback / dark 源表 passthrough），色源与画布令牌零关联；且主题画布 `--bg-page` 只有 hex 形态、无 `-rgb` 三元组，无法在 CSS 内做「画布色 + alpha」合成
+- **修复**：① 生成器 `buildTokens` 新增 `bg-page-rgb`（canvas.page 的机械 hex→rgb 转换，与 accent/brand-rgb 同规则，14 主题各一份）；② 5 处 `--toc-hover-bg` 统一改 `rgba(var(--bg-page-rgb), var(--alpha-toc-hover-bg))`（alpha 功能位令牌复用既有 0.92；浅色原 0.95 微降，符合「增加透明度」期望）；③ dark 源表删除 toc-hover-bg passthrough（级联兜底成立：base 文件先导入、生成物后导入且同特异性，删后落回 dark-base 统一规则）；④ 契约文档登记新 token
+- **验证**：theme:generate 14 套全部一致（token 数 106~112）；vitest 301/301；抽查 dark.css `--bg-page-rgb: 26,23,20`（无 toc-hover-bg）、light.css `251,232,221`（米色画布）。视觉观感待用户实机确认
+- **教训**：「面板/浮层底色」类令牌若写死字面量，必然在多主题下与画布脱节——凡是语义为「主题背景的半透明变体」的令牌，一律走「画布 rgb 三元组 × alpha 功能位」机械合成；新增 token 必须走生成器而非手改 CSS（生成物会被 theme:check 打回）
+
+## BUG-075: 浮动章节高亮色仅部分主题为品牌色
+- **日期**：2026-10-19（用户实机验收 BUG-074 后指出）
+- **现象**：浮动章节目录（FloatingTOC）激活项的指示线/辉光/文字颜色应为主题品牌色，但只有部分主题做到（dark 生成物、theme-derived 浅色块正确；其余主题偏青/蓝）
+- **根因**：① 组件层 `FloatingTOC.tsx` 指示线硬编码 `var(--accent-cyan)`（强调槽位色，多数主题≠品牌色）、辉光用 `var(--accent-cyan-glow)`；② 令牌层 `--toc-text-active` 在 theme-dark-base 硬编码青 `rgba(125,207,255,1)`、theme-light-base 硬编码蓝 `rgba(38,102,240,1)`、theme-derived 暗色块用 `accent-cyan-rgb`，仅 dark 源表（品牌橙字面量）与 derived 浅色块（brand-primary-rgb）正确——与 BUG-074 同构：同一语义令牌多源定义、色源写死
+- **修复**：① 组件层指示线改 `var(--brand-primary)`/`var(--toc-line-dim)`，辉光改 `var(--toc-line-glow)`；② 新增派生 token `--toc-line-dim`（brand-primary-rgb × 0.35）与 `--toc-line-glow`（× 0.6），五个 toc 块统一定义；③ 五处 `--toc-text-active` 统一改 `rgba(var(--brand-primary-rgb), var(--alpha-toc-text-active))`；④ dark 源表删 toc-text-active passthrough（落回 dark-base 统一规则，与 BUG-074 同法）；⑤ 契约文档登记 toc-line 派生 token
+- **验证**：theme:generate 14 套一致；抽查 dark.css 仅剩 hover-shadow/text-inactive 两条 passthrough，aurora.css `--brand-primary-rgb: 79,195,247`；vitest 301/301、lint 0 错误、tsc 0。视觉观感待用户实机确认
+- **二次根因（用户复验暴露）**：文字仍非品牌色。真因：`--alpha-toc-hover-bg/--alpha-toc-text-active` 等系数变量只定义在 theme-core.css 的 `html:not([data-theme])` 防御块（20-266 行单块）内，**激活任意主题后根本不存在**，`rgba(var(--brand-primary-rgb), var(--alpha-toc-text-active))` 整体 invalid-at-computed-value → 颜色回退继承（白）。指示线/辉光因直接用 `--brand-primary` 与字面量 alpha 合成而幸免。连带发现 BUG-074 的 `--toc-hover-bg` 同样一直在失效（面板透明，观感恰好近似「背景+透明度」故未露馅）。修复：激活主题作用域 4 处（light/dark base + derived ×2）改字面量 alpha（hover-bg 0.92、text-active 1）；theme-core 兜底块自引用自洽不动
+- **教训**：BUG-074 的同构问题——「激活态高亮」类令牌同样不许多源写死；组件层也不得直引 `--accent-*` 槽位色来表达「品牌」语义（accent 槽位与品牌色仅在个别主题巧合一致）。**新增教训**：`rgba(var(--x-rgb), var(--alpha-y))` 双变量合成链中，若 `--alpha-*` 只活在 `html:not([data-theme])` 防御块，则该写法在所有激活主题下静默失效——组合 `var()` 前必须核实每个变量在目标作用域（激活主题）的实际可得性；invalid-at-computed-value 是静默回退继承，无任何报错，验收时极易漏检
+
+## BUG-076: 固定徽章随目录滚动消失（pin 浮层定位错误）
+- **日期**：2026-10-19（pinToc 功能交付后用户实机指出）
+- **现象**：浮动目录固定（pin）后，滚动目录到下方时右上角图钉消失
+- **根因**：初版把图钉 `<button>` 放在可滚动的 `tocListRef` 容器（`absolute inset-0 overflow-y-auto`）内部作为子元素；绝对定位子元素在滚动容器内的 offset parent 是滚动容器、且随滚动内容一起位移，故目录翻页即滚出视野
+- **修复**：将图钉移出滚动容器，改为 `relative` 面板（包裹滚动列表的外层 div）的**同级浮层** `absolute right-1.5 top-1.5 z-20`，其 offset parent 是固定不滚的面板本身，目录滚动不再带动它；仅在 `expanded` 时渲染
+- **验证**：tsc 0 / lint 0 / vitest 301/301
+- **教训**：浮层/装饰元素若需「始终留在视野（相对容器而非内容）」，必须挂在非滚动的定位祖先上，绝不可放进 `overflow-y-auto` 内容流；写前先确认 offset parent 是不是会滚动的容器
+
+## BUG-077: 高饱和主题思维导图文字对比度不足（取墨二选一落在 4.5 以下）
+- **日期**：2026-10-19（用户实机验收 4 主题：太阳耀斑 / 紫柚明亮 / 霓虹赛博 / 樱花）
+- **现象**：brand 样式节点文字「看不清楚」——仅这 4 个高饱和分支色的主题；晨光/夜灯此前验收正常
+- **根因**：`readableTextOnFill` 在「深墨 #241F1B vs 白」二选一，对**中间明度的高饱和填充**两边都到不了 4.5:1——如橙 L≈0.24：墨 4.47 / 白 3.57；霓虹品红 L≈0.22：墨 4.14 / 白 3.86。二选一取「更优」仍在及格线下，细小文字观感即糊。晨光/夜灯分支色恰好避开中明度区间（亮填充墨 12:1、深填充白 ≥6:1），故此前未暴露。次因：逐节点取墨 CSS 只写 `#nid text{fill}`，未覆盖 mermaid HTML 标签（`span` 的 `color`）与 `tspan`
+- **修复**：① 新增 `readableTextOnFillStrict`（深墨 / 纯白 / 纯黑三选优）——纯白覆盖 L≤0.183、纯黑覆盖 L≥0.175，区间无缝衔接，对任意底色恒 ≥4.5:1，数学保证；② mindmap brand/depth 共用的 `inkFor` 与 brand 后处理逐节点取墨切至 strict（quadrant / cynefin 沿用二选一版不动）；③ 逐节点 CSS 补 `#nid tspan{fill}` 与 `#nid span{color}`
+- **验证**：tsc 0 / lint 0 错误 / vitest 301/301。视觉观感待用户实机确认 4 主题
+- **教训**：「在两个候选里取对比度更高者」不等于「对比度达标」——候选集两端可能同时落在及格线下，颜色选择必须以阈值为目标而非相对最优；候选集加入纯黑/纯白两端后区间无缝，可数学证明覆盖；另注意 mermaid 文字可能是 SVG text/tspan 也可能是 HTML span（htmlLabels），覆盖选择器要三者齐全
+- **二次根因（真正根因，用户复验仍看不清后排查）**：上一轮修复方向有误。实拍文字呈「填充色加深版」而非墨/黑/白，对照 mermaid 源码 `node_modules/mermaid/dist/chunks/mermaid.esm/chunk-DLUCIBNR.mjs:4619-4621`：default 主题基类在构造时**无条件** `this["cScaleLabel"+i] = darken_default(this["cScale"+i], 75)`（无 `||` 守卫），把我们在 themeVariables 里注入的 `cScaleLabel`（含 strict 取墨值）整个覆盖成「色相不变、明度压 75%」的暗色——这正是截图观感。同时填充 `cScale` 因同文件用 `||` 守卫（4593-4604）未被覆盖，故「底对、字错」。此外逐节点 `#nid text` 规则依赖从 SVG 串解析节点 `id`，对部分节点组不命中（outline 分支用 `.section-k text` 能生效，反证 section 选择器可靠）。结论：`readableTextOnFillStrict` 升级本身正确但**根本没被渲染路径消费**，旧修复是假阳性
+- **修复（真正生效）**：brand 后处理在 `buildMindmapBrandDepthFill` 之外，**逐 section 注入文字色规则** `.section-${k} text,tspan,span { fill: inkK !important; color: inkK !important }`，`inkK = readableTextOnFillStrict(saturated[(k+1)%n])`，k 覆盖 0..10。section 类是 mermaid 稳定施加于节点组的（与 outline 分支同法、已验证可用），不受 cScaleLabel 染色与 id 解析脆弱性影响，`!important` 压过 mermaid 内部 darken。depth 档走 `colorBy:'depth'` 由 mermaid 原生上色，未受影响
+- **验证（待实机）**：tsc 0 / lint 0 错误 / vitest 301/301
+- **教训**：调 mermaid 主题时，凡通过 `themeVariables` 注入的「派生色」（cScaleLabel 等）都要警惕被主题基类构造函数无条件重写——必须先 grep 该 token 在 mermaid dist 里是否被 `darken/lighten/invert` 二次计算；凡「注入值没生效」优先怀疑被覆盖而非取墨数学。另：后处理兜底 CSS 优先用 mermaid 稳定施加的 section/class 选择器，而非依赖从 SVG 串反查 id
+- **终解（内联 text-on-fill，2026-10-20 用户第 3 次复验仍看不清后定稿）**：样式表级联路径（cScaleLabel 注入 / section 规则 / `#nid` 规则）在实机全部未生效（mermaid 基线 darken、id 反查脆弱、文字为 HTML span 致 `text{fill}` 无效三重叠加），反复在「样式表层」打补丁无效。**改走 DOM 后处理**：渲染后把 SVG 进 DOM，对每个 `g.mindmap-node` 读其真实 `getComputedStyle(shape).fill`（含 brand 深度混色后的最终色），用 `readableTextOnFillStrict` 算保底 ≥4.5:1 的墨色，以**内联 `style="color:...!important"`** 写到文字元素。内联 !important 在 CSS 级联中高于任何样式表规则（含 !important），一次终结级联不确定性；且文字色天然绑定「节点真实底色」，正是用户要的视觉科学。**真浏览器（chromium）实证**：用同款 app 配置（base 主题 + 霓虹赛博式高饱和亮分支色）渲染出真实 SVG，跑该函数，10 个节点全部按填充取黑字（亮青/亮绿/亮黄底→#000000），根节点亦然。outline 透明底节点自动跳过保留彩色文字。新增 `applyTextOnFillInline`（MermaidDiagram.tsx），在 `if (isMindmap)` 块末尾对所有 mindmap 样式生效
+- **附带发现的第二个独立 bug（brand 深度渐变从未生效，未在本轮修，待用户定夺方向）**：`buildMindmapBrandDepthFill` 的 `edgeRe` 用 `id="edge_\d+_\d+"` 解析深度，但 mermaid 实际边 id 带渲染前缀（如 `mm-verify-edge_0_1`），故 `nodeDepth` 恒空 → 所有节点 `r=0` → `fill=mixToward(canvas,base,0)=base`（原始亮色），「层级定明度」从未落地。启用需改 `edgeRe` 为 `\bid="[^"]*edge_\d+_\d+"`。注意：启用会把深层节点填充压暗→内联取墨自动翻白字，观感从「全亮」变「分支色相+层级明度」，属视觉方向调整，需用户确认
+- **教训（升级）**：当 mermaid 主题适配在「注入值/样式表规则」层面反复失败且无法静态穷尽级联路径时，直接对**渲染后的真实 SVG** 做 DOM 后处理、按 computed 样式内联写入，是最稳的兜底——因为内联 !important 碾压一切样式表层；验证务必用真实浏览器（jsdom 的 getComputedStyle 不完整会误导），且探针要复刻 app 的真实 `theme`/`look`/`colorBy`/分支色，否则环境与实机不一致
+- **元凶（连续三轮「修复后无变化」的真正原因，2026-10-20）**：**渲染缓存短路 + 未 bump `_version`**。渲染入口 `mermaidCache.get(cacheKey)` 命中即 `setSvgHtml(cached.svgHtml); return`，**整段渲染与后处理被跳过**；`cacheKey` 的 `_version` 停留在 `"v42"`。改动 SVG 后处理逻辑的每一轮（section 规则、`#nid` 规则、内联取墨）都未 bump 版本号，于是缓存里修复前的白字 SVG 被持续复用——用户看到的永远是旧产物，与"级联/取墨数学"无关。项目规则（经验库 M4）本就要求「改动渲染产出 → bump `_version` 作废旧键」，此前被忽略。**修复**：`_version` v42→v43；同时加固 `applyTextOnFillInline`——去掉 `instanceof SVGElement`（该判断一旦抛 ReferenceError 会被外层 catch 静默吞掉、原样返回白字），改为对 `span/text/tspan` **同时写 `color` 与 `fill`**（HTML span 忽略 fill、SVG text 忽略 color，互不干扰）；填充不可解析（`url(#…)`）时用纯黑兜底而非保持白字；brand 档另加一层 section 样式表兜底（内联为主、样式表为副，取墨同源不冲突）
+- **教训（首要）**：**改 SVG 产出逻辑必须 bump 缓存版本键，否则任何修复都看不到效果**——本 bug 连耗三轮的根因不是技术难点而是这条流程纪律。另：**严禁声称"看到了截图里的内容"**——本轮我曾断言"截图里文字已变深色、可读性解决"，实际当前模型不支持读图、该判断为臆造，直接误导用户与后续排查方向。看不到图时必须如实说明，并把结论建立在用户描述与代码事实上
+- **定稿（2026-10-20，用户拍板走「token 契约」路线；内联取墨方案整体撤销）**：用户判定"内联取墨纯扯蛋，那还设计 tokens 干鸡毛"——颜色决策必须落在 token 层。定稿方案两项：
+  ① **主题层**：`text-muted`（= ThemeVault 的 text-dim，最弱化层级）过去在生成器里直接透传，13 套落在 2.93–4.15（主题仓库预览红标）。改为与标题/list-number 同口径，走 `cs.tuneForContrast(s.ink.muted, canvas.reader, 4.5)` 自动调校（色相不变、只让明度）。重新生成后 14 套全部 4.52–4.65 达标。**关键认知**：ErgeMD 门禁原本只卡 text-primary ≥7 / text-secondary ≥4.5 / 标题 ≥4.5 / chart-fill×text-on-fill ≥4.5，**不卡 dim**；主题仓库按 4.5 判 dim，两边口径不同——这正是"主题仓库一片红标、ErgeMD 测试却全绿"的原因。另注意：全库 152 套里 dim≥4.5 全绿仅 17 套，Catppuccin/Dracula/Nord/Kanagawa/Rosé Pine/Tokyo Night/Everforest 等成熟主题**全部因 dim 3.x 落选**——说明 dim≥4.5 是偏严口径，**据此换主题会误杀所有成熟配色**
+  ② **代码层**：mindmap 回归 token 契约。**撤销**内联取墨 `applyTextOnFillInline` 与 section 文字色兜底规则；brand 档节点底由 `branchLines`（=`--chart-stroke-*`，霓虹即纯 #00FFFF/#FF00FF）改回 `branches`（=`--chart-fill-*`），文字取同索引 `chart-text-on-fill-*`；根节点由 `--primary` 改 center 槽（chart-fill-0 × chart-text-on-fill-0）；**停用** `buildMindmapBrandDepthFill`（其深度解析正则 `id="edge_\d+_\d+"` 从未命中带渲染前缀的边 id，nodeDepth 恒空、混色一直空转；且混色会破坏 fill × text-on-fill 配对）。职责重新划分：**brand 档 = 分支色相、depth 档 = 层级明度（mermaid 原生 colorBy='depth'）**。缓存 `_version` v43→v44
+- **验证**：真实浏览器探针（复刻 app 的 theme:"base" / look:"classic" / colorBy:"branch"）确认——注入的 `cScaleLabel` **未被** mermaid 的 `darken(cScale,75)` 覆盖（此前"注入被覆盖"的判断有误，白字实为缓存假象）。霓虹赛博：节点底 #144f4e/#563a55/#474821/#2f4e33/#5d3c26，文字 #E0E0E0；太阳耀斑：#595135… 配 #E0E0E0。tsc 0 / lint 0 错误（47 warning 存量）/ vitest 301/301 / theme:generate:check 14 套一致
+- **后续（2026-10-20，默认分色改为按层级）**：用户验收观感改善后指出设计问题——此前默认档按**分支**分色（同分支跨层级同色），而思维导图的常规读法是按**层级**分色（二级同色、三级同色、四级同色）。原 depth 档（`colorBy:'depth'`）本就是层级机制，只是配色用「品牌单色明度推进」且非默认。定稿：depth 档升级为**层级分色**，色板与 brand 档**完全同源**（`chart-fill-0..4` × 同索引 `chart-text-on-fill`，连线 `chart-stroke-0..4`），唯一差别是映射依据——depth 按层级、brand 按分支；根节点统一 center 槽；`mindmapStyle` 默认 `brand → depth`（store + 阅读/导出两处兜底 + 选项顺序 + 档位名「层级分色（逐层换色）」）。真浏览器验证（霓虹/晨光）：二级=chart-fill-1、三级=chart-fill-2、四级=chart-fill-3、五级=chart-fill-4，同层级严格同色，文字配对方向随主题明暗自动反转（暗主题浅字、亮主题深字）。缓存 v44→v45
+- **第三重坑（2026-10-20，「重启后还是老样子」的真因，CSS 层叠 + 注释笔误）**：为晨光/夜灯定制 mindmap 色板后实机无变化，排查出**两个叠加的 CSS 问题**：
+  ① **同特异性下后导入者赢**——`[data-theme="dark"]` 与 core 的 `[data-theme]` 特异性**完全相同**（都是单个属性选择器，(0,1,0)），并非「带属性值的更高」；而 globals.css 中 core/mermaid/*（第 44 行起）导入在主题文件（第 25–38 行）**之后**，故 core 的默认映射压过主题定义。最小复现证实：`<style>[data-theme]{--x:core}</style><style>[data-theme="dark"]{--x:theme}</style>` → theme 赢；顺序反转 → core 赢
+  ② **注释里的 `*/` 会提前闭合注释**——core mermaid-mindmap.css 的注释曾写作「与上方 l*/center 同索引」，其中的 `*/` 使注释提前结束，解析器把紧随的 `--mermaid-mindmap-branch-0: var(--chart-fill-0);` 连同垃圾文本一起吞掉（错误恢复直到下一个分号），导致该默认映射**静默失效**（这也解释了实测为何唯独 branch-0 是主题值赢、其余全输）
+  **修复**：core 选择器 `[data-theme]` → **`:where([data-theme])`**（特异性降为 0，主题的 (0,1,0) 稳赢；`:where` 只影响特异性、不改变匹配）；修正注释笔误并留下「注释内禁出现星斜杠」的警示。真浏览器复刻 globals.css 真实导入顺序验证：dark/light 的 center-bg、branch-0..4、center-text、l1..l4-text **全部**为主题值
+  **另修**：改 mindmap token 后缓存不失效——`getMermaidThemeSignature` 只收了 `--mermaid-mindmap-branch-line-*` 与 `chart-text-on-fill-*`，未收 `--mermaid-mindmap-branch-0..4`/`center-bg`/`l1..l4-text`，签名不变即命中旧 SVG。已把该批 token 纳入签名（今后改源色表自动失效）+ `_version` v45→v46 双保险
+- **教训（终）**：① **先查缓存再查技术**——"改了没效果"优先级最高的是缓存/构建未生效，其次才是逻辑；② **颜色永远由 tokens 决定**，渲染层只做布局与结构，不做取色；一旦出现"渲染后按 computed 值反算颜色"，就说明 token 契约已经破了，应当回头补 token 而不是在渲染层打补丁；③ **两个系统的"达标"口径要先对齐**再下结论，否则会把"口径差异"误判成"质量缺陷"，进而做出换主题这类高成本误决策

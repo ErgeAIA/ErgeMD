@@ -37,6 +37,9 @@ const defaultReadingSettings: ReadingSettings = {
   language: "auto",
   autoSaveProgress: true,
   mindmapLayout: "radial",
+  // 思维导图默认按层级分色（同层级同色、层级间递进），与主流思维导图读法一致
+  mindmapStyle: "depth",
+  pinToc: false,
 };
 
 // ===== 默认配置级别 =====

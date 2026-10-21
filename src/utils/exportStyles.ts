@@ -330,7 +330,7 @@ export function buildExportStyles(
     ${fontSize ? `font-size: ${fontSize}px;` : ""}
   }
   code { font-family: "Cascadia Code", "Fira Code", Consolas, monospace; }
-  a { color: var(--accent-cyan); }
+  a { color: var(--link, var(--accent-cyan)); }
   img { max-width: 100%; page-break-inside: avoid; }
   h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
   pre, table { page-break-inside: avoid; }

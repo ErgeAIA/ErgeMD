@@ -46,6 +46,7 @@ const SHORTCUT_GROUPS = [
     items: [
       { key: "search", keys: "Ctrl+F" },
       { key: "toggleSidebar", keys: "Ctrl+L" },
+      { key: "pinToc", keys: "Ctrl+⇧+L" },
       { key: "goHome", keys: "Ctrl+⇧+R" },
       { key: "toggleTheme", keys: "Ctrl+⇧+T" },
       { key: "settings", keys: "Ctrl+," },

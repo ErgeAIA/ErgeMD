@@ -72,10 +72,28 @@ function buildTokens(s) {
   // bg-primary：历史消费方（LinkEditModal/ImageEditModal/ReadingOptions，7 处无兜底）
   // 从未被任何主题定义（BUG-067）；按「次级/elevated 表面」语义别名到 canvas.secondary
   set("bg-primary", s.canvas.secondary);
+  // bg-page 的 rgb 三元组：供「画布色 + alpha」机械合成引用（toc-hover-bg，
+  // BUG-074 浮动目录面板底色须随主题画布；与 accent/brand-rgb 同为源色 hex 机械转换）
+  {
+    const { r, g, b } = cs.parseHex(s.canvas.page);
+    set("bg-page-rgb", `${r}, ${g}, ${b}`);
+  }
   set("text-heading", s.ink.heading);
   set("text-primary", s.ink.primary);
   set("text-secondary", s.ink.secondary);
-  set("text-muted", s.ink.muted);
+  // text-muted（对应 ThemeVault 的 text-dim，最弱化层级）同样按画布调校至 ≥4.5:1，
+  // 色相不变、只让明度。源色表里 13 套主题的 text-dim 落在 2.93–4.15（主题仓库
+  // 预览红标），过去直接透传；ErgeMD 门禁未卡此项但主题仓库按 4.5 判，统一抬到
+  // 达标线，13 套一次收口（dark/light/亮色本就达标，调校为恒等变换不影响观感）
+  {
+    const dim = cs.tuneForContrast(s.ink.muted, s.canvas.reader, 4.5);
+    if (!dim.met) {
+      console.warn(
+        `[theme:generate] ${s.name}: text-muted 未达标（${dim.ratio.toFixed(2)}:1），已取明度边界值`,
+      );
+    }
+    set("text-muted", dim.hex);
+  }
 
   // ---- 标题色阶：色相种子按画布调校至 ≥4.5:1（彩度保、明度让位、色相不变）----
   s.headingHues.forEach((seed, i) => {
@@ -138,6 +156,43 @@ function buildTokens(s) {
     }
     set(`chart-text-on-fill-${i}`, color);
   });
+  // ---- 思维导图层级色板（可选，源色表定义 mindmapHues 的主题才生成）----
+  // 槽位顺序 = root/L2、L3、L4、L5、L6。覆盖 core/mermaid/mermaid-mindmap.css 的
+  // chart-fill 映射（该文件用 [data-theme] 通配选择器，主题用 [data-theme="xxx"]
+  // 特异性更高，可稳定覆盖），让 mindmap 反映品牌色 + 状态色而非低彩度填充带。
+  // 文字色按底色自动配对（与 chart-text-on-fill 同口径）
+  if (Array.isArray(s.mindmapHues) && s.mindmapHues.length >= 5) {
+    const mmInks = [s.ink.primary, s.canvas.reader];
+    // 底色调校：配对文字若不足 4.5:1，沿 OKLCH 明度轴推进底色（色相不变、彩度
+    // 取该明度下 sRGB 最大值）。对亮画布主题，底色会被推向更亮——既达标又更鲜明
+    // （晨光的 fill 档状态色 #2E8A5F 配黑字仅 4.23，调亮后才过线）；已达标的不动
+    const levels = s.mindmapHues.map((h) => {
+      const p = cs.pickTextColor(h, mmInks);
+      if (p.ratio >= 4.5) return h;
+      const t = cs.tuneForContrast(h, p.color, 4.5);
+      if (!t.met) {
+        console.warn(
+          `[theme:generate] ${s.name}: mindmap 色板 ${h} 调校后仍不足 4.5:1（${t.ratio.toFixed(2)}:1），已取明度边界值`,
+        );
+      }
+      return t.hex;
+    });
+    // root（中心节点）与 L2 共用第 0 槽＝品牌色，识别度最强
+    set("mermaid-mindmap-center-bg", levels[0]);
+    levels.forEach((h, i) => set(`mermaid-mindmap-branch-${i}`, h));
+    // 文字槽：center-text 同时服务 root 与 branch-0；l1..l4-text 服务 branch-1..4
+    const textSlots = [
+      ["mermaid-mindmap-center-text", levels[0]],
+      ["mermaid-mindmap-l1-text", levels[1]],
+      ["mermaid-mindmap-l2-text", levels[2]],
+      ["mermaid-mindmap-l3-text", levels[3]],
+      ["mermaid-mindmap-l4-text", levels[4]],
+    ];
+    for (const [token, bg] of textSlots) {
+      set(token, cs.pickTextColor(bg, mmInks).color);
+    }
+  }
+
   // 图表中性组：透传现行值
   set("chart-edge", s.chartNeutral.edge);
   set("chart-label-bg", s.chartNeutral.labelBg);

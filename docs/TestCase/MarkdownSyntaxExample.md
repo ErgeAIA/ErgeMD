@@ -1,7 +1,7 @@
 ---
 author: B站🔥宝藏二哥AIA
 description: ErgeMD Markdown 阅读器的完整语法测试文档，用于验证标题、段落、列表、代码块、表格、引用、Mermaid 图表等所有支持的 Markdown 特性在多主题下的渲染效果。
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # Markdown 完整语法测试文档
@@ -751,7 +751,7 @@ stateDiagram-v2
 
 ### 6.5 [实体关系图](https://mermaid.js.org/syntax/entityRelationshipDiagram.html)
 
-检查要点：基数标注渲染正确；实体框内属性文字对齐（ER 图依赖 SVG 后处理适配，重点回归配色）。
+检查要点：基数标注渲染正确；实体框内属性文字对齐（ER 配色走 mermaid v2 渲染器官方主题键 `mainBkg`/`attributeBackgroundColorOdd/Even` 等注入，重点回归配色）。
 
 ```mermaid
 erDiagram
@@ -781,7 +781,7 @@ erDiagram
 
 ### 6.6 [用户旅程图](https://mermaid.js.org/syntax/userJourney.html)
 
-检查要点：分区标题与情绪分数显示；折线起伏方向与数据一致。
+检查要点：分区标题与情绪分数显示；折线起伏方向与数据一致。分区色走官方 fillType0~7 键注入（分区标题文字经 SVG 后处理覆盖官方硬编码 #333），切换主题重点回归配色。
 
 ```mermaid
 journey
@@ -826,7 +826,7 @@ pie title 项目技术栈分布
 
 ### 6.9 [象限图](https://mermaid.js.org/syntax/quadrantChart.html)
 
-检查要点：四个象限标签位置正确；散点数据落在对应象限。
+检查要点：四个象限标签位置正确；散点数据落在对应象限。四象限底色取主题状态色（绿/蓝/红/黄，对齐官方 Cynefin 语义），象限内文字按对比度自动取白/深墨（v41 暗色下状态色中亮致白字对比度 <4.5:1，已用 mixToward 向画布色加深 0.45 使白字达 AA）；**重点回归暗色主题下象限文字清晰度（6.9）与分区配色**。
 
 ```mermaid
 quadrantChart
@@ -847,7 +847,7 @@ quadrantChart
 
 ### 6.10 [需求图](https://mermaid.js.org/syntax/requirementDiagram.html)
 
-检查要点：需求框与元素框样式有区分；satisfies 关系箭头正确。
+检查要点：需求框与元素框样式有区分；satisfies 关系箭头正确。关系线色（relationColor）取品牌系列色 chart-series-0（品牌橙 #FF6A2B），**重点回归关系线应为品牌橙、不再是偏青的中性色（6.10）**。
 
 ```mermaid
 requirementDiagram
@@ -868,7 +868,7 @@ test_entity - satisfies -> test_req
 
 ### 6.11 [Git 提交历史图](https://mermaid.js.org/syntax/gitgraph.html)
 
-检查要点：提交节点与分支线取 gitGraph 专用主题变量；分支创建与合并位置正确。
+检查要点：提交节点与分支线取 gitGraph 专用主题变量（git0~7 逐分支品牌系列色 / gitBranchLabel0~7 / commitLabel* / tagLabel*）；主分支与提交点为主分支色（亮 #FF6A2B / 暗 #F2570F），逐分支绿/黄/蓝/紫/红分明；分支创建与合并位置正确。**v41 已删 over-broad 后处理压色规则——分支线不再被压成中性灰（曾被读作青色），重点回归 6.11 各分支线为对应品牌色、无青色残留**。
 
 ```mermaid
 ---
@@ -939,7 +939,7 @@ gitGraph
 
 ### 6.13 [思维导图](https://mermaid.js.org/syntax/mindmap.html)
 
-检查要点：多级节点配色统一；中心节点文字与背景对比充足（历史踩坑点，切换主题复查）；布局默认为发散（放射），可在阅读选项中切换为层级树——mermaid 12 的思维导图布局受顶层 layout 配置影响，应用已按设置放行（默认 radial / 可选 dagre 层级树）。节点背景已按主题契约走 chart-fill × text-on-fill 硬指标（暗色下文字对比度全部 ≥4.5:1，由 CI 门禁守护），主题鲜明色相保留在分支连线上；以上两项为视觉回归重点。
+检查要点：布局默认为发散（放射），可在「阅读选项 → 思维导图布局」三选一切换：发散（cose-bilkent 放射）/ 层级树（dagre TB，根在上分支垂下）/ 横向逻辑图（dagre LR，中心在左、全分支朝右，v42 经注册包装布局把 data4Layout.direction 改 LR 委托 dagre 渲染器实现，mermaid 12.2.0 原生方向硬编码 TB 无配置口）。新增「思维导图样式」（同菜单，v42 引入，默认 brand）：① brand=逐分支强调色实底 + 层级向画布渐变 + 无下划线 + 文字按对比度自动取墨（最能体现主题特色）；② depth=单色按层级明度推进（原生 colorBy='depth'）；③ outline=透明底 + 彩色描边/文字；④ classic=低饱和底 + 彩色下划线（历史默认）。**重点回归**：切主题/切样式/切布局后节点文字对比度（≥4.5:1）、branches 各色相无串色、brand 深层较浅/较暗的层级渐变清晰、depth 单色逐层可辨、横向逻辑图连线与节点方向一致（全朝右）；视觉观感由实机确认。
 
 ```mermaid
 mindmap
@@ -977,7 +977,7 @@ mindmap
 
 ### 6.14 [时间线](https://mermaid.js.org/syntax/timeline.html)
 
-检查要点：各年份事件文字不溢出；时间轴刻度与分段均匀。
+检查要点：各年份事件文字不溢出；时间轴刻度与分段均匀。分区色走官方 cScale 系列注入（12 槽循环 + 根节点 git0 键），重点回归分区配色。
 
 ```mermaid
 timeline
@@ -1155,7 +1155,7 @@ packet
 
 ### 6.20 [看板图](https://mermaid.js.org/syntax/kanban.html)
 
-检查要点：各列与卡片层次清晰；卡片元数据（负责人、优先级）完整显示。
+检查要点：各列与卡片层次清晰；卡片元数据（负责人、优先级）完整显示。卡片文字走 cScale 主题色阶，亮/暗对比度实测定达标（亮 ~19:1 / 暗 ~5.7:1）。**注意：6.20 文字「不清晰」疑为 v39 前旧构建缓存（kanban 曾死键回退 mermaid 默认深蓝/紫填充）；若重建后仍有问题再报，重点回归重建后实机配色**。
 
 ```mermaid
 ---
@@ -1357,7 +1357,7 @@ Cache +'backup'> Database
 
 ### 6.28 [树形视图](https://mermaid.js.org/syntax/treeView.html)
 
-检查要点：目录树层级缩进正确；节点文字对齐；引号内名称完整显示。
+检查要点：目录树层级缩进正确；节点文字对齐；引号内名称完整显示。treeView 官方仅消费通用 textColor/lineColor（图标 fill=currentColor 随文字色），主题适配为文字/连线级。
 
 ```mermaid
 treeView-beta
@@ -1372,7 +1372,7 @@ treeView-beta
 
 ### 6.29 [泳道图](https://mermaid.js.org/syntax/swimlanes.html)
 
-检查要点：顶层 subgraph 渲染为泳道并按责任分组；跨泳道箭头表示工作交接（如 Support 到 Engineering）；节点沿用流程图形状语法（矩形、菱形、圆形）；该类型为 v11.16.0+ 新增，已注入 cluster / 节点 / 连线主题变量（mermaid-swimlane.css），切换主题后重点回归泳道分隔与文字可读性。
+检查要点：顶层 subgraph 渲染为泳道并按责任分组；跨泳道箭头表示工作交接（如 Support 到 Engineering）；节点沿用流程图形状语法（矩形、菱形、圆形）；该类型为 v11.16.0+ 新增，已注入 cluster / 节点 / 连线主题变量（mermaid-swimlane.css），切换主题后重点回归泳道分隔与文字可读性。连线标签底色走官方 edgeLabelBackground 键（v39 修复黑底色块）。
 
 ```mermaid
 swimlane-beta LR
@@ -1420,7 +1420,7 @@ usecase-beta
 
 ### 6.31 [Cynefin 框架图](https://mermaid.js.org/syntax/cynefin.html)
 
-检查要点：五个域位置固定（Complex 左上、Complicated 右上、Chaotic 左下、Clear 右下、Confusion 中心）；条目为引号徽标，Confusion 椭圆最多显示 3 条并带 +N 溢出标记；域间转换为带标签箭头（如 clear --> chaotic : "Complacency"）；该类型为 v11.16.0+ 新增，已注入 themeVariables.cynefin 嵌套主题变量（mermaid-cynefin.css，五域按语义着色），切换主题后重点回归波浪边界、五域填充与文字可读性。
+检查要点：五个域位置固定（Complex 左上、Complicated 右上、Chaotic 左下、Clear 右下、Confusion 中心）；条目为引号徽标，Confusion 椭圆最多显示 3 条并带 +N 溢出标记；域间转换为带标签箭头（如 clear --> chaotic : "Complacency"）；该类型为 v11.16.0+ 新增，已注入 themeVariables.cynefin 嵌套主题变量（mermaid-cynefin.css）：五域底色取主题状态色（复杂=ok 绿 / 繁杂=info 蓝 / 混乱=danger 红 / 清晰=warn 黄 / 中心=queued 紫，对齐官方渲染语义），条目徽标与域标签压在同色域底色上，文字色按 WCAG 对比度自动取白/深墨；切换主题后重点回归波浪边界、五域填充与文字可读性。
 
 ```mermaid
 cynefin-beta

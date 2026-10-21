@@ -196,10 +196,14 @@ html:not([data-theme]) {
   --code-border: rgba(125, 207, 255, var(--alpha-code-border));
 
   /* === TOC fallback === */
-  --toc-hover-bg: rgba(46, 46, 56, var(--alpha-toc-hover-bg));
+  /* BUG-074：色源换主题画布（bg-page），不再固定蓝灰 */
+  --toc-hover-bg: rgba(var(--bg-page-rgb), var(--alpha-toc-hover-bg));
   --toc-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --toc-text-active: rgba(125, 207, 255, var(--alpha-toc-text-active));
+  /* BUG-075：高亮随主题品牌色（brand-primary），不再固定青 */
+  --toc-text-active: rgba(var(--brand-primary-rgb), var(--alpha-toc-text-active));
   --toc-text-inactive: rgba(180, 180, 200, var(--alpha-toc-text-inactive));
+  --toc-line-dim: rgba(var(--brand-primary-rgb), 0.35);
+  --toc-line-glow: rgba(var(--brand-primary-rgb), 0.6);
 
   /* === 表格 fallback === */
   --table-header-bg: rgba(125, 207, 255, var(--alpha-table-header-bg));

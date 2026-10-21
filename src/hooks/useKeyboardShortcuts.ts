@@ -44,6 +44,7 @@ interface ShortcutHandlers {
  * - Ctrl+E: 导出 HTML
  * - Ctrl+Shift+E: 导出 Word
  * - Ctrl+L: 切换侧边栏
+ * - Ctrl+Shift+L: 固定/取消固定浮动目录
  * - Ctrl+Shift+R: 回到欢迎页
  * - F11: 全屏切换
  * - 中键拖拽: 移动窗口
@@ -326,6 +327,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
     if (ctrl && e.key === "l") {
       e.preventDefault();
       ots?.();
+      return;
+    }
+
+    // Ctrl+Shift+L: 固定/取消固定浮动目录
+    if (ctrl && e.shiftKey && e.key === "L") {
+      e.preventDefault();
+      urs({ pinToc: !readingSettings.pinToc });
       return;
     }
 

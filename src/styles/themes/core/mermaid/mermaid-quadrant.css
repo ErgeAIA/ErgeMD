@@ -8,7 +8,9 @@ ErgeMD 主题系统 - mermaid-quadrant.css
 
 象限图是数据序列图：
 - X/Y 轴使用 --chart-edge
-- 象限背景使用 --chart-surface-*
+- 四象限背景使用主题状态色（用户 2026-10-19 拍板，对齐官方 Cynefin 语义：
+  1=左上 ok 绿 / 2=右上 info 蓝 / 3=左下 danger 红 / 4=右下 warn 黄），
+  象限内文字色由 MermaidDiagram 按对比度自动取白/深墨
 - 数据点使用 --chart-series-*
 - 标题和标签使用 --chart-text
 
@@ -16,6 +18,12 @@ ErgeMD 主题系统 - mermaid-quadrant.css
 */
 
 [data-theme] {
+
+  /* === 象限图四象限底色（状态色，对齐官方 Cynefin 语义）=== */
+  --mermaid-quadrant-fill-1: var(--accent-green);
+  --mermaid-quadrant-fill-2: var(--accent-blue);
+  --mermaid-quadrant-fill-3: var(--accent-red);
+  --mermaid-quadrant-fill-4: var(--accent-yellow);
 
   /* === 象限图背景 === */
   --mermaid-quadrant-bg: var(--chart-surface-1);

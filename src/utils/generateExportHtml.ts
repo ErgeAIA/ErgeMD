@@ -415,7 +415,7 @@ ${markdownCss}
     background: transparent;
     color: inherit;
   }
-  a { color: var(--accent-cyan); }
+  a { color: var(--link, var(--accent-cyan)); }
   blockquote {
     border-left: 3px solid var(--accent-purple);
     padding: 0.5em 1em;

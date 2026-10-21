@@ -77,7 +77,7 @@
 
 /* ===== 链接 ===== */
 .markdown-body a {
-  color: var(--accent-cyan);
+  color: var(--link, var(--accent-cyan));
   text-decoration: none;
   text-underline-offset: 0.18em;
   transition: text-decoration-color 150ms ease-out;
@@ -327,7 +327,7 @@
 
 /* ===== 脚注 ===== */
 .markdown-body sup a {
-  color: var(--accent-cyan);
+  color: var(--link, var(--accent-cyan));
   text-decoration: none;
   font-size: 0.8em;
 }

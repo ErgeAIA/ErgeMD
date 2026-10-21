@@ -15,7 +15,12 @@ ErgeMD 主题系统 - mermaid-mindmap.css
 ================================================================================
 */
 
-[data-theme] {
+/* 选择器用 :where([data-theme]) 而非 [data-theme]：前者特异性为 0，主题文件用
+   [data-theme="xxx"]（特异性 0,1,0）即可稳定覆盖本文件的默认映射——两者特异性
+   其实相同（都是单个属性选择器），若都用 [data-theme]，后导入的 core 会压过先
+   导入的主题（globals.css 中 core 位于主题之后），主题的 mindmap 色板将全部失效。
+   :where 只降低特异性、不改变匹配，无 data-theme 时行为不变。 */
+:where([data-theme]) {
 
   /* === Mindmap 节点背景（承载文字，→ mermaid cScale）===
      使用 chart-fill 而非 branch 色；文字用同索引 text-on-fill 配对 */
@@ -34,7 +39,10 @@ ErgeMD 主题系统 - mermaid-mindmap.css
   /* 第 5 槽位文字（cScale4 的 text-on-fill；l4-bg 无消费者，不定义） */
   --mermaid-mindmap-l4-text: var(--chart-text-on-fill-4);
 
-  /* === Mindmap 节点背景序列（→ mermaid cScale0..11，与上方 l*/center 同索引）=== */
+  /* === Mindmap 节点背景序列（→ mermaid cScale0..11，与上方 center / l1..l3 同索引）===
+     注意：注释内禁止出现星斜杠序列——本例曾因「l*/center」的星斜杠让注释提前闭合，
+     解析器随即将下方 branch-0 声明当作垃圾吞掉（恢复到下一个分号），造成该默认
+     映射静默失效 */
   --mermaid-mindmap-branch-0: var(--chart-fill-0);
   --mermaid-mindmap-branch-1: var(--chart-fill-1);
   --mermaid-mindmap-branch-2: var(--chart-fill-2);

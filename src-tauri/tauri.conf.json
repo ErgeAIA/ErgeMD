@@ -13,10 +13,10 @@
     "windows": [
       {
         "title": "ErgeMD",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600,
+        "width": 1480,
+        "height": 920,
+        "minWidth": 900,
+        "minHeight": 640,
         "decorations": false,
         "center": true,
         "resizable": true,

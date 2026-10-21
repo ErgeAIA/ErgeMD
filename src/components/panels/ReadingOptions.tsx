@@ -1,6 +1,6 @@
 import { ConfigLevelSelector } from "@/components/settings/ConfigLevelSelector";
 import { useSettingsStore } from "@/stores/settingsStore";
-import type { MindmapLayout, ThemeMode } from "@/types";
+import type { MindmapLayout, MindmapStyle, ThemeMode } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,15 +23,15 @@ const themePreviewColors: Record<string, string[]> = {
   "solarized-light": ["#fdf6e3", "#2aa198", "#268bd2", "#b58900"],
 };
 
-/** 主题分类 */
+/** 主题分类：14 套主题均为内置，不再按明暗分组；默认品牌色双主题（亮/暗）置顶 */
 const themeCategories = [
   {
     key: "builtin",
-    themes: ["cyberpunk", "dark", "light", "solarized-light"] as ThemeMode[],
-  },
-  {
-    key: "dark",
     themes: [
+      "light",
+      "dark",
+      "cyberpunk",
+      "solarized-light",
       "falcon",
       "aurora",
       "cherry-blossom",
@@ -225,6 +225,15 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
       [updateReadingSettings],
     );
 
+    const handleMindmapStyleChange = useCallback(
+      (e: React.ChangeEvent<HTMLSelectElement>) => {
+        updateReadingSettings({
+          mindmapStyle: e.target.value as MindmapStyle,
+        });
+      },
+      [updateReadingSettings],
+    );
+
     const sliderTrack = (value: number, min: number, max: number) =>
       `linear-gradient(to right, var(--accent-cyan) ${((value - min) / (max - min)) * 100}%, var(--bg-code) ${((value - min) / (max - min)) * 100}%)`;
 
@@ -352,6 +361,25 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
 
         {/* 分隔线 */}
         <div style={{ height: "1px", background: "var(--divider)" }} />
+
+        {/* 固定目录 */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            id="reading-pin-toc"
+            type="checkbox"
+            checked={readingSettings.pinToc}
+            onChange={(e) => updateReadingSettings({ pinToc: e.target.checked })}
+            className="cursor-pointer"
+            style={{ width: "16px", height: "16px", accentColor: "var(--accent-cyan)" }}
+          />
+          <label
+            htmlFor="reading-pin-toc"
+            className="cursor-pointer"
+            style={{ ...labelStyle, marginBottom: 0 }}
+          >
+            {t("settings.pinToc")}
+          </label>
+        </div>
 
         {/* 字号 */}
         <div>
@@ -541,6 +569,38 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
           >
             <option value="radial">{t("settings.mindmapLayoutRadial")}</option>
             <option value="tree">{t("settings.mindmapLayoutTree")}</option>
+            <option value="logic">{t("settings.mindmapLayoutLogic")}</option>
+          </select>
+        </div>
+
+        {/* Mermaid 思维导图样式（节点观感，与布局正交） */}
+        <div>
+          <label
+            htmlFor="reading-mindmap-style"
+            className="block"
+            style={labelStyle}
+          >
+            {t("settings.mindmapStyle")}
+          </label>
+          <select
+            id="reading-mindmap-style"
+            value={readingSettings.mindmapStyle}
+            onChange={handleMindmapStyleChange}
+            style={{
+              width: "100%",
+              padding: "6px 12px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              background: "var(--bg-code)",
+              color: "var(--text-primary)",
+              border: "1px solid var(--divider)",
+              outline: "none",
+            }}
+          >
+            <option value="depth">{t("settings.mindmapStyleDepth")}</option>
+            <option value="brand">{t("settings.mindmapStyleBrand")}</option>
+            <option value="outline">{t("settings.mindmapStyleOutline")}</option>
+            <option value="classic">{t("settings.mindmapStyleClassic")}</option>
           </select>
         </div>
 

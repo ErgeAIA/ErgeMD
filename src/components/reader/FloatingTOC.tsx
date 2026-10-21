@@ -3,6 +3,7 @@ import { getTOCContextMenuItems } from "@/components/context-menu/TOCContextMenu
 import { useTOCConfig } from "@/hooks/useActiveConfig";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useFileStore } from "@/stores/fileStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { exportHtml } from "@/utils/export";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -46,6 +47,29 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
 
     const [isHovering, setIsHovering] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
+
+    // 固定目录（pin）：全局偏好，存 readingSettings，重载后保持、对所有文档生效
+    const pinned = useSettingsStore((s) => s.readingSettings.pinToc);
+    const updateReadingSettings = useSettingsStore((s) => s.updateReadingSettings);
+    const togglePin = useCallback(() => {
+      updateReadingSettings({ pinToc: !pinned });
+    }, [updateReadingSettings, pinned]);
+
+    // 展开态：hover 或已固定任一为真（固定后移开鼠标不收起）
+    const expanded = isHovering || pinned;
+
+    // 固定态按 Esc 取消固定
+    useEffect(() => {
+      if (!pinned) return;
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          updateReadingSettings({ pinToc: false });
+        }
+      };
+      window.addEventListener("keydown", onKey);
+      return () => window.removeEventListener("keydown", onKey);
+    }, [pinned, updateReadingSettings]);
 
     const {
       menuState,
@@ -255,17 +279,18 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
           <div
             className="relative overflow-hidden rounded-lg"
             style={{
-              width: isHovering ? expandedWidth : collapsedWidth,
+              width: expanded ? expandedWidth : collapsedWidth,
               height: viewportHeight,
               pointerEvents: "auto",
-              background: isHovering ? "var(--toc-hover-bg)" : "transparent",
-              boxShadow: isHovering ? "var(--toc-hover-shadow)" : "none",
+              background: expanded ? "var(--toc-hover-bg)" : "transparent",
+              boxShadow: expanded ? "var(--toc-hover-shadow)" : "none",
               transition: `width ${animationDuration}ms ease-out, background ${animationDuration}ms ease-out, box-shadow ${animationDuration}ms ease-out`,
             }}
           >
             <div
               ref={tocListRef}
               className="absolute inset-0 overflow-y-auto scrollbar-hide"
+              style={{ paddingTop: expanded ? 26 : 0 }}
             >
               {tocItems.map((item, index) => {
                 const lineWidth = getLineWidth(item.level);
@@ -275,15 +300,16 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
 
                 const lineOpacity = isActive
                   ? 1
-                  : isHovering
+                  : expanded
                     ? 0.7
                     : Math.max(minLineOpacity, 0.5 - distance * lineFadeRate);
 
+                // BUG-075：指示线随主题品牌色（原 accent-cyan 只在部分主题与品牌色一致）
                 const lineColor = isActive
-                  ? "var(--accent-cyan)"
-                  : "var(--accent-cyan-dim)";
+                  ? "var(--brand-primary)"
+                  : "var(--toc-line-dim)";
 
-                const textOpacity = isHovering
+                const textOpacity = expanded
                   ? isActive
                     ? 1
                     : inactiveOpacity
@@ -303,7 +329,7 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                       height: itemHeight,
                       paddingLeft: indent,
                       paddingRight: 8,
-                      opacity: isHovering
+                      opacity: expanded
                         ? 1
                         : Math.max(0.18, 1 - distance * 0.12),
                     }}
@@ -316,16 +342,16 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                           : lineWidth,
                         height: isActive ? 3 : 2,
                         backgroundColor: lineColor,
-                        opacity: isHovering ? 0 : lineOpacity,
+                        opacity: expanded ? 0 : lineOpacity,
                         boxShadow: isActive
-                          ? "0 0 8px var(--accent-cyan-glow)"
+                          ? "0 0 8px var(--toc-line-glow)"
                           : "none",
                         transition:
                           "width 120ms ease-out, height 120ms ease-out, opacity 120ms ease-out, background-color 120ms ease-out",
                       }}
                     />
 
-                    {isHovering && (
+                    {expanded && (
                       <span
                         className="ml-3 whitespace-nowrap overflow-hidden text-ellipsis text-sm"
                         style={{
@@ -344,6 +370,36 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                 );
               })}
             </div>
+            {/* 固定徽章：钉在面板右上角（relative 面板浮层），不随列表滚动，
+                目录翻页也始终留在视野内；仅 expanded 时显示 */}
+            {expanded && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePin();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                aria-pressed={pinned}
+                title={pinned ? t("toc.unpin") : t("toc.pin")}
+                className="absolute right-1.5 top-1.5 z-20 flex h-[22px] w-[22px] items-center justify-center rounded-full outline-none transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+                style={{ color: pinned ? "var(--brand-primary)" : "var(--text-muted)" }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill={pinned ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 17v5" />
+                  <path d="M9 10.76V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6.76l2 3.24H7l2-3.24z" />
+                </svg>
+              </button>
+            )}
           </div>
         </nav>
 

@@ -41,6 +41,60 @@ async function ensureZenumlRegistered(mermaid: any): Promise<void> {
   zenumlRegistered = true;
 }
 
+/**
+ * 思维导图「横向逻辑图」布局（全朝右，dagre LR）。
+ *
+ * mermaid 12.2.0 的 mindmap 把方向硬编码为 "TB"（mindmap-definition chunk 的
+ * getData 返回 `direction: "TB"`），顶层 config 无任何方向口子，因此原生只能出
+ * 放射（cose-bilkent）与向下层级树（dagre TB），无法出「全朝右」逻辑图。
+ *
+ * 绕过方案：注册一个包装布局，渲染前把 `data4Layout.direction` 改为 "LR" 再委托
+ * dagre 渲染器（dagre 只读 `rankdir: data4Layout.direction`）。dagre 内部 chunk
+ * 导出了完整 `render`，且 mermaid 的 package.json `exports` 含 `./*`，深链导入放行。
+ *
+ * 防护：mermaid 升级若改了 chunk 哈希文件名，动态 import 会失败 → 此处 try/catch 把
+ * lrLayoutReady 置否，调用点降级为 dagre TB（层级树），不会使图表崩溃。
+ */
+const MINDMAP_LR_LAYOUT = "mindmap-tree-lr";
+let lrLayoutRegistered = false;
+let lrLayoutReady = false;
+
+async function ensureMindmapLrLayout(mermaid: any): Promise<void> {
+  if (lrLayoutRegistered) return;
+  lrLayoutRegistered = true;
+  try {
+    await mermaid.registerLayoutLoaders([
+      {
+        name: MINDMAP_LR_LAYOUT,
+        loader: async () => {
+          const mod = await import(
+            "mermaid/dist/chunks/mermaid.esm/dagre-WMVPSHVI.mjs"
+          );
+          const dagreRender = (mod as any).render;
+          return {
+            render: (
+              data4Layout: any,
+              svg: any,
+              helpers: any,
+              opts: any,
+            ) => {
+              data4Layout.direction = "LR";
+              return dagreRender(data4Layout, svg, helpers, opts);
+            },
+          };
+        },
+      },
+    ]);
+    lrLayoutReady = true;
+  } catch (e) {
+    console.warn(
+      "[MermaidDiagram] 注册横向逻辑图布局失败，已降级为层级树:",
+      e,
+    );
+    lrLayoutReady = false;
+  }
+}
+
 const runNextTask = async () => {
   if (isRendering || mermaidRenderQueue.length === 0) return;
   isRendering = true;
@@ -68,21 +122,33 @@ export function renderMermaidForExport(chart: string): Promise<string> {
         const mermaid = (await mermaidModulePromise).default;
 
         await ensureZenumlRegistered(mermaid);
+        await ensureMindmapLrLayout(mermaid);
 
         // 与阅读路径保持一致：钉 dagre + classic，避免导出与文档观感漂移；
         // mindmap 按用户设置放行放射布局（cose-bilkent），导出与阅读视图同步
-        const mindmapLayout =
-          useSettingsStore.getState().readingSettings.mindmapLayout ?? "radial";
+        const readingSettings = useSettingsStore.getState().readingSettings;
+        const mindmapLayout = readingSettings.mindmapLayout ?? "radial";
+        const mindmapStyle = readingSettings.mindmapStyle ?? "depth";
         const isMindmapChart = normalizeChartType(chart) === "mindmap";
         mermaid.initialize({
           startOnLoad: false,
           theme: "default",
           securityLevel: "strict",
           layout:
-            isMindmapChart && mindmapLayout !== "tree"
-              ? "cose-bilkent"
+            isMindmapChart
+              ? mindmapLayout === "logic"
+                ? lrLayoutReady
+                  ? MINDMAP_LR_LAYOUT
+                  : "dagre"
+                : mindmapLayout !== "tree"
+                  ? "cose-bilkent"
+                  : "dagre"
               : "dagre",
           look: "classic",
+          // depth 风格在导出兜底路径下 section 也按层级分配，与阅读路径一致
+          mindmap: {
+            colorBy: mindmapStyle === "depth" ? "depth" : "branch",
+          },
           flowchart: { useMaxWidth: false, htmlLabels: true },
         });
 
@@ -426,6 +492,134 @@ function getCSSVar(name: string, fallback: string = ""): string {
   );
 }
 
+// ===== 状态色填充上的文字色自动选择 =====
+// Cynefin / 象限图的四分区底色取主题状态色（绿/蓝/红/黄/紫），亮色主题下
+// 状态色为深饱和（白字可读），暗色主题下为中亮（深墨可读）——单一文字色
+// 无法通吃，按 WCAG 对比度在白 / 深墨之间自动取更优者。深墨取画布深色
+// #241F1B（palette bg-surface），与色板同族。
+
+const INK_ON_FILL = "#241F1B";
+const PAPER_ON_FILL = "#FFFFFF";
+
+function parseColorToken(
+  value: string,
+): [number, number, number] | null {
+  const v = value.trim();
+  const hex = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    const h = hex[1];
+    if (h.length === 3) {
+      return [
+        parseInt(h[0] + h[0], 16),
+        parseInt(h[1] + h[1], 16),
+        parseInt(h[2] + h[2], 16),
+      ];
+    }
+    return [
+      parseInt(h.slice(0, 2), 16),
+      parseInt(h.slice(2, 4), 16),
+      parseInt(h.slice(4, 6), 16),
+    ];
+  }
+  const rgb = v.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i);
+  if (rgb) {
+    return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  }
+  return null;
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const lin = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+function contrastRatio(
+  a: [number, number, number],
+  b: [number, number, number],
+): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const [hi, lo] = la >= lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** 取白 / 深墨中与底色对比度更高的一方；解析失败回落白色 */
+function readableTextOnFill(bg: string): string {
+  const c = parseColorToken(bg);
+  if (!c) return PAPER_ON_FILL;
+  const ink = parseColorToken(INK_ON_FILL) as [number, number, number];
+  return contrastRatio(c, ink) >= contrastRatio(c, [255, 255, 255])
+    ? INK_ON_FILL
+    : PAPER_ON_FILL;
+}
+
+/**
+ * 保底 4.5:1 的取墨：在深墨 / 纯白 / 纯黑三者中取对比度最高者。
+ * 纯白与纯黑的可用区间无缝衔接（白覆盖 L≤0.183、黑覆盖 L≥0.175），对任意
+ * 底色恒 ≥4.5:1。二选一版本在中间明度的高饱和填充上两边都可能落在 4.5 以下
+ * （如橙 L≈0.24：墨 4.47 / 白 3.57），thin 文字观感即「看不清」（BUG-077：
+ * 太阳耀斑 / 紫柚明亮 / 霓虹赛博 / 樱花）。quadrant / cynefin 沿用二选一版不动。
+ */
+function readableTextOnFillStrict(bg: string): string {
+  const c = parseColorToken(bg);
+  if (!c) return PAPER_ON_FILL;
+  const candidates: Array<[
+    string,
+    [number, number, number],
+  ]> = [
+    [INK_ON_FILL, parseColorToken(INK_ON_FILL) as [number, number, number]],
+    [PAPER_ON_FILL, [255, 255, 255]],
+    ["#000000", [0, 0, 0]],
+  ];
+  let best = PAPER_ON_FILL;
+  let bestRatio = -1;
+  for (const [hex, rgb] of candidates) {
+    const r = contrastRatio(c, rgb);
+    if (r > bestRatio) {
+      bestRatio = r;
+      best = hex;
+    }
+  }
+  return best;
+}
+
+/**
+ * 把颜色 target 按 ratio 向 canvas 混合（ratio=1 即完全靠拢 canvas）。
+ * 用于暗色主题下状态色填充过亮、白字对比度不达标（<4.5:1）时，将填充
+ * 适当加深，使白字可读性达到 AA 标准；亮色主题直接原样返回。
+ */
+function mixToward(canvas: string, target: string, ratio: number): string {
+  const t = parseColorToken(target);
+  const c = parseColorToken(canvas);
+  if (!t || !c) return target;
+  const hx = (n: number) =>
+    Math.round(n).toString(16).padStart(2, "0");
+  return `#${hx(t[0] + (c[0] - t[0]) * ratio)}${hx(
+    t[1] + (c[1] - t[1]) * ratio,
+  )}${hx(t[2] + (c[2] - t[2]) * ratio)}`;
+}
+
+/**
+ * 【已停用】思维导图 brand 风格逐节点深度混色。
+ *
+ * 原实现从 SVG 串解析「节点 id→section」与「子节点 id→depth」，逐节点向画布混色
+ * 落实「分支定色相、层级定明度」。停用原因有两点：
+ * ① 混色会改掉节点底色，使它与生成器配对的 chart-text-on-fill 不再对应——想要
+ *    文字继续达标就得再按混色结果重算取墨，等于把颜色决策搬进渲染层（内联取墨），
+ *    绕开 token 契约，与项目「颜色一律由 tokens 决定」的原则冲突；
+ * ② 深度解析依赖 `<path id="edge_父_子">`，但 mermaid 实际边 id 带渲染前缀
+ *    （如 `mm-xxx-edge_0_1`），该正则从未命中，nodeDepth 恒空，所有节点 r=0，
+ *    即「层级明度」从未真正生效——混色逻辑一直是空转。
+ *
+ * 现由「brand 档 = 分支色相（chart-fill × chart-text-on-fill 配对）、
+ * depth 档 = 层级明度（mermaid 原生 colorBy='depth'）」分别承担，职责清晰。
+ * （实现已移除：保留空转会误导后来者，需要时可据此说明在 token 层引入
+ * 「层级明度」令牌后重写。）
+ */
+
 function getMermaidColors(): {
   primaryColor: string;
   primaryTextColor: string;
@@ -624,15 +818,32 @@ function getMermaidColors(): {
         ),
       },
       gantt: {
-        sectionBg: getCSSVar("--mermaid-gantt-section-bg", tertiaryColor),
+        // section 行底色直读 --chart-surface-3（与 taskBg 直读 chart-series-0 同策略，
+        // 绕开 --mermaid-gantt-section-bg 间接映射——globals.css 的 html:not([data-theme])
+        // 兜底块把它硬编码成深色 #16162A，时序/缓存下可能读到兜底值致 section 行变黑）
+        sectionBg: getCSSVar(
+          "--chart-surface-3",
+          getCSSVar("--mermaid-gantt-section-bg", tertiaryColor),
+        ),
         sectionLine: lineColor,
-        taskBg: getCSSVar("--mermaid-gantt-task-bg", primaryColor),
+        // 任务条底色直接取主题品牌主色 chart-series-0（最高识别度，从淡表面分区跳出）。
+        // 早先经 mermaid-gantt.css 的 --mermaid-gantt-task-bg→var(--chart-series-0) 间接取，
+        // 但该 CSS 映射文件在 HMR/缓存场景可能不随 JS 热更新 → 任务条回落旧值（chart-surface-1
+        // 深色）呈「大黑条」。改为 JS 直读 chart-series-0（git/sankey 同款、确认随主题最新），
+        // 保留 --mermaid-gantt-task-bg 作兜底（若某主题显式定制了甘特专用色则仍尊重）
+        taskBg: getCSSVar(
+          "--chart-series-0",
+          getCSSVar("--mermaid-gantt-task-bg", primaryColor),
+        ),
         taskBorder: getCSSVar(
           "--mermaid-gantt-task-border",
           primaryBorderColor,
         ),
         taskText: getCSSVar("--mermaid-gantt-task-text", primaryTextColor),
-        milestoneBg: getCSSVar("--mermaid-gantt-milestone-bg", primaryColor),
+        milestoneBg: getCSSVar(
+          "--chart-series-1",
+          getCSSVar("--mermaid-gantt-milestone-bg", primaryColor),
+        ),
         milestoneBorder: getCSSVar(
           "--mermaid-gantt-milestone-border",
           primaryBorderColor,
@@ -972,6 +1183,21 @@ function getMermaidThemeSignature(): string {
     "--mermaid-mindmap-branch-line-2",
     "--mermaid-mindmap-branch-line-3",
     "--mermaid-mindmap-branch-line-4",
+    // 思维导图节点底与文字槽：dark/light 等主题经源色表 mindmapHues 覆盖 core 的
+    // chart-fill 映射，文字改由 l*-text 直接提供（不再经 chart-text-on-fill 链）。
+    // 这批 token 必须入签名——否则改源色表重生成后签名不变，缓存继续复用旧 SVG
+    // （「重启后还是老样子」即此因，与 BUG-077 的缓存坑同源）
+    "--mermaid-mindmap-center-bg",
+    "--mermaid-mindmap-center-text",
+    "--mermaid-mindmap-branch-0",
+    "--mermaid-mindmap-branch-1",
+    "--mermaid-mindmap-branch-2",
+    "--mermaid-mindmap-branch-3",
+    "--mermaid-mindmap-branch-4",
+    "--mermaid-mindmap-l1-text",
+    "--mermaid-mindmap-l2-text",
+    "--mermaid-mindmap-l3-text",
+    "--mermaid-mindmap-l4-text",
     // 思维导图节点文字直接消费 text-on-fill（经 l*-text 链），入签名保证缓存正确失效
     "--chart-text-on-fill-0",
     "--chart-text-on-fill-1",
@@ -1220,6 +1446,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
     // 思维导图布局偏好（radial=发散放射 / tree=层级树），旧持久化数据由 merge 兜底
     const mindmapLayout =
       useSettingsStore((s) => s.readingSettings.mindmapLayout) ?? "radial";
+    // 思维导图样式偏好（depth=按层级分色，默认 / brand=按分支分色 / outline=素雅描边 / classic=经典）
+    const mindmapStyle =
+      useSettingsStore((s) => s.readingSettings.mindmapStyle) ?? "depth";
 
     const resolvedTheme = getResolvedTheme();
 
@@ -1230,9 +1459,86 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       chart,
       // 思维导图布局参与缓存键：切换布局后旧 SVG 立即失效重渲染
       mindmapLayout,
+      // 思维导图样式参与缓存键：切换样式后旧 SVG 立即失效重渲染
+      mindmapStyle,
+      // v40：Cynefin/象限四分区底色换主题状态色 + 文字色按对比度自动选取
+      // v41：gitgraph 分支线/提交点改用品牌系列色（chart-series-0~7，主分支橙）
+      // 消除「青色/错色」并强化品牌识别；requirement 关系线改品牌橙；象限图与
+      // Cynefin 五域在暗色主题下把状态色填充向画布加深 ~45%，白字达 AA 对比度
+      // v48：mindmap depth 档字号层级递增（中心最大逐级递减）；hover 覆盖扩至
+      // sequence actor / journey / xychart / packet / radar / eventmodeling /
+      // treemap / ishikawa / cynefin 等类型，渲染产物变化，作废旧键
+      // v47：晨光（light）mindmap 层级色板改用状态色 -fill 亮版（与夜灯的深版
+      // 区分开），渲染产物变化，作废旧键
+      // v46：晨光/夜灯定制 mindmap「品牌色+状态色」层级色板（源色表 mindmapHues），
+      // 渲染产物变化；同时把 mindmap 节点底/文字 token 纳入 themeSignature，
+      // 今后改这批 token 会自动失效缓存，不必再依赖手动 bump
+      // v45：思维导图默认档改为「按层级分色」（depth，colorBy='depth'），
+      // 与 brand 档「按分支分色」并列；渲染产物变化，作废旧键
+      // v44：思维导图回归 token 契约——brand 档节点底改 chart-fill、文字改
+      // chart-text-on-fill（取消逐节点深度混色与内联取墨），渲染产物变化，作废旧键
+      // v43：思维导图文字改「内联 text-on-fill」（BUG-077），渲染产物结构变化
+      // （文字元素带内联 color/fill），必须作废旧键——否则缓存命中会直接复用
+      // 修复前的白字 SVG，后处理整段被跳过（前三轮修复"无变化"的根因）
+      // v42：思维导图新增「样式」偏好（brand=强调色实底 / depth=层级渐变 /
+      // outline=素雅描边 / classic=经典）；brand 逐分支高饱和实底 + 层级向画布
+      // 渐变 + 隐藏下划线；depth 走 mermaid 原生 colorBy=depth 单色明度推进
+      // v40：Cynefin/象限四分区底色换主题状态色 + 文字色按对比度自动选取
+      // v39：全类型 themeVariables 键名换正（BUG-070 批量死键清理，含 ER
+      // v38 的同一根因；edgeLabelBackground 全局生效修复连线标签黑底）
+      // v38：ER 主题注入换 mermaid ≥11 v2 渲染器官方键（entityBkg 系旧键
+      // 在 12.2.0 中已不存在，v37 及以前缓存的是默认配色），作废旧键
       // v37：mermaid 12 升级轮。v36 及以前的缓存可能含 neo 外观的 drop-shadow
       // 残留（未钉 look 时渲染产出），升版一次性作废旧键（BUG-065）
-      _version: "v37",
+      // v49：① 饼图去黑色描边（pieStrokeWidth:0）；② hover 淡出规则加 !important
+      // （治饼图 .pieCircle{opacity:0.7} 的 #id 作用域覆盖）+ 悬停项显式 opacity:1；
+      // ③ 补沃德利地图组件节点 hover（g.wardley-node，此前漏加）；渲染产物变化，作废旧键
+      // v50：多图去黑描边——旅程图 actor 圆、架构图服务节点（.node-bkg）、C4 关系线
+      // （path:not([class])）、treemap 矩形（treemapLeaf/treemapSection，此前后处理误用
+      // kebab 类致空操作）；均 mermaid 无 themeVariables 键可注入、回落默认近黑，改用
+      // !important 后处理覆盖；渲染产物变化，作废旧键
+      // v51：① 回退 Git 合并箭头后处理（path[class*="arrow"] 是上轮回归——误覆盖分支色
+      // 并 fill 填充弧线，箭头本就由 themeVariables.gitN 着色）；② 桑基 colorScheme 硬编码
+      // Tableau10 不读主题，后处理全局映射到 chart-series；③ 主题切换清空渲染缓存兜底；
+      // 渲染产物变化，作废旧键
+      // v52：① 甘特任务条底色 chart-fill-0→chart-series-0（品牌主色，高识别度，彻底解决
+      // 任务条融进分区、全主题发模糊）+ 条上文字按填充算对比色；② 桑基深色主题流量发虚
+      // 真因是 mermaid 默认 .link{mix-blend-mode:multiply}——深色底上相乘成更暗近不可见，
+      // 深色主题改 normal + stroke-opacity 0.85；渲染产物变化，作废旧键
+      // v53：甘特任务条/里程碑色改 JS 直读 --chart-series-0/1（不再经 mermaid-gantt.css 的
+      // --mermaid-gantt-task-bg 间接映射——该 CSS 映射在 HMR/缓存场景可能不随 JS 热更新，
+      // 致任务条回落旧值 chart-surface-1 呈「大黑条」；直读 chart-series 与 git/sankey 同源、
+      // 确认随主题最新）；渲染产物变化，作废旧键
+      // v54：甘特 section 行底色同样改 JS 直读 --chart-surface-3 + 后处理强制 rect.section
+      // 填充（globals.css 的 html:not([data-theme]) 兜底块把 --mermaid-gantt-section-bg
+      // 硬编码为深色 #16162A，时序/缓存下会读到兜底值致 section 行变黑）；渲染产物变化，作废旧键
+      // v55：甘特去黑的「全场兜底」错误方案已删除（见 v56，系误诊）
+      // v56：甘特「全主题大黑条」真根因——注入 <style> 的 CSS 里误写了双斜杠注释。
+      // CSS 不认 // 注释，它会把「// 网格…」连同后面的选择器一起当作非法选择器，
+      // 整条规则被丢弃；更糟的是解析器错位会吞掉 mermaid 原有样式，section 矩形失去
+      // 填充规则后回落 SVG 默认 fill:black → 与主题无关、全主题呈「大黑条」（v54/v55
+      // 针对性覆盖 section/rect 全部无效即因此，规则本身也被吞）。现把该注释改为 CSS
+      // 合法的 斜杠星号 注释，并删除 v55 的 rect 全场兜底与 svg 背景透明（误诊产物，
+      // 且 rect{fill} 会抹平 section 交替底色）。实测：黑色 rect 4→0，网格线规则恢复生效。
+      // 【教训】所有 svg.replace("<style>", ...) 注入的 CSS 一律只能用 /* */ 注释。
+      // v57：修复「切主题后个别图表不刷新、要按 F5」（典型症状：思维导图根节点只剩边框/
+      // 近白色，即 git0 取到了 chart-fill-0 而非 center-bg）。根因是 cacheKey 里的
+      // themeSignature 在**渲染期**计算，而 data-theme 由 useTheme 的 useLayoutEffect 应用，
+      // React 渲染早于 layout effect → 签名仍是旧主题 → 命中上一主题缓存直接返回不重渲染。
+      // 修法：渲染 effect 内先校验 data-theme 是否已同步（未同步则 rAF 延后一帧重试，上限 3 次），
+      // 再用实时 getMermaidThemeSignature() 重算并替换缓存键后查/存缓存。
+      // v58：① 上述「等待重试」改为**主动同步** data-theme（重试 3 次后会放弃、仍用旧 CSS
+      // 渲染，是遗留的偶发窗口）；② 桑基给通用渐变 id 加 svg 唯一前缀（多图同页时编号撞车
+      // 会让 url(#linearGradient-N) 指向失效定义，实测同页两图未复现，作预防性加固）；
+      // ③ 桑基兜底色防 pieColors 空数组除零（会替换成 "undefined" 使渐变失效）；
+      // ④ 桑基连线保底降级——Tableau 替换后若仍残留 Tableau 色或 url(#id) 引用悬空，
+      // 强制给 path 明确主题 stroke，避免渐变失效导致 SVG 整条线不渲染（观感「连线没有」）。
+      // v59：修复看板图（kanban）暗色主题卡片白底白字——mermaid 给普通卡片的
+      // rect.label-container 硬编码近白底（≈#f4f4f4），无 themeVariables 键可注入，而卡片
+      // 文字继承 textColor（暗色主题为浅色）→ 白底白字不可读（列头有 cScaleN 故正常）。
+      // 新增 kanban 后处理：强制卡片底为 cardBg、卡片文字按 text 取色。
+      // 渲染产物变化，作废旧键
+      _version: "v59",
     });
 
     useEffect(() => {
@@ -1258,10 +1564,39 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       return () => observer.disconnect();
     }, [exportMode]);
 
+    // 主题切换防御性兜底：resolvedTheme 变化时清空渲染缓存，确保所有图表用新主题
+    // 重渲染（缓存键已含 resolvedTheme + themeSignature，理论上切主题即失效；此处
+    // 再兜一层，杜绝「切换主题后图表不刷新、需按 F5」的边界情况）。
+    // 用 ref 跳过挂载首跑——否则文档内多图表逐个挂载会互相清缓存、初始加载反复重渲染
+    const prevResolvedThemeRef = useRef(resolvedTheme);
+    useEffect(() => {
+      if (prevResolvedThemeRef.current === resolvedTheme) return;
+      prevResolvedThemeRef.current = resolvedTheme;
+      mermaidCache.clear();
+    }, [resolvedTheme]);
+
     useEffect(() => {
       if (!isVisible) return;
 
-      const cached = mermaidCache.get(cacheKey);
+      // ① 主题同步：data-theme 由 useTheme 的 useLayoutEffect 应用，而 React 先渲染、
+      // 后跑 layout effect，本 effect 触发时 documentElement 上可能仍是旧主题 → 此后所有
+      // getCSSVar 与 isLight 判断都基于旧主题（表现为切换主题后个别图颜色不对、桑基流量
+      // 不可见，刷新才恢复）。这里主动同步一次（写相同值无副作用），确保本次渲染读到的
+      // 一定是当前主题。相比「等待重试」，主动同步无竞态、无放弃兜底。
+      const themeAttr = document.documentElement.getAttribute("data-theme");
+      if (themeAttr !== resolvedTheme) {
+        document.documentElement.setAttribute("data-theme", resolvedTheme);
+      }
+
+      // ② 用实时签名修正缓存键：即便 data-theme 已就绪，cacheKey 仍是渲染期算出的旧签名，
+      // 直接使用仍会命中上一主题的缓存。这里按当前 CSS 变量重算签名并替换后再查/存。
+      const liveSignature = getMermaidThemeSignature();
+      const effectiveCacheKey =
+        liveSignature === themeSignature
+          ? cacheKey
+          : JSON.stringify({ ...JSON.parse(cacheKey), signature: liveSignature });
+
+      const cached = mermaidCache.get(effectiveCacheKey);
       if (cached) {
         setSvgHtml(cached.svgHtml);
         setError(false);
@@ -1289,10 +1624,13 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (cancelled) return;
 
           await ensureZenumlRegistered(mermaid);
+          await ensureMindmapLrLayout(mermaid);
 
           const mermaidTheme = "base";
 
-          let erThemeCSS = "";
+          // ER 曾通过 themeCSS 注入属性行配色；mermaid ≥11 该 DOM 类已移除，
+          // 且官方键 attributeBackgroundColorOdd/Even 已覆盖，置空即可
+          const erThemeCSS = "";
 
           const themeVariables = {
             fontFamily: colors.fontFamily,
@@ -1311,9 +1649,16 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             pie5: colors.pieColors[4],
             pie6: colors.pieColors[5],
             pieTextColor: colors.pieTextColor,
+            // 去掉饼图黑色描边：mermaid 默认 pieStrokeColor:black / pieStrokeWidth:2px，
+            // 且最外圈用独立的 pieOuterStrokeColor:black / pieOuterStrokeWidth:2px；
+            // 宽度均置 0 彻底移除，颜色兜底设为画布底色
+            pieStrokeWidth: "0px",
+            pieStrokeColor: colors.backgroundColor,
+            pieOuterStrokeWidth: "0px",
+            pieOuterStrokeColor: colors.backgroundColor,
             nodeBorder: colors.primaryBorderColor,
-            nodeBg: colors.primaryColor,
             nodeText: colors.primaryTextColor,
+            titleColor: colors.primaryTextColor,
             actorBorder: colors.primaryBorderColor,
             actorBg: colors.primaryColor,
             actorTextColor: colors.primaryTextColor,
@@ -1321,8 +1666,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             decisionBg: colors.primaryColor,
             decisionBorder: colors.primaryBorderColor,
             decisionTextColor: colors.primaryTextColor,
-            edgeLabelBg: colors.primaryColor,
-            edgeLabelTextColor: colors.primaryTextColor,
+            // 官方键为 edgeLabelBackground（edgeLabelBg/edgeLabelTextColor 在
+            // 12.2.0 dist 0 命中，为死键已删）；取画布色让连线标签底融入页面
+            edgeLabelBackground: colors.backgroundColor,
             labelBoxBgColor: colors.primaryColor,
             labelTextColor: colors.primaryTextColor,
             classDefBg: colors.primaryColor,
@@ -1381,6 +1727,8 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           const isQuadrant = chartType === "quadrant";
           const isTreeview = chartType === "treeview";
           const isWardley = chartType === "wardley";
+          const isVenn = chartType === "venn";
+          const isArchitecture = chartType === "architecture";
           const isIshikawa = chartType === "ishikawa";
           const isZenuml = chartType === "zenuml";
           const isEventModeling = chartType === "eventmodeling";
@@ -1392,14 +1740,20 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             const vars = themeVariables as any;
             vars.darkMode = isLight ? false : true;
             const timelineColors = colors.charts.timeline;
-            vars.cScale0 = timelineColors.cScale[0];
-            vars.cScale1 = timelineColors.cScale[1];
-            vars.cScale2 = timelineColors.cScale[2];
-            vars.cScale3 = timelineColors.cScale[3];
-            vars.cScaleLabel0 = timelineColors.cScaleLabel[0];
-            vars.cScaleLabel1 = timelineColors.cScaleLabel[1];
-            vars.cScaleLabel2 = timelineColors.cScaleLabel[2];
-            vars.cScaleLabel3 = timelineColors.cScaleLabel[3];
+
+            // mermaid ≥11 timeline 官方键（12.2.0 dist 实测）：分区 cScaleN/
+            // cScaleLabelN（genSections 按 THEME_COLOR_LIMIT 循环）、根节点
+            // git0/gitBranchLabel0；只注入 4 槽会漏掉多分区场景
+            for (let i = 0; i < 12; i++) {
+              vars[`cScale${i}`] =
+                timelineColors.cScale[i % timelineColors.cScale.length];
+              vars[`cScaleLabel${i}`] =
+                timelineColors.cScaleLabel[
+                  i % timelineColors.cScaleLabel.length
+                ];
+            }
+            vars.git0 = timelineColors.cScale[0];
+            vars.gitBranchLabel0 = timelineColors.cScaleLabel[0];
           }
 
           if (isMindmap) {
@@ -1408,29 +1762,89 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
 
             const mindmapColors = colors.charts.mindmap;
+            // 强调色带（高饱和，视觉身份）：各档连线/描边来源
+            const saturated = mindmapColors.branchLines;
+            // 安全填充带（chart-fill）：brand / depth / classic 的节点底来源
+            const branchBg = mindmapColors.branches;
+            // 按底色对比度自动取白/深墨（承载文字的填充必须 text-on-fill 绑定）
+            // BUG-077：取墨须保底 4.5:1（outline 透明底分支与根节点兜底用）
+            const inkFor = (bg: string) => readableTextOnFillStrict(bg);
 
-            vars.git0 = mindmapColors.centerColor;
-            vars.gitBranchLabel0 = mindmapColors.centerText;
+            // 四档样式分别确定 cScale（节点底）/ cScaleLabel（文字）/ cScaleInv+lineColor（下划线/连线）
+            let fillSlots: string[];
+            let textSlots: string[];
+            let lineSlots: string[];
 
-            // 节点背景（cScale）= fill（承载文字），文字（cScaleLabel）= 同索引 text-on-fill；
-            // 连线（cScaleInv / lineColor）= stroke（视觉身份）。详见 mermaid-mindmap.css。
-            // 注意：branches / branchLines / nodeInks 三个序列必须等长（当前均为 5），
-            // 新增分支时三处与 mermaid-mindmap.css 的 branch/branch-line 令牌需同步扩充
-            const branches = mindmapColors.branches;
-            const branchLines = mindmapColors.branchLines;
-            const nodeInks = [
-              mindmapColors.centerText,
-              mindmapColors.level1Text,
-              mindmapColors.level2Text,
-              mindmapColors.level3Text,
-              mindmapColors.level4Text,
-            ];
+            if (mindmapStyle === "outline") {
+              // 透明底 + 彩色描边/文字，下划线由后处理消隐
+              fillSlots = saturated.map(() => "transparent");
+              textSlots = saturated.slice();
+              lineSlots = saturated;
+            } else if (mindmapStyle === "depth") {
+              // 按层级分色（默认档）：同层级同色、层级间色相递进，符合思维导图
+              // 「层级即分类」的常规读法。colorBy='depth' 下 mermaid 把 section 按
+              // 层级分配，节点底取 cScale(depth-1)、连线取 cScaleInv(depth-1)。
+              // 与 brand 档共用同一套 token 色板，唯一区别是映射依据：
+              // brand 按分支、depth 按层级
+              fillSlots = branchBg.slice();
+              textSlots = [
+                mindmapColors.centerText,
+                mindmapColors.level1Text,
+                mindmapColors.level2Text,
+                mindmapColors.level3Text,
+                mindmapColors.level4Text,
+              ];
+              lineSlots = saturated;
+            } else if (mindmapStyle === "classic") {
+              // 低饱和底 + 彩色下划线（历史默认观感）；注意 branches 含 5 槽且与 branchLines 等长
+              fillSlots = branchBg.slice();
+              textSlots = [
+                mindmapColors.centerText,
+                mindmapColors.level1Text,
+                mindmapColors.level2Text,
+                mindmapColors.level3Text,
+                mindmapColors.level4Text,
+              ];
+              lineSlots = saturated;
+            } else {
+              // brand（默认）：分支定色相 —— 节点底取 chart-fill（契约里承载文字的
+              // 安全填充），文字取同索引 chart-text-on-fill（生成器按「每底色绑定
+              // 最优墨色」配对并保 ≥4.5:1）；连线取 chart-stroke 保留主题视觉身份。
+              // 曾在此把 chart-stroke（霓虹主题即纯 #00FFFF/#FF00FF）当大面积实底，
+              // 高饱和主题下刺眼；层级明度交给 depth 档（原生 colorBy='depth'），
+              // 此处不再自行混色，避免破坏 fill × text-on-fill 的配对关系
+              fillSlots = branchBg.slice();
+              textSlots = [
+                mindmapColors.centerText,
+                mindmapColors.level1Text,
+                mindmapColors.level2Text,
+                mindmapColors.level3Text,
+                mindmapColors.level4Text,
+              ];
+              lineSlots = saturated;
+            }
+
+            // 根节点：brand/classic 用 center 槽（chart-fill-0 × chart-text-on-fill-0
+            // 配对，与品牌档分支底色同源，避免霓虹类主题拿纯 #00FFFF 当实底刺眼）；
+            // 根节点：brand/depth/classic 统一用 center 槽（chart-fill-0 ×
+            // chart-text-on-fill-0 配对），霓虹类主题不拿纯 #00FFFF 当实底；
+            // outline 透明底保留彩色描边/文字
+            const rootFill =
+              mindmapStyle === "outline"
+                ? "transparent"
+                : mindmapColors.centerColor;
+            vars.git0 = rootFill;
+            vars.gitBranchLabel0 =
+              mindmapStyle === "outline"
+                ? inkFor(rootFill)
+                : mindmapColors.centerText;
+
             for (let i = 0; i < 12; i++) {
-              const slot = i % branches.length;
-              vars[`cScale${i}`] = branches[slot];
-              vars[`cScaleLabel${i}`] = nodeInks[slot];
-              vars[`cScaleInv${i}`] = branchLines[slot];
-              vars[`lineColor${i}`] = branchLines[slot];
+              const slot = i % fillSlots.length;
+              vars[`cScale${i}`] = fillSlots[slot];
+              vars[`cScaleLabel${i}`] = textSlots[slot];
+              vars[`cScaleInv${i}`] = lineSlots[slot];
+              vars[`lineColor${i}`] = lineSlots[slot];
             }
 
             vars.textColor = colors.primaryTextColor;
@@ -1472,19 +1886,26 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const gitgraphColors = colors.charts.gitgraph;
 
-            vars.git0 = gitgraphColors.branchColors[0];
-            vars.git1 = gitgraphColors.branchColors[1];
-            vars.git2 = gitgraphColors.branchColors[2];
-            vars.git3 = gitgraphColors.branchColors[3];
+            // mermaid ≥11 gitgraph 官方键（12.2.0 dist 实测）：分支线与提交点
+            // git0..7、分支标签文字 gitBranchLabel0..7、提交标签 commitLabelColor/
+            // commitLabelBackground、tagLabel*。分支线/提交点统一走品牌系列色
+            // （chart-series-0..7），避免落回中性 chart-edge 或 mermaid 默认青色，
+            // 直接对齐「品牌色识别」诉求；commitNodeColor 已删除（提交点由后处理
+            // 统一压成 commitNodeColor/chart-stroke-0，保持与分支同族）
+            for (let i = 0; i < 8; i++) {
+              vars[`git${i}`] = getCSSVar(
+                `--chart-series-${i}`,
+                gitgraphColors.branchColors[i % 4],
+              );
+            }
+            for (let i = 0; i < 8; i++) {
+              vars[`gitBranchLabel${i}`] = gitgraphColors.branchLabelColor;
+            }
             vars.commitLabelColor = gitgraphColors.commitLabelColor;
             vars.commitLabelBackground = gitgraphColors.commitLabelBg;
             vars.tagLabelColor = gitgraphColors.tagLabelColor;
             vars.tagLabelBackground = gitgraphColors.tagLabelBg;
             vars.tagLabelBorder = gitgraphColors.tagLabelBorder;
-            vars.commitNodeColor = gitgraphColors.commitNodeColor;
-            vars.commitNodeBorderColor = gitgraphColors.commitNodeBorderColor;
-            vars.branchLabelColor = gitgraphColors.branchLabelColor;
-            vars.branchLabelBackground = gitgraphColors.branchLabelBg;
           }
 
           if (isSankey) {
@@ -1492,10 +1913,11 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const sankeyColors = colors.charts.sankey;
 
-            vars.sankeyNodeBorderColor = sankeyColors.nodeBorderColor;
-            vars.sankeyNodeBkgColor = sankeyColors.nodeBkgColor;
-            vars.sankeyNodeTextColor = sankeyColors.nodeTextColor;
-            vars.sankeyLinkColorMode = "gradient";
+            // mermaid ≥11 sankey 官方主题键仅 textColor（标签文字）与 mainBkg
+            // （标签光晕描边，12.2.0 dist 实测）；节点/流量带颜色由 config.sankey
+            // 控制（无 themeVariables 键），sankeyNodeBkgColor 系为死键已删
+            vars.textColor = sankeyColors.nodeTextColor;
+            vars.mainBkg = sankeyColors.nodeBkgColor;
           }
 
           if (isRequirement) {
@@ -1503,12 +1925,26 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const requirementColors = colors.charts.requirement;
 
-            vars.requirementBkgColor = requirementColors.requirementBkg;
+            // mermaid ≥11 requirement 官方键（12.2.0 dist 实测）：requirementBackground/
+            // requirementBorderColor/requirementTextColor、关系线 relationColor、
+            // 关系标签 relationLabelBackground/relationLabelColor、edgeLabelBackground；
+            // requirementBkgColor/elementBkgColor 系为死键已删（元素框由统一渲染器
+            // shapes 着色，走 mainBkg/nodeBorder/nodeTextColor）
+            vars.requirementBackground = requirementColors.requirementBkg;
             vars.requirementTextColor = requirementColors.requirementText;
             vars.requirementBorderColor = requirementColors.requirementBorder;
-            vars.elementBkgColor = requirementColors.elementBkg;
-            vars.elementTextColor = requirementColors.elementText;
-            vars.elementBorderColor = requirementColors.elementBorder;
+            vars.mainBkg = requirementColors.elementBkg;
+            vars.nodeBorder = requirementColors.elementBorder;
+            vars.nodeTextColor = requirementColors.elementText;
+            // 关系线走品牌系列色（chart-series-0 橙）而非中性 lineColor，避免落回
+            // mermaid 默认关系色被用户识别为「青色」；关系标签随文字色保证可读
+            vars.relationColor = getCSSVar(
+              "--chart-series-0",
+              colors.lineColor,
+            );
+            vars.relationLabelBackground = requirementColors.elementBkg;
+            vars.relationLabelColor = requirementColors.elementText;
+            vars.edgeLabelBackground = colors.backgroundColor;
           }
 
           if (isFlowchart && colors.charts.flowchart) {
@@ -1517,11 +1953,11 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             const flowchartColors = colors.charts.flowchart;
 
             vars.nodeBorder = flowchartColors.nodeBorder;
-            vars.nodeBg = flowchartColors.nodeBg;
             vars.nodeText = flowchartColors.nodeText;
             vars.edgeColor = flowchartColors.edgeColor;
-            vars.edgeLabelBg = flowchartColors.edgeLabelBg;
-            vars.edgeLabelTextColor = flowchartColors.edgeLabelText;
+            // 官方键 edgeLabelBackground（nodeBg/edgeLabelBg/edgeLabelTextColor
+            // 为死键已删，标签文字色由下方 SVG 后处理兜底）
+            vars.edgeLabelBackground = flowchartColors.edgeLabelBg;
             vars.subgraphBorderColor = flowchartColors.subgraphBorderColor;
             vars.subgraphBgColor = "transparent";
           }
@@ -1595,34 +2031,22 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
 
             vars.darkMode = isLight ? false : true;
 
-            vars.entityBkg = erDiagramColors.entityBg;
-            vars.entityBorder = erDiagramColors.entityBorder;
-            vars.entityTextColor = erDiagramColors.entityText;
-            vars.relationshipColor = erDiagramColors.relationshipColor;
-
-            if (erDiagramColors.attributeBg) {
-              vars.entityAttributeBkg = erDiagramColors.attributeBg;
-              vars.entityAttributeText = erDiagramColors.attributeText;
-              vars.entityAttributeBkgAlt = erDiagramColors.attributeBg;
-              vars.entityAttributeTextAlt = erDiagramColors.attributeText;
-
-              vars.entityText = erDiagramColors.entityText;
-              vars.attributeText = erDiagramColors.attributeText;
-              vars.attributeBkg = erDiagramColors.attributeBg;
-              vars.textColor = erDiagramColors.attributeText;
-              vars.primaryTextColor = erDiagramColors.entityText;
-
-              erThemeCSS = `
-                .er .attributeBoxOdd rect,
-                .er .attributeBoxEven rect {
-                  fill: ${erDiagramColors.attributeBg} !important;
-                }
-                .er .attributeBoxOdd text,
-                .er .attributeBoxEven text {
-                  fill: ${erDiagramColors.attributeText} !important;
-                }
-              `;
-            }
+            // mermaid ≥11 的 ER v2 渲染器官方键（12.2.0 dist 实测，
+            // entityBkg/entityBorder/entityTextColor/relationshipColor 为
+            // v10 旧键，注入无效）：
+            // 实体框 mainBkg/nodeBorder；属性行 attributeBackgroundColorOdd/Even；
+            // 关系线 lineColor；标签底 tertiaryColor/edgeLabelBackground；
+            // 文字 textColor/nodeTextColor/titleColor
+            vars.mainBkg = erDiagramColors.entityBg;
+            vars.nodeBorder = erDiagramColors.entityBorder;
+            vars.attributeBackgroundColorOdd = erDiagramColors.attributeBg;
+            vars.attributeBackgroundColorEven = erDiagramColors.attributeBgAlt;
+            vars.lineColor = erDiagramColors.relationshipColor;
+            vars.edgeColor = erDiagramColors.relationshipColor;
+            vars.edgeLabelBackground = colors.primaryColor;
+            vars.textColor = erDiagramColors.attributeText;
+            vars.nodeTextColor = erDiagramColors.entityText;
+            vars.titleColor = erDiagramColors.entityText;
           }
 
           if (isJourney && colors.charts.journey) {
@@ -1630,10 +2054,26 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const journeyColors = colors.charts.journey;
 
-            vars.journeyBkg = journeyColors.journeyBg;
-            vars.journeyBorder = journeyColors.journeyBorder;
-            vars.journeyTextColor = journeyColors.journeyText;
-            vars.journeyFillColor = journeyColors.fillColor;
+            // mermaid ≥11 journey 官方键（12.2.0 dist 实测 journeyDiagram 样式模板）：
+            // 分区/任务 fillType0..7（可透传覆盖，缺省自 primary/secondary 派生）、
+            // 人物 actor0..3、脸谱底 faceColor、节点 mainBkg/nodeBorder、
+            // 文字 textColor/titleColor、连线 lineColor；journeyBkg 等为死键已删
+            for (let i = 0; i < 8; i++) {
+              const series = getCSSVar(
+                `--chart-series-${i}`,
+                journeyColors.fillColor,
+              );
+              vars[`fillType${i}`] = series;
+              vars[`actor${i}`] = series;
+            }
+            vars.faceColor = colors.backgroundColor;
+            vars.mainBkg = journeyColors.journeyBg;
+            vars.nodeBorder = journeyColors.journeyBorder;
+            vars.lineColor = colors.lineColor;
+            vars.edgeColor = colors.lineColor;
+            vars.edgeLabelBackground = colors.backgroundColor;
+            vars.textColor = journeyColors.journeyText;
+            vars.titleColor = journeyColors.journeyText;
           }
 
           if (isC4Context && colors.charts.c4) {
@@ -1672,15 +2112,21 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const treemapColors = colors.charts.treemap;
 
-            vars.treemapTextColor = treemapColors.text;
-            vars.treemapGroupBkgColor = treemapColors.groupBg;
-            vars.treemapLeaf0Color = treemapColors.leaf0;
-            vars.treemapLeaf1Color = treemapColors.leaf1;
-            vars.treemapLeaf2Color = treemapColors.leaf2;
-            vars.treemapLeaf3Color = treemapColors.leaf3;
-            vars.treemapLeaf4Color = treemapColors.leaf4;
-            vars.treemapLeaf5Color = treemapColors.leaf5;
-            vars.treemapBorderColor = treemapColors.border;
+            // mermaid ≥11 treemap 官方键（12.2.0 dist 实测）：层级填充 cScale0..7
+            // （渲染器按深度取槽位）、文字 textColor/titleColor；
+            // treemapLeaf0Color 系为死键已删。矩形上承载文字 → text-on-fill 配对
+            for (let i = 0; i < 8; i++) {
+              vars[`cScale${i}`] = getCSSVar(
+                `--chart-series-${i}`,
+                treemapColors.leaf0,
+              );
+              vars[`cScaleLabel${i}`] = getCSSVar(
+                `--chart-text-on-fill-${i}`,
+                treemapColors.text,
+              );
+            }
+            vars.textColor = treemapColors.text;
+            vars.titleColor = treemapColors.text;
           }
 
           if (isBlock && colors.charts.block) {
@@ -1688,10 +2134,21 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const blockColors = colors.charts.block;
 
-            vars.blockTextColor = blockColors.text;
-            vars.blockBkgColor = blockColors.bg;
-            vars.blockBorderColor = blockColors.border;
-            vars.blockArrowColor = blockColors.line;
+            // mermaid ≥11 block 官方键 = 通用组（12.2.0 dist 实测）：mainBkg/
+            // nodeBorder/textColor/nodeTextColor/titleColor/lineColor/
+            // arrowheadColor/edgeLabelBackground/clusterBkg/clusterBorder；
+            // blockBkgColor 系为死键已删
+            vars.mainBkg = blockColors.bg;
+            vars.nodeBorder = blockColors.border;
+            vars.textColor = blockColors.text;
+            vars.nodeTextColor = blockColors.text;
+            vars.titleColor = blockColors.text;
+            vars.lineColor = blockColors.line;
+            vars.edgeColor = blockColors.line;
+            vars.arrowheadColor = blockColors.line;
+            vars.edgeLabelBackground = colors.backgroundColor;
+            vars.clusterBkg = blockColors.bg;
+            vars.clusterBorder = blockColors.border;
           }
 
           if (isKanban && colors.charts.kanban) {
@@ -1699,11 +2156,24 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const kanbanColors = colors.charts.kanban;
 
-            vars.kanbanTextColor = kanbanColors.text;
-            vars.kanbanColumnBkgColor = kanbanColors.columnBg;
-            vars.kanbanCardBkgColor = kanbanColors.cardBg;
-            vars.kanbanCardBorderColor = kanbanColors.cardBorder;
-            vars.kanbanDividerColor = kanbanColors.divider;
+            // mermaid ≥11 kanban 官方键与 timeline 同族（12.2.0 dist 实测）：
+            // 列头 cScaleN/cScaleLabelN（genSections）、根卡片 git0/gitBranchLabel0、
+            // 文字 textColor；kanbanColumnBkgColor 系为死键已删。
+            // 节点背景走 chart-fill × text-on-fill 配对（同思维导图硬指标）
+            for (let i = 0; i < 12; i++) {
+              vars[`cScale${i}`] = getCSSVar(
+                `--chart-fill-${i % 8}`,
+                kanbanColors.cardBg,
+              );
+              vars[`cScaleLabel${i}`] = getCSSVar(
+                `--chart-text-on-fill-${i % 8}`,
+                kanbanColors.text,
+              );
+              vars[`cScaleInv${i}`] = kanbanColors.cardBorder;
+            }
+            vars.git0 = kanbanColors.columnBg;
+            vars.gitBranchLabel0 = kanbanColors.text;
+            vars.textColor = kanbanColors.text;
           }
 
           if (isQuadrant && colors.charts.quadrant) {
@@ -1711,17 +2181,38 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const quadrantColors = colors.charts.quadrant;
 
-            vars.quadrantBkgColor = quadrantColors.bg;
-            vars.quadrantTitleColor = quadrantColors.title;
-            vars.quadrantAxisLabelColor = quadrantColors.axisLabel;
-            vars.quadrantAxisColor = quadrantColors.axisLine;
-            vars.quadrantDivisionsColor = quadrantColors.divider;
-            vars.quadrantPoint0Color = quadrantColors.point0;
-            vars.quadrantPoint1Color = quadrantColors.point1;
-            vars.quadrantPoint2Color = quadrantColors.point2;
-            vars.quadrantPoint3Color = quadrantColors.point3;
-            vars.quadrantPoint4Color = quadrantColors.point4;
-            vars.quadrantPoint5Color = quadrantColors.point5;
+            // mermaid ≥11 quadrant 官方键（12.2.0 dist 实测）：四象限 quadrant1-4Fill/
+            // quadrant1-4TextFill、散点 quadrantPointFill/quadrantPointTextFill、
+            // 轴文字 quadrantXAxisTextFill/quadrantYAxisTextFill、标题 quadrantTitleFill、
+            // 边框 quadrantInternalBorderStrokeFill/quadrantExternalBorderStrokeFill；
+            // quadrantBkgColor 系为死键已删。四象限底色取主题状态色
+            // （绿/蓝/红/黄，用户 2026-10-19 拍板，对齐官方 Cynefin 语义：
+            // 1=左上 2=右上 3=左下 4=右下），象限文字按对比度自动取白/深墨。
+            // 暗色主题下状态色为中亮色，白字对比度 <4.5:1（偏糊），故把填充
+            // 向画布色加深 ~45%，使白字达 AA；亮色主题直接取状态色（深底白字）
+            const quadrantFills = [
+              getCSSVar("--mermaid-quadrant-fill-1", quadrantColors.point0),
+              getCSSVar("--mermaid-quadrant-fill-2", quadrantColors.point3),
+              getCSSVar("--mermaid-quadrant-fill-3", quadrantColors.point2),
+              getCSSVar("--mermaid-quadrant-fill-4", quadrantColors.point1),
+            ].map((f) => (isLight ? f : mixToward(colors.backgroundColor, f, 0.45)));
+            for (let i = 1; i <= 4; i++) {
+              vars[`quadrant${i}Fill`] = quadrantFills[i - 1];
+              vars[`quadrant${i}TextFill`] = readableTextOnFill(
+                quadrantFills[i - 1],
+              );
+            }
+            vars.quadrantPointFill = isLight
+              ? quadrantColors.point0
+              : mixToward(colors.backgroundColor, quadrantColors.point0, 0.45);
+            vars.quadrantPointTextFill = readableTextOnFill(
+              vars.quadrantPointFill,
+            );
+            vars.quadrantXAxisTextFill = quadrantColors.axisLabel;
+            vars.quadrantYAxisTextFill = quadrantColors.axisLabel;
+            vars.quadrantTitleFill = quadrantColors.title;
+            vars.quadrantInternalBorderStrokeFill = quadrantColors.divider;
+            vars.quadrantExternalBorderStrokeFill = quadrantColors.axisLine;
           }
 
           if (isTreeview && colors.charts.treeview) {
@@ -1729,13 +2220,60 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             vars.darkMode = isLight ? false : true;
             const treeviewColors = colors.charts.treeview;
 
-            vars.treeviewLabelColor = treeviewColors.label;
-            vars.treeviewDescriptionColor = treeviewColors.description;
-            vars.treeviewLineColor = treeviewColors.line;
-            vars.treeviewIconColor = treeviewColors.icon;
-            vars.treeviewBkgColor = treeviewColors.bg;
-            vars.treeviewHighlightBackgroundColor = treeviewColors.highlightBg;
-            vars.treeviewHighlightBorderColor = treeviewColors.highlightStroke;
+            // mermaid ≥11 treeView 官方消费仅通用 textColor/lineColor
+            // （12.2.0 dist 实测，图标 fill=currentColor 随文字色）；
+            // treeviewLabelColor 系为死键已删
+            vars.textColor = treeviewColors.label;
+            vars.nodeTextColor = treeviewColors.description;
+            vars.lineColor = treeviewColors.line;
+          }
+
+          if (isVenn) {
+            const vars = themeVariables as any;
+            vars.darkMode = isLight ? false : true;
+
+            // mermaid ≥11 venn 官方键（12.2.0 dist 实测）：圆填充 cScale0..12
+            // （渲染器按集合取槽位）、文字 vennSetTextColor、标题 vennTitleTextColor。
+            // 圆填充用 chart-series（强色相，此前无注入块、全默认配色）
+            for (let i = 0; i <= 12; i++) {
+              vars[`cScale${i}`] = getCSSVar(
+                `--chart-series-${i % 8}`,
+                colors.pieColors[i % colors.pieColors.length],
+              );
+              vars[`cScaleLabel${i}`] = getCSSVar(
+                `--chart-text-on-fill-${i % 8}`,
+                colors.primaryTextColor,
+              );
+            }
+            vars.vennSetTextColor = getCSSVar(
+              "--mermaid-venn-text",
+              colors.primaryTextColor,
+            );
+            vars.vennTitleTextColor = getCSSVar(
+              "--mermaid-venn-text",
+              colors.primaryTextColor,
+            );
+          }
+
+          if (isArchitecture) {
+            const vars = themeVariables as any;
+            vars.darkMode = isLight ? false : true;
+
+            // mermaid ≥11 architecture 官方键（12.2.0 dist 实测）：连线 archEdgeColor、
+            // 箭头 archEdgeArrowColor、分组边界 archGroupBorderColor（服务节点填充
+            // 由 config.architecture 控制，无 themeVariables 键）
+            vars.archEdgeColor = getCSSVar(
+              "--mermaid-architecture-line",
+              colors.lineColor,
+            );
+            vars.archEdgeArrowColor = getCSSVar(
+              "--mermaid-architecture-line",
+              colors.lineColor,
+            );
+            vars.archGroupBorderColor = getCSSVar(
+              "--mermaid-architecture-border",
+              colors.primaryBorderColor,
+            );
           }
 
           if (isWardley && colors.charts.wardley) {
@@ -1801,14 +2339,14 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             const vars = themeVariables as any;
             vars.darkMode = isLight ? false : true;
             const sc = colors.charts.swimlane;
-            vars.nodeBg = sc.nodeBg;
             vars.nodeBorder = sc.nodeBorder;
             vars.nodeText = sc.nodeText;
             vars.clusterBkg = sc.laneBg;
             vars.clusterBorder = sc.laneBorder;
             vars.edgeColor = sc.edgeColor;
-            vars.edgeLabelBg = sc.edgeLabelBg;
-            vars.edgeLabelTextColor = sc.edgeLabelText;
+            // 官方键 edgeLabelBackground（nodeBg/edgeLabelBg/edgeLabelTextColor
+            // 为死键已删）——泳道连线标签黑底即因死键落回 mermaid 默认深色
+            vars.edgeLabelBackground = sc.edgeLabelBg;
             vars.textColor = sc.nodeText;
           }
 
@@ -1829,20 +2367,29 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (isCynefin && colors.charts.cynefin) {
             const vars = themeVariables as any;
             const cf = colors.charts.cynefin;
+            // 五域底色取主题状态色（用户 2026-10-19 拍板，对齐官方 Cynefin
+            // 渲染语义：复杂=绿 / 繁杂=蓝 / 混乱=红 / 清晰=黄 / 混乱中心=紫）。
+            // 条目徽标与域名标签都直接压在同色域底色上（dist 实测
+            // fill-opacity 0.95），五块底色同属一个明度类，单一文字色即可
+            // 通吃——按对比度在白 / 深墨间自动选取。暗色主题下状态色为中亮色，
+            // 白字对比度 <4.5:1，故把五域填充向画布色加深 ~45% 使白字达 AA
+            const deepen = (c: string) =>
+              isLight ? c : mixToward(colors.backgroundColor, c, 0.45);
+            const onCynefinText = readableTextOnFill(deepen(cf.complexBg));
             vars.cynefin = {
-              complexBg: cf.complexBg,
-              complicatedBg: cf.complicatedBg,
-              clearBg: cf.clearBg,
-              chaoticBg: cf.chaoticBg,
-              confusionBg: cf.confusionBg,
+              complexBg: deepen(cf.complexBg),
+              complicatedBg: deepen(cf.complicatedBg),
+              clearBg: deepen(cf.clearBg),
+              chaoticBg: deepen(cf.chaoticBg),
+              confusionBg: deepen(cf.confusionBg),
               boundaryColor: cf.boundaryColor,
               boundaryWidth: 2,
               cliffColor: cf.cliffColor,
               cliffWidth: 3,
               arrowColor: cf.arrowColor,
               arrowWidth: 2,
-              labelColor: cf.labelColor,
-              textColor: cf.textColor,
+              labelColor: onCynefinText,
+              textColor: onCynefinText,
               domainFontSize: 16,
               itemFontSize: 14,
             };
@@ -1859,8 +2406,21 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             // mindmap 例外：12.x 仅当顶层 layout 未被用户定义时才用默认放射
             // 布局 cose-bilkent，钉 dagre 会把它压成层级树——按用户设置放行
             layout:
-              isMindmap && mindmapLayout !== "tree" ? "cose-bilkent" : "dagre",
+              isMindmap
+                ? mindmapLayout === "logic"
+                  ? lrLayoutReady
+                    ? MINDMAP_LR_LAYOUT
+                    : "dagre"
+                  : mindmapLayout !== "tree"
+                    ? "cose-bilkent"
+                    : "dagre"
+                : "dagre",
             look: "classic",
+            // 思维导图「层级渐变」风格走 mermaid 原生 colorBy='depth'：section 改为按
+            // 层级分配，配合注入的 lineSlots 单色明度推进；其余风格保持按分支着色
+            mindmap: {
+              colorBy: mindmapStyle === "depth" ? "depth" : "branch",
+            },
             flowchart: {
               useMaxWidth: false,
               htmlLabels: true,
@@ -2078,18 +2638,17 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (isTreemap && colors.charts.treemap) {
             const treemapColors = colors.charts.treemap;
 
+            // 注意：mermaid 实际 class 是 camelCase（treemapLeaf / treemapSection），
+            // 此前用 kebab（.treemap-leaf / .treemap-group）匹配不到 → 后处理空操作，
+            // 描边回落 mermaid 名哈希色（可近黑）。改用 camelCase 选中矩形本体
             const treemapInlineStyle = `
               .treemap-text text,
               text {
                 fill: ${treemapColors.text} !important;
               }
 
-              .treemap-group rect {
-                fill: ${treemapColors.groupBg} !important;
-              }
-
-              .treemap-leaf rect {
-                fill: ${treemapColors.leaf0} !important;
+              .treemapLeaf,
+              .treemapSection {
                 stroke: ${treemapColors.border} !important;
               }
             `;
@@ -2097,37 +2656,96 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             svg = svg.replace("<style>", `<style>${treemapInlineStyle}`);
           }
 
-          if (isErDiagram && colors.charts.erDiagram) {
-            const erDiagramColors = colors.charts.erDiagram;
+          if (isSankey) {
+            // 桑基图（节点矩形 + 流量渐变描边）的 colorScheme 硬编码 Tableau10 色板，
+            // 完全不读主题（themeVariables.sankey.* 对填充/描边均无效）—— 导致整张图
+            // 不随主题变，且固定中灰系 Tableau 色在深色底上对比不足、发虚。
+            // 后处理把每个 Tableau10 色全局替换为对应主题 chart-series 色（同索引一致映射，
+            // 覆盖 stop-color/fill/stroke 属性与 <style> 块），节点与流量统一主题自适应；
+            // 节点标签在页面底上（不在填充上），文字对比度不受影响。
+            // 兜底防除零：pieColors 为空时 i % 0 = NaN 会取到 undefined，
+            // 使下面 replace 把颜色替换成字符串 "undefined"（无效色 → 渐变失效）
+            const pieFallback = colors.pieColors.length
+              ? colors.pieColors
+              : ["#FF6A2B"];
+            const sankeySeries = Array.from({ length: 8 }, (_, i) =>
+              getCSSVar(`--chart-series-${i}`, pieFallback[i % pieFallback.length]),
+            );
+            const tableau10 = [
+              "#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f",
+              "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab",
+            ];
+            for (let i = 0; i < tableau10.length; i++) {
+              svg = svg.replace(
+                new RegExp(tableau10[i], "gi"),
+                sankeySeries[i % sankeySeries.length],
+              );
+            }
 
-            const inlineStyle = `
-              .er text,
-              .er .entityBox text,
-              .er .attributeBoxOdd text,
-              .er .attributeBoxEven text,
-              .er entityBox text,
-              .er attributeBoxOdd text,
-              .er attributeBoxEven text,
-              text {
-                fill: ${erDiagramColors.attributeText} !important;
-              }
+            // 桑基流量渐变的 <linearGradient> 用的是**通用编号 id**（如 linearGradient-49），
+            // 不带 svg 唯一前缀。页面同时存在多个图表时编号会撞车，浏览器只解析第一个匹配
+            // id → 后渲染的图其 url(#linearGradient-N) 指向别的 SVG 的定义（或已被移除的
+            // 定义）→ 流量带渐变不显示/错色。该现象天然「偶发」：取决于懒加载后 DOM 里 SVG
+            // 的顺序与数量，刷新后顺序变化就表现为「有时好、有时要 F5」。
+            // 这里给桑基 SVG 内所有通用 id 加上本 svg 的唯一前缀，并同步改写 url(#...) 引用。
+            const svgIdMatch = svg.match(/<svg[^>]*\sid="([^"]+)"/);
+            const uidPrefix = svgIdMatch
+              ? svgIdMatch[1]
+              : `mm${Math.random().toString(36).slice(2, 10)}`;
+            const genericIds = [
+              ...new Set(
+                [
+                  ...svg.matchAll(
+                    /\sid="((?:linearGradient|filter|clipPath|marker|pattern)[-\w]*)"/g,
+                  ),
+                ].map((mm) => mm[1]),
+              ),
+            ];
+            for (const gid of genericIds) {
+              const nid = `${uidPrefix}-${gid}`;
+              svg = svg.split(`id="${gid}"`).join(`id="${nid}"`);
+              svg = svg.split(`url(#${gid})`).join(`url(#${nid})`);
+            }
 
-              .er .entityBox rect,
-              .er entityBox rect {
-                fill: ${erDiagramColors.entityBg} !important;
-                stroke: ${erDiagramColors.entityBorder} !important;
-              }
+            // 保底降级：桑基连线是 path（无 class）带内联 stroke="url(#linearGradient-N)"，
+            // 一旦渐变失效（stop 色无效 / 定义被破坏 / **引用悬空**），SVG 会因 paint server
+            // 无效而**整条线不渲染**（用户观感「连线没有」：首屏打开文档时无线，F5 后恢复）。
+            // 两道检测：① Tableau 色残留（替换未覆盖）；② url(#id) 引用悬空（定义缺失）。
+            // 任一命中即强制给 path 明确主题 stroke —— 牺牲渐变也要保证连线可见。
+            const definedIds = new Set(
+              [...svg.matchAll(/\sid="([^"]+)"/g)].map((mm) => mm[1]),
+            );
+            const danglingRefs = [
+              ...new Set(
+                [...svg.matchAll(/url\(#([^)]+)\)/g)]
+                  .map((mm) => mm[1])
+                  .filter((id) => !definedIds.has(id)),
+              ),
+            ];
+            const hasResidualTableau = tableau10.some((c) =>
+              new RegExp(c, "i").test(svg),
+            );
+            if (hasResidualTableau || danglingRefs.length > 0) {
+              svg = svg.replace(
+                "<style>",
+                `<style>svg path { stroke: ${sankeySeries[0]} !important; }`,
+              );
+            }
 
-              .er .attributeBoxOdd rect,
-              .er attributeBoxOdd rect,
-              .er .attributeBoxEven rect,
-              .er attributeBoxEven rect {
-                fill: ${erDiagramColors.attributeBg} !important;
-              }
-            `;
-
-            svg = svg.replace("<style>", `<style>${inlineStyle}`);
+            // 深色主题流量发虚的真因：mermaid 默认 .link{stroke-opacity:0.5;
+            // mix-blend-mode:multiply}。multiply 在浅色底上正常（流量压暗可见），
+            // 但在深色底上与暗底相乘 → 流量被压得更暗、几乎不可见（用户观感「深色不明显」）。
+            // 深色主题改 normal 混合 + 提高不透明度；浅色主题 multiply 观感正常，保持不变。
+            if (!isLight) {
+              svg = svg.replace(
+                "<style>",
+                `<style>.link { stroke-opacity: 0.85 !important; mix-blend-mode: normal !important; }`,
+              );
+            }
           }
+
+          // ER 无需 SVG 后处理：themeVariables 已用 v2 渲染器官方键
+          // （attributeBoxOdd/Even 等 DOM 类在 mermaid ≥11 已移除，旧补丁失效已删）
 
           if (isFlowchart && colors.charts.flowchart) {
             const flowchartColors = colors.charts.flowchart;
@@ -2174,6 +2792,23 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             svg = svg.replace("<style>", `<style>${inlineStyle}`);
           }
 
+          if (isJourney && colors.charts.journey) {
+            // journey 分区标题文字在样式模板中硬编码 #333（暗色主题下不可读），
+            // 后处理覆盖为令牌文字色（.label text 同时覆盖任务标签文字）；
+            // actor 圆（circle.actor-N）描边/填充 mermaid 回落默认近黑，需显式覆盖
+            const jc = colors.charts.journey;
+            svg = svg.replace(
+              "<style>",
+              `<style>
+                .label text { fill: ${jc.journeyText} !important; }
+                circle[class*="actor"] {
+                  stroke: ${jc.journeyBorder} !important;
+                  fill: ${jc.journeyBg} !important;
+                }
+              `,
+            );
+          }
+
           if (isSequence) {
             const textColor = colors.primaryTextColor;
 
@@ -2206,9 +2841,21 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             const textColor = colors.primaryTextColor;
             const taskBg = ganttColors.taskBg;
             const taskBorder = ganttColors.taskBorder;
+            const milestoneBg = ganttColors.milestoneBg;
+            // 任务条/里程碑为品牌主色填充（chart-series-0/1），条上文字需按填充算对比色，
+            // 保证高识别度填充上的可读性（≥4.5:1）
+            const taskTextOnFill = readableTextOnFillStrict(taskBg);
+            const milestoneTextOnFill = readableTextOnFillStrict(milestoneBg);
 
             const ganttInlineStyle = `
-              .taskText,
+              .taskText {
+                fill: ${taskTextOnFill} !important;
+              }
+
+              .milestoneText {
+                fill: ${milestoneTextOnFill} !important;
+              }
+
               .sectionTitle,
               .todayText,
               text {
@@ -2216,8 +2863,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
 
               .task,
-              .task rect,
-              .task .taskText {
+              .task rect {
                 fill: ${taskBg} !important;
               }
 
@@ -2228,17 +2874,81 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               .milestone,
               .milestone rect,
               .milestone path {
-                fill: ${taskBg} !important;
+                fill: ${milestoneBg} !important;
                 stroke: ${taskBorder} !important;
+              }
+
+              /* 网格/坐标轴描边：mermaid 给 line 写内联 stroke=currentColor（解析为黑），
+                 themeVariables.gridColor 无法覆盖，用 !important 强制改为主题线色。
+                 【重要】注入 style 的 CSS 只能用 斜杠星号 注释，绝不可写双斜杠：
+                 双斜杠在 CSS 里不是注释，会被当作非法选择器，导致整条规则被丢弃，
+                 甚至吞掉 mermaid 原有样式 —— 曾致 section 回落 SVG 默认 fill 黑，
+                 全主题呈现「大黑条」。 */
+              .grid line,
+              .grid .tick {
+                stroke: ${ganttColors.sectionLine} !important;
               }
             `;
 
             svg = svg.replace("<style>", `<style>${ganttInlineStyle}`);
           }
 
+          if (isKanban && colors.charts.kanban) {
+            const kc = colors.charts.kanban;
+            /* kanban 普通卡片的 rect 是 mermaid 硬编码近白底（rect.label-container ≈ #f4f4f4），
+               而卡片文字继承 textColor（暗色主题下为浅色）→ 白底白字完全不可读。
+               列头（.section-N）有 cScaleN 显式填色故正常，仅普通卡片受影响、无主题键可注入。
+               强制卡片底为 cardBg、卡片文字按 text 取色，保证任意主题下可读。 */
+            svg = svg.replace(
+              "<style>",
+              `<style>
+                rect.label-container { fill: ${kc.cardBg} !important; }
+                .node .label,
+                .node foreignObject,
+                .node foreignObject * {
+                  color: ${kc.text} !important;
+                  fill: ${kc.text} !important;
+                }
+              `,
+            );
+          }
+
+          if (isArchitecture) {
+            // 架构图服务节点矩形（rect.node-bkg）描边 mermaid 无 themeVariables 键可注入，
+            // 回落默认近黑；用主题边框色覆盖（仅描边，不碰填充，避免误改分组底色）
+            svg = svg.replace(
+              "<style>",
+              `<style>.node-bkg { stroke: ${colors.primaryBorderColor} !important; }`,
+            );
+          }
+
+          if (isC4Context) {
+            // C4 关系线为裸 <path>（无 class），mermaid 回落默认近黑；
+            // 后处理仅覆盖无 class 的 path（path.basic 已着色，不受影响）
+            svg = svg.replace(
+              "<style>",
+              `<style>path:not([class]) { stroke: ${colors.lineColor} !important; }`,
+            );
+          }
+
           if (isGitGraph && colors.charts.gitgraph) {
             const gitgraphColors = colors.charts.gitgraph;
             const textColor = colors.primaryTextColor;
+            // 与 themeVariables 注入一致：分支线/提交点走品牌系列色（chart-series-0..7），
+            // 逐分支独立着色，避免回退中性 chart-edge 或 mermaid 默认青色；
+            // 旧版的 over-broad `.gitGraph path{stroke:branchColors[0]}` 会把所有分支
+            // 线强制压成同一种色，已删除
+            const branchColors = Array.from({ length: 8 }, (_, i) =>
+              getCSSVar(`--chart-series-${i}`, gitgraphColors.branchColors[i % 4]),
+            );
+            let branchRules = "";
+            for (let i = 0; i < 8; i++) {
+              branchRules += `
+              .gitGraph .branch${i} path,
+              .gitGraph .branch${i} line {
+                stroke: ${branchColors[i]} !important;
+              }`;
+            }
 
             const gitgraphInlineStyle = `
               .commit-id,
@@ -2249,22 +2959,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
                 fill: ${textColor} !important;
               }
 
-              .gitGraph .branch0 path,
-              .gitGraph .branch0 line {
-                stroke: ${gitgraphColors.branchColors[0]} !important;
-              }
-              .gitGraph .branch1 path,
-              .gitGraph .branch1 line {
-                stroke: ${gitgraphColors.branchColors[1]} !important;
-              }
-              .gitGraph .branch2 path,
-              .gitGraph .branch2 line {
-                stroke: ${gitgraphColors.branchColors[2]} !important;
-              }
-              .gitGraph .branch3 path,
-              .gitGraph .branch3 line {
-                stroke: ${gitgraphColors.branchColors[3]} !important;
-              }
+              ${branchRules}
 
               .gitGraph .commit circle {
                 fill: ${gitgraphColors.commitNodeColor} !important;
@@ -2274,7 +2969,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               .gitGraph .branch-label rect,
               .gitGraph .branch-label rect:first-child {
                 fill: ${gitgraphColors.branchLabelBg} !important;
-                stroke: ${gitgraphColors.branchColors[0]} !important;
+                stroke: ${branchColors[0]} !important;
               }
 
               .gitGraph .branch-label text {
@@ -2298,11 +2993,6 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
 
               .gitGraph .tag-label text {
                 fill: ${gitgraphColors.tagLabelColor} !important;
-              }
-
-              .gitGraph path,
-              .gitGraph line {
-                stroke: ${gitgraphColors.branchColors[0]} !important;
               }
 
               [class*="branch"] path,
@@ -2345,27 +3035,67 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           }
 
           if (isMindmap) {
-            const mindmapColors = colors.charts.mindmap;
+            const mc = colors.charts.mindmap;
+            const saturated = mc.branchLines;
+            let extra = "";
 
-            // mermaid 12.2.0 思维导图渲染器语义（反编译 mindmap-definition chunk 核实）：
-            // - 节点背景（cScale）/ 文字（cScaleLabel）由 themeVariables 注入，已按契约接线
-            //   （fill 承载文字 + 同索引 text-on-fill；根节点 section--1 ↔ cScale0 = fill-0）
-            // - 分支连线（.section-edge-N，curve=basis 的 path）由 cScale 上色，即连线色跟随
-            //   节点背景色——fill 化后浅色主题下连线将不可见
-            // - cScaleInv 仅作用于 line 元素（classic 外观不产生），lineColor 为死变量
-            // 故连线色在此用 SVG 后处理显式覆盖为 stroke 色（主题视觉身份所在）。
-            // 选择器索引：渲染器 CSS 规则 .section-edge-(i-1) 与 cScale(i) 配对，
-            // 即 section-edge-k 对应 branches[(k+1) % 5]，stroke 取同索引 branchLines。
-            const branchLines = mindmapColors.branchLines;
-            let mindmapStyle = "";
-            for (let k = 0; k < 11; k++) {
-              mindmapStyle += `
-              .section-edge-${k} {
-                stroke: ${branchLines[(k + 1) % branchLines.length]} !important;
-              }`;
+            // classic 保留下划线；其余三档下划线（mermaid 默认贴底整宽 line）与实底冗余，消隐
+            if (mindmapStyle !== "classic") {
+              extra += `.mindmap-node line { display: none !important; }`;
             }
 
-            svg = svg.replace("<style>", `<style>${mindmapStyle}`);
+            if (mindmapStyle === "depth") {
+              // colorBy='depth' 下 section 已是层级，连线由注入的 lineSlots 上色，无需覆盖
+
+              // 字号层级递增（常规思维导图读法）：中心节点最大，逐级递减。
+              // 仅 depth 档注入——brand/classic 档的 section 是「分支」而非层级，
+              // 按 section 设字号会让不同分支字号不同，与层级语义相反。
+              // mermaid 基准字号 16px（`#<id> svg{font-size:16px}`），文字容器
+              // div 无内联 font-size，故 CSS 可直接覆盖并继承到 span。
+              //
+              // 幅度取舍：mermaid 的形状尺寸按 16px 文字测量，任何层级放大都有
+              // 撑破背景的风险（文字 nowrap）。实测 root 18px 时 6 字 ≈108px，
+              // 已接近 119px 的圆形背景。故只放大中心一级，并允许其长文字换行
+              // （圆高 119px 可容两行）；L2 维持基准不放大；L3/L4 递减（变小
+              // 绝不会溢出）。既满足「中心稍大 + 向外递减」，又不破布局。
+              extra += `.mindmap-node foreignObject { overflow: visible !important; }`;
+              const fontTiers = [18, 16, 15, 14, 13]; // root / L2 / L3 / L4 / L5+
+              const fontSel = (sel: string, px: number) =>
+                `${sel} foreignObject div, ${sel} foreignObject span { font-size: ${px}px !important; }`;
+              // 中心节点：放大 + 长文字允许换行（配合 max-width 收行，防横向撑出圆形）
+              extra += fontSel(".section-root", fontTiers[0]);
+              extra += `.section-root foreignObject div { white-space: normal !important; }`;
+              extra += fontSel(".section-0", fontTiers[1]);
+              extra += fontSel(".section-1", fontTiers[2]);
+              extra += fontSel(".section-2", fontTiers[3]);
+              // L5 及更深（section-3..11）统一取最后一档，避免无限列举
+              const deepSel = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+                .map((k) => `.section-${k}`)
+                .join(",");
+              extra += `${deepSel} foreignObject div, ${deepSel} foreignObject span { font-size: ${fontTiers[4]}px !important; }`;
+            } else {
+              // 连线按分支色覆盖（section-edge-k ↔ saturated[(k+1) % n]），保留主题视觉身份
+              for (let k = 0; k < 11; k++) {
+                extra += `.section-edge-${k} { stroke: ${saturated[(k + 1) % saturated.length]} !important; }`;
+              }
+            }
+
+            // brand 档不再做逐节点深度混色，也不再注入任何文字色规则：
+            // 节点底 = chart-fill、文字 = chart-text-on-fill，二者由生成器配对并
+            // 保证 ≥4.5:1；渲染层只负责连线着色与下划线消隐，不参与颜色决策
+
+            if (mindmapStyle === "outline") {
+              // 透明底 + 彩色描边 + 彩色文字；描边取 (k+1)%n 与同分支连线一致
+              for (let k = 0; k < saturated.length; k++) {
+                const hue = saturated[(k + 1) % saturated.length];
+                extra += `.section-${k} path { fill: transparent !important; stroke: ${hue} !important; stroke-width: 2 !important; }`;
+                extra += `.section-${k} text { fill: ${hue} !important; }`;
+              }
+            }
+
+            if (extra) {
+              svg = svg.replace("<style>", `<style>${extra}`);
+            }
           }
 
           // hover 高亮：纯 CSS 注入（同类图元淡出、悬停项保持不透明），与主题注入同一机制。
@@ -2383,7 +3113,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (!cancelled) {
             if (svg && svg.includes("<svg")) {
               cleanupCache();
-              mermaidCache.set(cacheKey, {
+              mermaidCache.set(effectiveCacheKey, {
                 svgHtml: svg,
                 timestamp: Date.now(),
               });

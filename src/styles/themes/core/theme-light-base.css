@@ -197,10 +197,14 @@ ErgeMD 主题系统 - theme-light-base.css
   --pulse-glow-bright: 0 0 20px rgba(38, 102, 240, 0.30);
 
   /* === TOC === */
-  --toc-hover-bg: rgba(255, 255, 255, 0.95);
+  /* BUG-074：面板底色随主题画布（bg-page）+ alpha，不再硬编码纯白 */
+  --toc-hover-bg: rgba(var(--bg-page-rgb), 0.92);
   --toc-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  --toc-text-active: rgba(38, 102, 240, 1);
+  /* BUG-075：高亮随主题品牌色（brand-primary），不再硬编码蓝 */
+  --toc-text-active: rgba(var(--brand-primary-rgb), 1);
   --toc-text-inactive: rgba(45, 45, 45, 0.65);
+  --toc-line-dim: rgba(var(--brand-primary-rgb), 0.35);
+  --toc-line-glow: rgba(var(--brand-primary-rgb), 0.6);
 
   /* ============================================
      图表专用色板 - 亮色主题默认值

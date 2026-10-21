@@ -17,3 +17,7 @@
 | F10 | 主题存在理由优先于机制统一 | 🟡 | theme-tokens.md |
 | F11 | CSS 派生层导入顺序陷阱 | 🟡 | theme-tokens.md |
 | F12 | 图表 hover 纯 CSS 高亮 | 🟡 | interaction.md |
+| F16 | hover 目标必须核对 DOM 结构与遮挡关系 | 🟡 | interaction.md |
+| F13 | 默认映射层用 :where() 降特异性 | 🟡 | theme-tokens.md |
+| F14 | CSS 注释内 `*/` 吞后续声明 | 🟡 | theme-tokens.md |
+| F15 | 颜色决策必须留在 token 层 | 🔴 | theme-tokens.md |

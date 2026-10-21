@@ -49,8 +49,15 @@ export type ThemeMode =
 type Language = "zh-CN" | "en-US" | "auto";
 
 // ===== 阅读设置类型 =====
-// ===== Mermaid 思维导图布局：radial=发散放射（cose-bilkent）/ tree=层级树（dagre） =====
-export type MindmapLayout = "radial" | "tree";
+// ===== Mermaid 思维导图布局：radial=发散放射（cose-bilkent）/ tree=层级树（dagre TB）/
+// logic=横向逻辑图（dagre LR，全朝右） =====
+export type MindmapLayout = "radial" | "tree" | "logic";
+
+// ===== Mermaid 思维导图样式（节点观感，与布局正交）：
+// depth=按层级分色（同层级同色、层级间色相递进，默认，符合思维导图层级读法）；
+// brand=按分支分色（同分支同色、跨层级）；outline=透明底 + 彩色描边/文字；
+// classic=低饱和底 + 彩色下划线（历史默认）=====
+export type MindmapStyle = "brand" | "depth" | "outline" | "classic";
 
 export interface ReadingSettings {
   fontFamily: string;
@@ -63,6 +70,9 @@ export interface ReadingSettings {
   language: Language;
   autoSaveProgress: boolean;
   mindmapLayout: MindmapLayout;
+  mindmapStyle: MindmapStyle;
+  // 浮动章节目录固定（pin）：固定后移开鼠标不自动收起，全局偏好、对所有文档生效
+  pinToc: boolean;
 }
 
 // ===== Toast 消息类型（Phase 4 Task 1） =====

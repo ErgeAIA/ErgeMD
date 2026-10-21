@@ -75,7 +75,7 @@ const ContextMenuLink: React.FC<ContextMenuLinkProps> = memo((props) => {
       <a
         href={displayHref}
         style={{
-          color: "var(--accent-cyan)",
+          color: "var(--link, var(--accent-cyan))",
           textDecoration: "none",
           borderBottom: "1px solid transparent",
           transition: "border-color 0.2s ease",

@@ -68,10 +68,14 @@ ErgeMD 主题系统 - theme-derived.css
   --code-border: rgba(var(--accent-cyan-rgb), 0.08);
 
   /* === TOC === */
-  --toc-hover-bg: rgba(46, 46, 56, 0.92);
+  /* BUG-074：面板底色随主题画布（bg-page）+ alpha */
+  --toc-hover-bg: rgba(var(--bg-page-rgb), 0.92);
   --toc-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --toc-text-active: rgba(var(--accent-cyan-rgb), 1);
+  /* BUG-075：高亮随主题品牌色（brand-primary），不再用 accent-cyan */
+  --toc-text-active: rgba(var(--brand-primary-rgb), 1);
   --toc-text-inactive: rgba(180, 180, 200, 0.65);
+  --toc-line-dim: rgba(var(--brand-primary-rgb), 0.35);
+  --toc-line-glow: rgba(var(--brand-primary-rgb), 0.6);
 
   /* === Toast === */
   --toast-info-bg: rgba(var(--accent-cyan-rgb), 0.08);
@@ -154,10 +158,14 @@ ErgeMD 主题系统 - theme-derived.css
   --code-border: rgba(var(--brand-primary-rgb), 0.10);
 
   /* === TOC === */
-  --toc-hover-bg: rgba(255, 255, 255, 0.95);
+  /* BUG-074：面板底色随主题画布（bg-page）+ alpha */
+  --toc-hover-bg: rgba(var(--bg-page-rgb), 0.92);
   --toc-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  /* BUG-075：高亮随主题品牌色（brand-primary），统一走 alpha 功能位 */
   --toc-text-active: rgba(var(--brand-primary-rgb), 1);
   --toc-text-inactive: rgba(45, 45, 45, 0.65);
+  --toc-line-dim: rgba(var(--brand-primary-rgb), 0.35);
+  --toc-line-glow: rgba(var(--brand-primary-rgb), 0.6);
 
   /* === Toast === */
   --toast-info-bg: rgba(var(--brand-primary-rgb), 0.06);

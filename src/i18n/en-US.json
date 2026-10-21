@@ -24,6 +24,7 @@
     "exportHtml": "Export HTML",
     "exportWord": "Export Word",
     "toggleSidebar": "Toggle Sidebar",
+    "pinToc": "Pin TOC",
     "goHome": "Go to Welcome Page",
     "search": "Search",
     "toggleTheme": "Toggle Theme",
@@ -69,6 +70,13 @@
     "mindmapLayout": "Mindmap Layout",
     "mindmapLayoutRadial": "Radial",
     "mindmapLayoutTree": "Tree",
+    "mindmapLayoutLogic": "Logic (horizontal)",
+    "pinToc": "Pin TOC",
+    "mindmapStyle": "Mindmap Style",
+    "mindmapStyleBrand": "Brand Branch (accent fill)",
+    "mindmapStyleDepth": "Depth Layers (per-level color)",
+    "mindmapStyleOutline": "Outline (transparent)",
+    "mindmapStyleClassic": "Classic (low-sat fill)",
     "theme": "Theme",
     "language": "Language",
     "autoSaveProgress": "Auto Save Reading Progress",
@@ -94,8 +102,8 @@
   },
   "theme": {
     "cyberpunk": "Cyberpunk",
-    "dark": "Dark",
-    "light": "Light",
+    "dark": "Night Lamp",
+    "light": "Morning Light",
     "system": "System",
     "falcon": "Falcon",
     "aurora": "Aurora Borealis",
@@ -111,11 +119,12 @@
   },
   "themeCategory": {
     "builtin": "Built-in",
-    "dark": "Dark Themes",
     "system": "System"
   },
   "toc": {
-    "navigation": "Table of Contents"
+    "navigation": "Table of Contents",
+    "pin": "Pin TOC",
+    "unpin": "Unpin TOC"
   },
   "chart": {
     "clickToZoom": "Click to zoom"
