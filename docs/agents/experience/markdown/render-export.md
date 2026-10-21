@@ -1,13 +1,13 @@
 # markdown/render-export — 渲染与导出经验
 
-## MD1: 导出链路独立管线 🔴
+## MD1: 导出统一 DOM 复制单管线 + 两道安全闸 🔴
 
-- **主张**：文档导出（PDF/HTML）必须走独立管线——从 Markdown 原文直接生成完整 HTML，不复用阅读组件；当前文档内容从状态 store 取，禁止 `document.querySelector` 全局 DOM 查询；所有图表必须在导出前渲染完成。
-- **适用**：阅读器/编辑器类应用的导出功能，尤其是渲染层带虚拟滚动时。
-- **Why**：虚拟滚动会卸载不可见 block，导出时拿到的是残缺 DOM；多 Tab 下 `querySelector(".markdown-body")` 永远命中第一个 Tab；阅读组件的渲染状态与导出需求耦合会互相破坏。
-- **How**：`generateExportHtml.ts` 从原文生成完整 HTML（注入主题 CSS、图表渲染占位符）→ 预渲染所有图表 → WebView PrintToPdf；内容取 `useFileStore.getState().currentContent`；PlantUML 串行队列渲染。
-- **反例**：导出 PDF 图表全空白；无论打开哪个文档都导出第一个（BUG-053、BUG-054；DEC-023~026）。
-- **事实源**：BUG-053~057；DEC-023~026
+- **主张**：导出的文档必须是「屏幕上所见的忠实投影」，渲染只有一处真相——HTML/章节/PDF 全部从同一份 DOM 复制产物派生（唯一 seam `captureExportDocument`），**不**再为 PDF 单独维护一套 Markdown 二次解析器（已于 2026-10-21 删除 `generateExportHtml.ts`，DEC-039 废止 DEC-023/024/026 对 PDF 的约束）。复用阅读 DOM 有两条必须守住的闸：① **虚拟滚动残缺**——导出前置 `exportMode` 让 `VirtualMarkdownView` 全量渲染全部 block（非虚拟化），并轮询图表就绪 + 补救未渲染/错误炸弹 mermaid 块；② **多 Tab 命中错误**——取正文一律走 `queryActiveMarkdownBody()`（第一个可见 `.markdown-body`，非活动 Tab 经 display:none 隐藏），**禁止裸 `document.querySelector(".markdown-body")`**；章节导出也限定在活动 Tab 子树内查 id。
+- **适用**：阅读器/编辑器类应用的导出功能，尤其是渲染层带虚拟滚动 + 多 Tab 常驻时。
+- **Why**：早年确立「独立管线」的两个理由（虚拟滚动残缺 DOM、多 Tab 命中错误）真实存在（BUG-053/054），但独立二次解析器与真实阅读器必然漂移——重新实现 callout/表格/数学/代码块，用户观感即「PDF 与屏幕不一致」。DOM 复制 + 上述两道闸既保真又消除漂移。
+- **How**：`captureExportDocument({forPdf,grayscale,fontSize,sectionId})` → 进 exportMode → 双 rAF → `waitForExportRender` → `renderUnrenderedMermaidBlocks` → `generateHtmlContent`（`queryActiveMarkdownBody` 取正文 + `serializeAppStylesheets` 序列化应用 CSSOM 并剪枝 + 注入 `:root` 变量）→ finally 复原。PDF/HTML/章节共用。
+- **反例**：多 Tab 下裸 querySelector 命中非活动 Tab 导出错文档（BUG-053/054 病灶，现已由 queryActiveMarkdownBody 收口）；独立解析器渲染细节与阅读器漂移。
+- **事实源**：BUG-053~057；DEC-023~026（PDF 部分已被 DEC-039 废止）；DEC-032（常驻 Tab 上限）；DEC-039
 
 ## MD2: 块解析与行内语法细节 🟡
 

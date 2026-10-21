@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-10-18
+updated: 2026-10-21
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -15,6 +15,15 @@ description: >
 > **优先级高于 PRD**：冲突时以本文件最新决策为准，并回写 PRD/ADR。
 > 格式：`## DEC-NNN: 标题`，新条目置顶，NNN 三位递增。
 > 字段：`- **日期**：` / `- **背景**：` / `- **决策**：` / `- **验证**：`
+
+---
+
+## DEC-039: 导出统一为 DOM 复制单管线，PDF 复用阅读视图产物（废止 DEC-023/024/026 对 PDF 的约束）
+
+- **日期**：2026-10-21
+- **背景**：导出长期分裂为两条渲染管线——HTML/章节导出走 DOM 复制 + CSSOM 序列化（管线 A），PDF 却走 `generateExportHtml.ts` 的 Markdown 二次解析渲染（管线 B）。管线 B 重新实现了 callout/表格/列表/数学/代码块渲染，与真实阅读器必然漂移，用户反馈「PDF 与屏幕上看到的不一致」。第一性原理：导出的文档应是「屏幕上所见的忠实投影」，渲染只能有一处真相；管线 A 早已是 HTML 导出路径且质量更高。MD1/DEC-023~026 当年确立「独立管线、禁 DOM query」的两个理由（虚拟滚动残缺 DOM、多 Tab 命中错误）现已被 `VirtualMarkdownView` 的 exportMode（导出时全量渲染 block）与 `domUtils.queryActiveMarkdownBody()`（取第一个可见 body、规避非活动 Tab）分别化解；但 `export.ts` 的 `extractHtmlContent` 与 `exportStyles` 两处此前仍用裸 `document.querySelector`，未接安全选择器，多 Tab（DEC-032：活动+固定+最近 3 个常驻）下存在命中错误文档的潜在 bug。
+- **决策**：① 删除管线 B `generateExportHtml.ts`，PDF 改走管线 A。② 抽出唯一 seam `captureExportDocument(options)`（进入 exportMode → 等 rAF/图表渲染 → 生成自包含 HTML），HTML 文件导出、章节导出、PDF 导出全部从同一份产物派生；`exportPdf` 以 `{ forPdf: true, fontSize }` 调用。③ `generateHtmlContent`/`extractHtmlContent` 及 `exportStyles` 的 `collectAllCssVariables`/`serializeAppStylesheets` 一律改走 `queryActiveMarkdownBody()`，章节导出也限定在活动 Tab 子树内查 id，修掉多 Tab 命中隐患。④ `buildExportStyles` 补全打印分页规则（svg/表格行/数学块避免页内断裂）。⑤ Rust 打印引擎维持 `PrintToPdf` + `document.write`：前端 `@page` + `print-color-adjust:exact` 叠加 Chromium `PrintToPdf` 默认已覆盖 A4/边距/背景/无页眉页脚；显式 `PrintSettings`（需 Environment6 强转）与就绪轮询（unsafe PWSTR）增益边际且无法在本环境运行时验证，推迟到可实机生成 PDF 验证时再做（见 issue #5）。灰度 PDF 直接复用既有 `GRAYSCALE_OVERRIDES`。
+- **验证**：tsc --noEmit 0 错误；vitest 全量 316/316（exportPdf.test.ts 的 mock 已从被删的 `generateExportHtml` 切到 `captureExportDocument`）。PDF 实际观感与三端（Windows 落盘 / macOS / Linux）打印效果**待用户实机生成 PDF 验证**。
 
 ---
 

@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-10-19
+updated: 2026-10-22
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -663,3 +663,41 @@ description: >
   **修复**：core 选择器 `[data-theme]` → **`:where([data-theme])`**（特异性降为 0，主题的 (0,1,0) 稳赢；`:where` 只影响特异性、不改变匹配）；修正注释笔误并留下「注释内禁出现星斜杠」的警示。真浏览器复刻 globals.css 真实导入顺序验证：dark/light 的 center-bg、branch-0..4、center-text、l1..l4-text **全部**为主题值
   **另修**：改 mindmap token 后缓存不失效——`getMermaidThemeSignature` 只收了 `--mermaid-mindmap-branch-line-*` 与 `chart-text-on-fill-*`，未收 `--mermaid-mindmap-branch-0..4`/`center-bg`/`l1..l4-text`，签名不变即命中旧 SVG。已把该批 token 纳入签名（今后改源色表自动失效）+ `_version` v45→v46 双保险
 - **教训（终）**：① **先查缓存再查技术**——"改了没效果"优先级最高的是缓存/构建未生效，其次才是逻辑；② **颜色永远由 tokens 决定**，渲染层只做布局与结构，不做取色；一旦出现"渲染后按 computed 值反算颜色"，就说明 token 契约已经破了，应当回头补 token 而不是在渲染层打补丁；③ **两个系统的"达标"口径要先对齐**再下结论，否则会把"口径差异"误判成"质量缺陷"，进而做出换主题这类高成本误决策
+
+## BUG-078: 带样式 PDF 导出图表被放大／裁切（打印布局不求值 SVG max-width）
+- **日期**：2026-10-22（用户多轮实机截图反馈：HTML 里正常、PDF 里「SVG 像没显示／完全被裁切／有的图放得特别大」）
+- **现象**：同一份导出 HTML 在浏览器里图表正常；转 PDF 后 6.5 ER 图只露底部一点、6.11 Git 图整块空白、个别小图（状态图）撑满整页且图内文字异常巨大
+- **取证**：用 headless Chrome（`--print-to-pdf`，与生产同为 Blink 打印管线）复刻桌面导出文件，PyMuPDF 逐页统计绘制 bbox——多页 `drawMaxH` 达 857／935／1056，而页面可用高度仅 736，即矢量图被画到页外后裁掉；渲染该页 PNG 可见 193.5×364 的状态图被放大成 741×1247px（图内文字放大约 4 倍）
+- **根因**：mermaid 输出 `width="100%"` + 内联 `max-width:<固有宽度>px`（实测 139–1814px）。屏幕布局会把 max-width 求值到固有宽度，**打印布局不做该求值**，`width="100%"` 直接撑满内容区：小图被放大数倍（高度同比暴涨→越页被裁），宽图与内容区宽度打架。此前把 shell 规则加 `max-width:100% !important` 只是绕过优先级，没触及「打印时百分比求解」这一根本
+- **修复**：PDF 导出时 `extractHtmlContent` 传入 `{width:642,height:950}`（A4 210mm − 左右各 20mm ≈ 642px），由 `bakeSvgInlineStyles` 把每个根 SVG **固化成明确 px 宽高**：`w=min(固有宽,642)`、`h=viewBoxH×w/viewBoxW`，超高再等比缩到 950，并移除内联 max-width。HTML 导出保持响应式，只把内联上限改写为 `min(原值,100%)`（宽图收敛、窄图不放大）。用完恢复原属性，不污染阅读视图缓存
+- **验证**：tsc 0 / lint 0 / vitest 316/316。A/B 实测同一份桌面导出文件：修复前 60 页且 3 页 `drawMaxH` 溢出（935／1056／857），修复后 52 页、全部页 `drawMaxH ≤ 736` 无越界；渲染复核 ER 图（CUSTOMER/ORDER/PRODUCT/ORDER_ITEM 完整）、饼图、思维导图（中心节点有填充、分支色正常）均完整且尺寸合理。**PDF 实机导出观感仍待用户确认**
+- **教训**：① 打印不是屏幕布局的复制品——`width:百分比 + max-width` 这类依赖布局求解的组合在 PrintToPdf 下不可信，导出产物应固化为确定尺寸；② 判断「图看不见」不要停在 CSS 优先级思路上，直接生成 PDF 并测量绘制 bbox 才有可证伪的证据；③ 走真实打印管线（headless Chrome）+ 把页面渲染成图，比反复让用户手动导出验证快得多（注：本轮 AI 曾在无法读图的情况下声称"目视确认"，已向用户澄清；可证伪的证据只能是测量数据，不是"看图"）
+
+## BUG-079: 思维导图中心只剩描边、子节点全带橙描边（注入样式跨图污染）
+- **日期**：2026-10-22（用户实机反馈：PDF 尺寸问题修好后，中心色块仍丢失只剩描边，子节点也全带描边）
+- **现象**：带样式导出（HTML/PDF）与阅读视图中，思维导图中心节点白底 + 橙色描边、底色丢失；所有二级子节点被强加一圈橙色描边
+- **取证**：无头浏览器 dump 真实导图节点的计算样式——中心 `circle.basic.label-container` `fill=rgb(255,255,255)` / `stroke=rgb(255,106,43)`；子节点 `path.node-bkg.node-0` 填充正常（`rgb(178,130,11)`）但 `stroke=rgb(255,106,43)`。用 `element.matches()` 枚举所有命中中心的规则，揪出两条跨域规则：`.node rect, .node circle, .node polygon { fill:白 !important; stroke:品牌色 !important }`（流程图注入）与 `.node-bkg { stroke:品牌色 !important }`（架构图注入）
+- **根因**：**HTML 的 `<style>` 不论写在 DOM 何处都对整个文档生效**。mermaid 给每张图单独注入 `<style>`，其自身规则天然带 `#<svgId>` 前缀（如 `#mermaid-xxx .section-root circle`），而我们用 `svg.replace("<style>", ...)` 手工追加的 14 处规则全是**裸选择器**——思维导图的节点 group 类名是 `node mindmap-node section-root`，同样带 `.node`，于是被流程图规则压成白底；子节点 `path.node-bkg` 则被架构图规则强加橙描边。只在流程图/架构图**已渲染**后才出现（虚拟滚动下未渲染就不污染），导出是全量渲染故必然复现
+- **为何此前两次"修好"都不成立**：① v57 把同类症状归因为「data-theme 与缓存键不同步」，改的是同步时机——症状随渲染时序变化（滚动过流程图就中招），属误诊；② `bakeSvgInlineStyles` 烘焙的是**污染后**的计算值，内联样式优先级最高，等于把白色固化得更彻底，所以"烘焙兜底"救不了
+- **修复**：新增 `src/components/reader/mermaidInjectStyle.ts`（`scopeInjectedCss` / `injectSvgStyle`），把 14 处手工注入全部改为经 `injectSvgStyle`，对齐 mermaid 自身的 `#<svgId>` 作用域口径；渲染缓存 `_version` v59→v60；新增 11 条单测（含 `svg:has(...)` 语义回归——首版实现把 `svg:has(x)` 处理成 `#id :has(x)`，多出的空格会使其从「根 SVG 且满足 :has」退化成「根 SVG 的后代中满足 :has 者」，语义完全不同，由单测捕获）
+- **验证**：tsc 0 / lint 0 错误 / vitest 327/327。在真实导出页做 A/B（移除两条裸规则）：中心 `fill` 由 `rgb(255,255,255)` → **`rgb(255,106,43)`**（品牌橙），子节点 `stroke` 由 `rgb(255,106,43)` → **`rgb(210,204,190)`**（中性线色），子节点填充保持主题色不变
+- **教训**：① 给 mermaid 注入样式**必须自带 `#<svgId>` 作用域**——每张图的 `<style>` 都是全局的，裸选择器会随页面里图的数量增加产生"远距离幽灵 bug"；② 症状随渲染时序（虚拟滚动）时有时无时，先怀疑**跨组件/跨图状态泄漏**，而不是缓存或主题同步；③ 兜底手段若"固化当前计算值"（烘焙内联样式），一旦上游算错就等于把错误固化得更彻底，务必先追溯计算值的来源
+
+## BUG-080: PDF 里 6.16/6.17/6.18/6.19 等图「色块丢失」（print 样式把 SVG rect 高度清零）
+- **日期**：2026-10-22（用户实机：PDF 尺寸修好后逐个看，发现桑基/XY/块图/数据包等大部分图没有颜色，黑白导出同样）
+- **现象**：HTML 里图表颜色正常，导出 PDF 后 6.17 XY 只剩折线没有柱状条、6.18 块图只有描边、6.19 数据包只剩文字、6.16 桑基节点与流量带无彩；与主题无关（黑白模式同样丢失）
+- **取证**：PyMuPDF 逐页枚举矢量图元——修复前 xychart 页只有 `l`（折线/网格），柱状 `rect` **一个都不存在**；像素统计该页彩色仅 0.33%（且集中在标题文字抗锯齿）。二分定位：把该 SVG 单独抽成最小页面打印 → 12 根柱正常（`#ff6a2b`）；只把导出 CSS 加回 → 柱全部消失
+- **根因**：`src/styles/globals.css` 的 `@media print` 块里有一条 `* { height: auto !important; max-height: none !important; overflow: visible !important }`。CSS 的 `height` **会覆盖 SVG `<rect>` 的 height 呈现属性**，`height: auto` 对矩形求值为 0 → 打印时整块不绘制。该规则只在 print 媒体生效，所以屏幕/导出 HTML 完全正常、只有 PDF 丢；与颜色无关（黑白同样）。折线用 `d`、网格线用 `y1/y2`、圆用 `r`，均不受 height 影响——这正是"只剩折线、色块全没"的原因
+- **修复**：选择器改为 `*:not(svg *)`（仍包含 svg 根元素自身，不影响整体自适应缩放），并单独保留 `svg foreignObject { overflow: visible }` 以免 foreignObject 内文字被裁
+- **同轮附带修复**：① `bakeSvgInlineStyles` 不再把 `url(#…)` paint server 烘焙成计算值——桑基流量带本是 `stroke=url(#linearGradient-N)` 渐变，被烘成单色灰后彩带消失（渐变定义随 SVG 复制仍有效，无需内联）；② 补漏 5 处**跨行书写**的裸注入（journey / kanban / architecture / C4 / 桑基 `.link` / hover 新建 style），统一走 `injectSvgStyle`——其中 architecture 的 `.node-bkg { stroke: 品牌色 !important }` 正是"思维导图子节点全带橙描边"的真元凶（BUG-079 轮按单行 grep 漏掉了跨行写法，误以为已全覆盖，用户因此复验仍有描边）；③ mindmap 实心底档（brand/depth）去掉节点默认中性描边，outline/classic 不动；缓存 `_version` v60→v61
+- **验证**：tsc 0 / lint 0 错误 / vitest 327/327。端到端（对整份测试文档仅替换该 print 规则后打印）：xychart 页图元 40→58、12 根 `#ff6a2b` 柱状条全部出现（高 47~178）；桑基页 70→119；数据包页出现 18 个矩形块。**PDF 实机观感仍待用户确认**
+- **教训**：① CSS `width/height` 是**会覆盖 SVG 呈现属性**的，"用 `*` 兜底解除固定高度"这类写法会静默清空所有 rect，全量兜底选择器必须显式排除 SVG 子树（`*:not(svg *)`）；② 同一缺陷的排查要按"图元类型"归类看规律——stroke 类保留、rect 类全丢，直接指向 height/width 而非颜色系统；③ 源码里同一种注入写法可能有多行/单行两种形态，排查时必须同时覆盖（本轮 5 处漏网全是跨行写法）
+
+## BUG-081: hover 高亮整体失效（作用域化把 CSS 注释当成选择器，@media 被吞）
+- **日期**：2026-10-22（用户实机：收尾验收时「hover 动画效果没有了」）
+- **现象**：鼠标悬停图表图元时的「同类淡出、当前项保持不透明」效果完全消失
+- **根因**：`scopeInjectedCss` 首版用正则 `([{}]|^)([^@{}][^{}]*?)\{` 解析选择器。`MERMAID_HOVER_CSS` 开头是 `/* ===== Mermaid hover 高亮 ===== */` 注释，紧接 `@media (hover: hover) {`；**注释与 at-rule 前置里都不含 `{`**，于是正则把「注释 + @media + 整串选择器」当成单个选择器段并统一加 `#svgId ` 前缀，产出 `#id /* 注释 */ @media (hover: hover) { svg g.node …` —— at-rule 被塞进选择器，整条规则非法被浏览器丢弃
+- **为何只有 hover 中招**：其余注入 CSS 首字符就是选择器（开头无注释），正则工作正常；hover CSS 是唯一以注释开头的
+- **修复**：改为扫描式解析——注释原样透传；遇 `{` 时对前置段加前缀（段以 `@` 开头则原样，保护 at-rule 前置）；声明体原样输出；`svg`/`svg:` 前缀做整体替换（保持 `#id:has(...)` 语义）。缓存 `_version` v61→v62
+- **验证**：tsc 0 / lint 0 错误 / vitest 329/329；新增 2 条防回归断言——作用域化后注释与 `@media` 均保留、`#id :has(` 不出现（空格会改变语义）、声明块数量与原文一致、无残留裸 `svg …` 选择器
+- **教训**：处理 CSS 文本**不要依赖「选择器里不含 `{`/`@`」的假设**——注释、at-rule 前置、字符串值都会破坏它；解析必须显式跳过注释并识别 at-rule 前置。本项目 v56 已因 CSS 注释（`*/` 提前闭合）翻车一次，这是同一雷区的第二次，处理 mermaid 注入 CSS 时应默认「注释可能出现在任何位置」

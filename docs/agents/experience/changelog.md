@@ -2,7 +2,7 @@
 title: 经验库变更日志
 type: experience-changelog
 project: ErgeMD
-updated: 2026-10-20
+updated: 2026-10-21
 description: >
   每轮蒸馏一条：原料、覆盖主题、产出与有意跳过；兼作蒸馏台账，用于避免重复蒸馏。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -96,3 +96,10 @@ description: >
   - mindmap 字号层级递增的具体数值（18/16/15/14/13）——项目参数，且「图形尺寸按原字号测量、只放大中心一级配换行保护」的结论依赖 mermaid 的测量机制，不 portable
   - 细线/空心几何（xychart 折线、gitGraph 箭头与分支线）命中精度受限——已在 F16 的 How 里作为注意事项，不单列条目
   - esbuild 打包 mermaid 为 IIFE 用于真浏览器验证——一次性验证手段，非稳定做法
+
+## 2026-10-21 · 第八轮：导出统一 DOM 复制单管线（P0）
+
+- **原料**：issue #5（导出功能统一与 PDF 打印保真优化）；代码 `src/utils/export.ts`（captureExportDocument / generateHtmlContent / extractHtmlContent）、`exportPdf.ts`、`exportStyles.ts`、`domUtils.ts`、`src-tauri/src/commands/pdf.rs`；`experience/markdown/render-export.md` MD1；`docs/agents/decision-log.md` DEC-023/024/026/032
+- **覆盖主题**：markdown（导出单管线 / DOM 复制安全闸 / CSSOM 序列化）；workflow（red 经验随代码演进的改写）
+- **产出**：**修订 MD1**——由「导出必须独立管线、禁 DOM query」改写为「导出统一 DOM 复制单管线 + exportMode/queryActiveMarkdownBody 两道安全闸」，保留原两条理由作为闸的 Why；新增 DEC-039 记录 pivot 与对 DEC-023/024/026 的废止
+- **有意跳过**：Rust 显式 PrintSettings（Environment6 强转）与就绪轮询（unsafe PWSTR）——前端 @page+print-color-adjust+Chromium PrintToPdf 默认已覆盖打印保真，且无法在本环境运行时验证打印产物，推迟到可实机生成 PDF 时；资源内联（图片 base64 / 字体子集）为 P2；HTML 复制按钮为 P1（均见 issue #5）
