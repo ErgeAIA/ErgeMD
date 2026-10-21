@@ -35,7 +35,7 @@ pub async fn export_pdf(
         WebviewUrl::App("index.html".into()),
     )
     .title("ErgeMD PDF Export")
-    .inner_size(800.0, 1100.0)
+    .inner_size(794.0, 1123.0)
     .visible(false)
     .decorations(false)
     .center()
@@ -55,8 +55,10 @@ pub async fn export_pdf(
             html_json
         ))
         .map_err(|e| format!("Failed to inject HTML: {}", e))?;
-    // 等待页面渲染完成
-    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+    // 等待页面渲染完成：按 HTML 体积自适应（SVG 烘焙内联样式后 HTML 明显变大，
+    // 固定 2s 不足以让 WebView 完成解析与布局，导致尾部图表缺失）
+    let render_wait_ms = std::cmp::max(3000u64, (html_content.len() as u64 / 1000) * 4);
+    tokio::time::sleep(tokio::time::Duration::from_millis(render_wait_ms)).await;
 
     let result = export_pdf_inner(&window, &file_path).await;
 

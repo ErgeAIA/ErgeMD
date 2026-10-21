@@ -1,4 +1,4 @@
-import markdownCss from "@/styles/markdown.css?inline";
+import { queryActiveMarkdownBody } from "./domUtils";
 
 /**
  * 灰度模式下的调色板覆盖。
@@ -146,7 +146,9 @@ function declarationsOf(rule: CSSStyleRule): string {
     const value = style.getPropertyValue(prop).trim();
     if (!value) continue;
     const priority = style.getPropertyPriority(prop);
-    parts.push(`${prop}: ${value}${priority ? ` ${priority}` : ""}`);
+    // getPropertyPriority 返回 "important"（不含 !）；CSS 语法必须是 !important，
+    // 漏写 ! 会让整条声明非法被浏览器丢弃（曾导致导出标题等 !important 配色全失效）
+    parts.push(`${prop}: ${value}${priority ? ` !${priority}` : ""}`);
   }
   return parts.length > 0 ? `${parts.join(";\n  ")};` : "";
 }
@@ -246,7 +248,7 @@ function pruneRule(rule: CSSRule, scope: Element): string {
  * @param scope 导出 DOM 的根元素，默认取文档中的 .markdown-body
  */
 export function serializeAppStylesheets(scope?: Element): string {
-  const target = scope ?? document.querySelector(".markdown-body");
+  const target = scope ?? queryActiveMarkdownBody();
   let css = "";
   for (const sheet of Array.from(document.styleSheets)) {
     try {
@@ -312,6 +314,11 @@ export function buildExportStyles(
   }`
     : "";
 
+  const grayscaleFilter = grayscale
+    ? `  /* 黑白导出：全局去色。GRAYSCALE_OVERRIDES 只改 CSS 变量，覆盖不到烤进 mermaid/plantuml SVG 的字面 fill/stroke，filter 连内联 SVG 一并压成灰度 */
+  body { filter: grayscale(1); }`
+    : "";
+
   const shell = `
   html, body {
     font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
@@ -331,9 +338,13 @@ export function buildExportStyles(
   }
   code { font-family: "Cascadia Code", "Fira Code", Consolas, monospace; }
   a { color: var(--link, var(--accent-cyan)); }
-  img { max-width: 100%; page-break-inside: avoid; }
+  /* 强制按容器宽度缩放并保持比例。mermaid SVG 带内联 max-width:XXXpx（useMaxWidth:false
+     的固有宽度，常 800px+），若无 !important 会盖过本规则——浏览器窗口宽时看不出问题，
+     A4 内容区（~642px）放不下就溢出被裁（表现为「图特别大/只露一半/整块空白」）。
+     height:auto 保证按 viewBox 比例缩放、不拉伸。 */
+  img, svg { max-width: 100% !important; height: auto !important; page-break-inside: avoid; }
   h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
-  pre, table { page-break-inside: avoid; }
+  pre, table, tr, .math-block, .katex-display { page-break-inside: avoid; }
   ${
     forPdf
       ? `pre {
@@ -363,13 +374,10 @@ export function buildExportStyles(
 ${appCss}
   ${pageRules}
   ${colorAdjust}
+${grayscaleFilter}
   :root {
 ${rootVars}
   }
 ${shell}
 </style>`;
 }
-
-// 供 PDF 导出路径（generateExportHtml.ts）复用同一份 markdown.css 文本，
-// 保证 HTML 与 PDF 导出的排版/高亮配色来源一致。
-export { markdownCss };

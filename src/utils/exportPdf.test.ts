@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const addToastMock = vi.fn();
 const saveMock = vi.fn();
-const generateExportHtmlMock = vi.fn();
+const captureExportDocumentMock = vi.fn();
 const invokeMock = vi.fn();
 const detectPlatformMock = vi.fn();
 
@@ -18,8 +18,8 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
   save: (...args: unknown[]) => saveMock(...args),
 }));
 
-vi.mock("./generateExportHtml", () => ({
-  generateExportHtml: (...args: unknown[]) => generateExportHtmlMock(...args),
+vi.mock("@/utils/export", () => ({
+  captureExportDocument: (...args: unknown[]) => captureExportDocumentMock(...args),
 }));
 
 vi.mock("@/stores/fileStore", () => ({
@@ -63,7 +63,7 @@ describe("exportPdf platform-aware toast", () => {
     currentFilePathRef.current = "/tmp/note.md";
     addToastMock.mockClear();
     saveMock.mockReset();
-    generateExportHtmlMock.mockReset();
+    captureExportDocumentMock.mockReset();
     invokeMock.mockReset();
     detectPlatformMock.mockReset();
   });
@@ -75,7 +75,7 @@ describe("exportPdf platform-aware toast", () => {
 
   it("emits guidance toast on macOS before invoking export_pdf", async () => {
     detectPlatformMock.mockReturnValue("macos");
-    generateExportHtmlMock.mockResolvedValue("<html></html>");
+    captureExportDocumentMock.mockResolvedValue("<html></html>");
     saveMock.mockResolvedValue("/tmp/note.pdf");
     invokeMock.mockResolvedValue(undefined);
 
@@ -93,7 +93,7 @@ describe("exportPdf platform-aware toast", () => {
 
   it("emits guidance toast on Linux before invoking export_pdf", async () => {
     detectPlatformMock.mockReturnValue("linux");
-    generateExportHtmlMock.mockResolvedValue("<html></html>");
+    captureExportDocumentMock.mockResolvedValue("<html></html>");
     saveMock.mockResolvedValue("/tmp/note.pdf");
     invokeMock.mockResolvedValue(undefined);
 
@@ -111,7 +111,7 @@ describe("exportPdf platform-aware toast", () => {
 
   it("does NOT emit platform guidance toast on Windows", async () => {
     detectPlatformMock.mockReturnValue("windows");
-    generateExportHtmlMock.mockResolvedValue("<html></html>");
+    captureExportDocumentMock.mockResolvedValue("<html></html>");
     saveMock.mockResolvedValue("/tmp/note.pdf");
     invokeMock.mockResolvedValue(undefined);
 

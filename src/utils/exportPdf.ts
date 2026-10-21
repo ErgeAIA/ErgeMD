@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
-import { generateExportHtml } from "./generateExportHtml";
+import { captureExportDocument } from "./export";
 import { useFileStore } from "@/stores/fileStore";
 import { useReaderStore } from "@/stores/readerStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -38,14 +38,17 @@ async function doExportPdf(grayscale: boolean): Promise<void> {
 
   const fontSize = useSettingsStore.getState().readingSettings.fontSize;
 
-  const htmlPromise = generateExportHtml(content, { grayscale, fontSize });
+  // PDF 与 HTML 共用同一份 DOM 复制产物：从「屏幕上所见」直接派生，杜绝渲染漂移。
   const filePathPromise = save({
     filters: [{ name: "PDF", extensions: ["pdf"] }],
     defaultPath: `${defaultFileName}.pdf`,
   });
 
   try {
-    const [htmlContent, filePath] = await Promise.all([htmlPromise, filePathPromise]);
+    const [filePath, htmlContent] = await Promise.all([
+      filePathPromise,
+      captureExportDocument({ grayscale, forPdf: true, fontSize }),
+    ]);
 
     if (!filePath) return;
 

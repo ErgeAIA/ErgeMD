@@ -229,7 +229,7 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
           sectionTitle: item.text,
           onCopySectionTitle: () => navigator.clipboard.writeText(item.text),
           onExportSectionHtml: () =>
-            exportHtml(".markdown-body", { sectionId: item.id }).catch(
+            exportHtml({ sectionId: item.id }).catch(
               () => {},
             ),
         });
