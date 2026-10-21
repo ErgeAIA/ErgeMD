@@ -5,6 +5,7 @@ import SVGPreview from "./SVGPreview";
 import { useReaderStore } from "@/stores/readerStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { MERMAID_HOVER_CSS } from "./mermaidHoverCss";
+import { injectSvgStyle } from "./mermaidInjectStyle";
 
 /**
  * Mermaid 渲染结果缓存（内存级别，页面刷新失效）。
@@ -130,10 +131,69 @@ export function renderMermaidForExport(chart: string): Promise<string> {
         const mindmapLayout = readingSettings.mindmapLayout ?? "radial";
         const mindmapStyle = readingSettings.mindmapStyle ?? "depth";
         const isMindmapChart = normalizeChartType(chart) === "mindmap";
+
+        // 兜底渲染也必须带 themeVariables：历史上这里裸 initialize 出 mermaid 默认配色，
+        // 一旦竞态中兜底胜出，思维导图中心节点（git0）无填充、泳道/节点发空或默认色。
+        // 与阅读路径同源取色（getMermaidColors）：base 通用色覆盖所有图表，思维导图/泳道
+        // 再按类型补关键键（取值与阅读路径一致：git0=centerColor、cScale=branches）。
+        const colors = getMermaidColors();
+        const themeVariables: Record<string, unknown> = {
+          fontFamily: colors.fontFamily,
+          fontSize: "16px",
+          primaryColor: colors.primaryColor,
+          primaryTextColor: colors.primaryTextColor,
+          primaryBorderColor: colors.primaryBorderColor,
+          lineColor: colors.lineColor,
+          secondaryColor: colors.secondaryColor,
+          tertiaryColor: colors.tertiaryColor,
+          backgroundColor: colors.backgroundColor,
+          nodeBorder: colors.primaryBorderColor,
+          nodeText: colors.primaryTextColor,
+          mainBkg: colors.backgroundColor,
+          edgeColor: colors.lineColor,
+          edgeLabelBackground: colors.backgroundColor,
+          actorBg: colors.primaryColor,
+          actorBorder: colors.primaryBorderColor,
+          actorTextColor: colors.primaryTextColor,
+          signalColor: colors.lineColor,
+          clusterBkg: colors.backgroundColor,
+          clusterBorder: colors.primaryBorderColor,
+        };
+        const exportChartType = normalizeChartType(chart);
+        if (exportChartType === "mindmap" && colors.charts.mindmap) {
+          const mc = colors.charts.mindmap;
+          themeVariables.git0 = mc.centerColor;
+          themeVariables.gitBranchLabel0 = mc.centerText;
+          const fills = mc.branches;
+          const texts = [
+            mc.centerText,
+            mc.level1Text,
+            mc.level2Text,
+            mc.level3Text,
+            mc.level4Text,
+          ];
+          const lines = mc.branchLines;
+          for (let i = 0; i < 12; i++) {
+            themeVariables[`cScale${i}`] = fills[i % fills.length];
+            themeVariables[`cScaleLabel${i}`] = texts[i % texts.length];
+            themeVariables[`cScaleInv${i}`] = lines[i % lines.length];
+          }
+        }
+        if (exportChartType === "swimlane" && colors.charts.swimlane) {
+          const sc = colors.charts.swimlane;
+          themeVariables.nodeBorder = sc.nodeBorder;
+          themeVariables.nodeText = sc.nodeText;
+          themeVariables.clusterBkg = sc.laneBg;
+          themeVariables.clusterBorder = sc.laneBorder;
+          themeVariables.edgeColor = sc.edgeColor;
+          themeVariables.edgeLabelBackground = sc.edgeLabelBg;
+        }
+
         mermaid.initialize({
           startOnLoad: false,
-          theme: "default",
+          theme: "base",
           securityLevel: "strict",
+          themeVariables,
           layout:
             isMindmapChart
               ? mindmapLayout === "logic"
@@ -1538,7 +1598,22 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
       // 文字继承 textColor（暗色主题为浅色）→ 白底白字不可读（列头有 cScaleN 故正常）。
       // 新增 kanban 后处理：强制卡片底为 cardBg、卡片文字按 text 取色。
       // 渲染产物变化，作废旧键
-      _version: "v59",
+      // v60：修复「思维导图中心色块丢失只剩描边、子节点全带橙色描边」（阅读与导出均中招，
+      // 导出是全量渲染故必然复现）。真根因不是主题/缓存，而是**注入样式跨图污染**：
+      // HTML 的 <style> 无论写在 DOM 哪个位置都对整个文档生效，而我们手工注入的规则
+      // 是裸选择器——流程图的 `.node rect/.node circle/.node polygon{fill:白 !important;
+      // stroke:品牌色}` 会命中思维导图（mindmap 节点 group 同样带 .node 类），把中心圆
+      // 压成白底；架构图的 `.node-bkg{stroke:品牌色}` 会给思维导图所有子节点加橙描边。
+      // （这也解释了 v57 那条「切主题/F5 才对」的悬案：虚拟滚动下流程图未渲染时不污染，
+      // 一渲染或导出全量渲染就中招。）修法：新增 injectSvgStyle/scopeInjectedCss，把全部
+      // 手工注入对齐到 mermaid 自身的 `#<svgId>` 作用域口径。渲染产物变化，作废旧键
+      // v61：思维导图实心底档（brand/depth）去掉节点中性描边（用户实机：子节点全带描边）。
+      // 渲染产物变化，作废旧键
+      // v62：修复 hover 高亮整体失效——scopeInjectedCss 首版用正则解析选择器，会把 CSS
+      // 注释连同后面的 @media 一起当成选择器段，@media 被吞进选择器导致整条规则非法。
+      // MERMAID_HOVER_CSS 开头正是注释，故 hover 是第一个受害者（其余注入 CSS 开头无
+      // 注释才逃过）。改为扫描式解析（注释原样透传、@media 前置不加前缀）。渲染产物变化
+      _version: "v62",
     });
 
     useEffect(() => {
@@ -2495,7 +2570,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
             if (svg.includes("<style>")) {
-              svg = svg.replace("<style>", `<style>${wardleyStyle}`);
+              svg = injectSvgStyle(svg, wardleyStyle);
             } else {
               svg = svg.replace(/<svg([^>]*)>/, `<svg$1><style>${wardleyStyle}</style>`);
             }
@@ -2518,7 +2593,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
             if (svg.includes("<style>")) {
-              svg = svg.replace("<style>", `<style>${ishikawaStyle}`);
+              svg = injectSvgStyle(svg, ishikawaStyle);
             } else {
               svg = svg.replace(/<svg([^>]*)>/, `<svg$1><style>${ishikawaStyle}</style>`);
             }
@@ -2609,7 +2684,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
             if (svg.includes("<style>")) {
-              svg = svg.replace("<style>", `<style>${zenumlStyle}`);
+              svg = injectSvgStyle(svg, zenumlStyle);
             } else {
               svg = svg.replace(/<svg([^>]*)>/, `<svg$1><style>${zenumlStyle}</style>`);
             }
@@ -2629,7 +2704,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
             if (svg.includes("<style>")) {
-              svg = svg.replace("<style>", `<style>${eventModelingStyle}`);
+              svg = injectSvgStyle(svg, eventModelingStyle);
             } else {
               svg = svg.replace(/<svg([^>]*)>/, `<svg$1><style>${eventModelingStyle}</style>`);
             }
@@ -2653,7 +2728,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${treemapInlineStyle}`);
+            svg = injectSvgStyle(svg, treemapInlineStyle);
           }
 
           if (isSankey) {
@@ -2726,9 +2801,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               new RegExp(c, "i").test(svg),
             );
             if (hasResidualTableau || danglingRefs.length > 0) {
-              svg = svg.replace(
-                "<style>",
-                `<style>svg path { stroke: ${sankeySeries[0]} !important; }`,
+              svg = injectSvgStyle(
+                svg,
+                `svg path { stroke: ${sankeySeries[0]} !important; }`,
               );
             }
 
@@ -2737,9 +2812,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             // 但在深色底上与暗底相乘 → 流量被压得更暗、几乎不可见（用户观感「深色不明显」）。
             // 深色主题改 normal 混合 + 提高不透明度；浅色主题 multiply 观感正常，保持不变。
             if (!isLight) {
-              svg = svg.replace(
-                "<style>",
-                `<style>.link { stroke-opacity: 0.85 !important; mix-blend-mode: normal !important; }`,
+              svg = injectSvgStyle(
+                svg,
+                `.link { stroke-opacity: 0.85 !important; mix-blend-mode: normal !important; }`,
               );
             }
           }
@@ -2789,7 +2864,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${inlineStyle}`);
+            svg = injectSvgStyle(svg, inlineStyle);
           }
 
           if (isJourney && colors.charts.journey) {
@@ -2797,9 +2872,9 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             // 后处理覆盖为令牌文字色（.label text 同时覆盖任务标签文字）；
             // actor 圆（circle.actor-N）描边/填充 mermaid 回落默认近黑，需显式覆盖
             const jc = colors.charts.journey;
-            svg = svg.replace(
-              "<style>",
-              `<style>
+            svg = injectSvgStyle(
+              svg,
+              `
                 .label text { fill: ${jc.journeyText} !important; }
                 circle[class*="actor"] {
                   stroke: ${jc.journeyBorder} !important;
@@ -2833,7 +2908,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${inlineStyle}`);
+            svg = injectSvgStyle(svg, inlineStyle);
           }
 
           if (isGantt && colors.charts.gantt) {
@@ -2890,7 +2965,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${ganttInlineStyle}`);
+            svg = injectSvgStyle(svg, ganttInlineStyle);
           }
 
           if (isKanban && colors.charts.kanban) {
@@ -2916,18 +2991,18 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
           if (isArchitecture) {
             // 架构图服务节点矩形（rect.node-bkg）描边 mermaid 无 themeVariables 键可注入，
             // 回落默认近黑；用主题边框色覆盖（仅描边，不碰填充，避免误改分组底色）
-            svg = svg.replace(
-              "<style>",
-              `<style>.node-bkg { stroke: ${colors.primaryBorderColor} !important; }`,
+            svg = injectSvgStyle(
+              svg,
+              `.node-bkg { stroke: ${colors.primaryBorderColor} !important; }`,
             );
           }
 
           if (isC4Context) {
             // C4 关系线为裸 <path>（无 class），mermaid 回落默认近黑；
             // 后处理仅覆盖无 class 的 path（path.basic 已着色，不受影响）
-            svg = svg.replace(
-              "<style>",
-              `<style>path:not([class]) { stroke: ${colors.lineColor} !important; }`,
+            svg = injectSvgStyle(
+              svg,
+              `path:not([class]) { stroke: ${colors.lineColor} !important; }`,
             );
           }
 
@@ -3006,7 +3081,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${gitgraphInlineStyle}`);
+            svg = injectSvgStyle(svg, gitgraphInlineStyle);
           }
 
           if (
@@ -3031,7 +3106,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             `;
 
-            svg = svg.replace("<style>", `<style>${universalStyle}`);
+            svg = injectSvgStyle(svg, universalStyle);
           }
 
           if (isMindmap) {
@@ -3093,22 +3168,22 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             }
 
+            // 实心底档（brand/depth）去掉节点描边：mermaid 默认给节点 path 补一道中性描边
+            // （chart-stroke 灰），在彩色实心块上割裂感明显（用户实机反馈「子节点全带描边」）。
+            // outline 档本就靠描边表达语义、classic 档以「经典默认」为准，两者保持原样。
+            if (mindmapStyle === "brand" || mindmapStyle === "depth") {
+              extra += `.mindmap-node path.node-bkg, .mindmap-node circle.label-container { stroke: none !important; }`;
+            }
+
             if (extra) {
-              svg = svg.replace("<style>", `<style>${extra}`);
+              svg = injectSvgStyle(svg, extra);
             }
           }
 
           // hover 高亮：纯 CSS 注入（同类图元淡出、悬停项保持不透明），与主题注入同一机制。
           // 放在最后注入 → 出现在 <style> 最前面；因规则用 :has()/:not(:hover) 提升特异性，
           // 且只声明 opacity/transition，不会与主题规则冲突
-          if (svg.includes("<style>")) {
-            svg = svg.replace("<style>", `<style>${MERMAID_HOVER_CSS}`);
-          } else {
-            svg = svg.replace(
-              /<svg([^>]*)>/,
-              `<svg$1><style>${MERMAID_HOVER_CSS}</style>`,
-            );
-          }
+          svg = injectSvgStyle(svg, MERMAID_HOVER_CSS);
 
           if (!cancelled) {
             if (svg && svg.includes("<svg")) {

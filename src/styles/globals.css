@@ -549,9 +549,20 @@ select:focus-visible {
     overflow: visible !important;
   }
 
-  * {
+  /* 解除容器固定高度，保证跨页完整。**必须排除 SVG 内部图形**：CSS 的 height 会覆盖
+     <rect>/<image> 等的 height 属性，height:auto 使矩形高度归零 → 打印时整块消失
+     （表现为 6.16 桑基节点、6.17 XY 柱状条、6.18 块图色块、6.19 数据包色块、ER 实体框
+     集体"丢色"，而折线/网格/圆因用 d / r 属性不受影响；黑白导出同样中招，因为与颜色
+     无关）。*:not(svg *) 仍包含 svg 根元素自身，不影响整体自适应缩放。 */
+  *:not(svg *) {
     height: auto !important;
     max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* SVG 内部只保留 overflow（防止 foreignObject 内文字被裁），不碰 height */
+  svg foreignObject,
+  svg foreignobject {
     overflow: visible !important;
   }
 
