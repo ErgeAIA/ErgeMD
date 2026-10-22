@@ -1128,7 +1128,7 @@ dependencies = [
 
 [[package]]
 name = "ergemd"
-version = "0.4.4"
+version = "0.5.0"
 dependencies = [
  "base64 0.22.1",
  "chrono",

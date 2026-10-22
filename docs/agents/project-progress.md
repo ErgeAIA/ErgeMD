@@ -2,7 +2,7 @@
 title: Project Progress
 type: project-progress
 project: ErgeMD
-updated: 2026-10-22
+updated: 2026-10-23
 description: >
   项目开发进度实时记录：阶段、分支、代码状态、最近进展。每次会话更新。
   AI 在本文件新增进展或修改当前状态后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -19,8 +19,9 @@ description: >
 
 - **当前分支**：main（主题契约三阶段全部完成并推送双远端 @ da63ea5；2026-10-19 用户全主题视觉验收通过）
 - **阶段**：主题色板契约重构**已验收交付**（设计 → 三阶段实施 → 14/14 迁移 → 实机验收闭环）；无进行中阶段
-- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.4.4；codegraph 索引 112 文件）
+- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-10-23 发布 v0.5.0（接导出修复收尾）：变更日志精简为面向用户的发布说明——去掉根因推演、缓存版本号、CSS 变量名等实现细节，同类修复合并（如 6 条图表描边/配色修复 → 4 条、3 条浮动目录修复 → 1 条），中英两份同步；版本号三处同步 0.5.0（package.json / Cargo.toml / tauri.conf.json）并补同步 Cargo.lock，README 中英下载链接更新至 v0.5.0，变更日志归档为 `[0.5.0] - 2026-10-23`。本版面向用户的主要内容：导出与屏幕所见一致（PDF 图表不再放大裁切、色块与桑基彩带正常）、思维导图横向逻辑图布局与四种配色、浮动目录可固定、图表悬停高亮、万行级文档目录精准跳转、大文档打开更快。**待办**：双平台推送 + Tag v0.5.0 后等 CI 发版；Gitee 需手动建发行版
 - 2026-10-17 文档任务：丰富 docs/TestCase/MarkdownSyntaxExample.md——H1/H2/H3 共 69 个标题下补充测试范围与检查要点（Mermaid 28 种图表逐节标注回归重点，标注已知上游问题）；仅改文档，未动代码与构建配置，待用户实机验证
 - 2026-10-17 文档与测试（接上条）：MarkdownSyntaxExample.md 补入泳道图 / 用例图 / Cynefin 框架图三节（6.29~6.31，取官方最新语法），章节计数与文末清单同步为 31 种；修正 mermaid-zenuml.css 注释中的 zenuml 版本（0.2.3 → 1.0.1）；新增 src/components/reader/mermaidSyntaxDoc.test.ts 固化「文档全部 mermaid 块可 parse」回归（33/33 通过，含镜像站链接防护）；实测发现官方用例图示例 `usecase-beta direction LR`（同行）在 12.2.0 解析失败，direction 须独立成行，已在文档记录该坑
 - 2026-10-17 主题适配（接上条）：为泳道图 / 用例图 / Cynefin 框架图三种新图表补齐 Mermaid 主题变量适配——新增 mermaid-swimlane.css / mermaid-usecase.css / mermaid-cynefin.css（沿用 chart palette 令牌：surface 承载文字、stroke 描边、edge 连线、fill-N 语义着色），并在 ChartColors 接口、getMermaidColors、normalizeChartType 映射、themeVariables 注入块四处补齐；顺带修正 ishikawa 映射（关键字 ishikawa-beta 此前漏映射，石川图主题块从未命中）；vite.config.ts 注释 ZenUML 版本 0.2.3→1.0.1（用户授权改构建配置）。人类阅读性：五域按语义着色（复杂=紫/繁杂=蓝/清晰=绿/混沌=橙/混乱=中性），include/extend 虚线分色区分；用例图 actor 文字沿用 primaryTextColor 与 eventmodeling 同套 fill-N+text 配对原则。tsc --noEmit 通过、eslint 仅存量 as-any warning、回归测试 33/33。14 主题 × 三图视觉可读性仍待用户实机
