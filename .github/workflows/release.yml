@@ -123,6 +123,15 @@ jobs:
             src-tauri/target/**/release/bundle/appimage/*.AppImage
             src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
           if-no-files-found: error
+      # Release 页正文 = CHANGELOG 对应版本段落（与更新卡片同源）；缺段落时回退占位文案
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VER="${TAG_NAME#v}"
+          awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
+            CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "See the assets to download and install this version." > release-notes.md
+          fi
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
@@ -134,8 +143,7 @@ jobs:
             ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip
           tag_name: ${{ env.TAG_NAME }}
           name: 'ErgeMD ${{ env.TAG_NAME }}'
-          body: |
-            See the assets to download and install this version.
+          body_path: release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
