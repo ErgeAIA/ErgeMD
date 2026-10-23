@@ -80,7 +80,7 @@ YOU MUST 在 Trae IDE 工作时先读 .trae/rules/ 下适用规则
 | 打包产物命名 | 独立包 src-tauri/target/release/ErgeMD-v{x}.exe；安装包 src-tauri/target/release/bundle/nsis/ErgeMD-v{x}-setup.exe |
 | 版本号变更必须打 Tag | tag 严格为 v{x.y.z}，与 package.json / Cargo.toml / tauri.conf.json 一致，双平台推送；仅文档 / 重构 / 内部调整且版本未变则不打 Tag |
 | 预发布版本 Tag | 用 v{x.y.z}-rc.N / v{x.y.z}-beta.N 形式，同样双平台推送 |
-| 发布流程固定 | 升三处版本号 → 更新 CHANGELOG.md 与 CHANGELOG.en.md → 核对 README 下载链接 → commit → 双平台 push → git tag v{x.y.z} 双推 → 等 CI 发版 → Gitee 手动建发行版 |
+| 发布流程固定 | 升三处版本号 → 更新 CHANGELOG.md 与 CHANGELOG.en.md → 核对 README 下载链接 → commit → 双平台 push → git tag v{x.y.z} 双推 → 等 CI 发版（GitHub Release 为唯一发布源，不再同步 / 手动建 Gitee 发行版） |
 | 写文件方式 | 仅允许 SearchReplace / Write 工具；禁 Set-Content、sed -i、echo > 等 shell 写入；含中文文件禁整文件重写。**生成物例外**：`src/styles/themes/*.css` 中标注 `GENERATED` 的文件由 `pnpm theme:generate` 脚本重写，人工修改必须走源色表 `scripts/theme/sources/*.js`；一致性由 `pnpm theme:generate:check` 校验 |
 | 提交前检查 README | 已完成功能的 TODO 标 [x]；新版本核对 README 下载链接版本号（口径 package.json > Cargo.toml > README.md） |
 | 修改先读最新内容 | 改任何文件前先读最新内容，禁基于缓存或记忆修改；old_str 多处匹配时停下问用户 |

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag to sync to Gitee (e.g. v0.4.3)'
+        description: 'Tag to build and publish (e.g. v0.4.3)'
         required: true
 
 permissions:
@@ -140,8 +140,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # 更新分发：汇总三平台签名产物 → 生成 updater manifest → 发布到 updates-dist
-  # （GitHub 流：main 仓清单 + release 安装包；Gitee 流：镜像仓清单 + Gitee 附件，
-  #   国内用户清单与下载全走 Gitee。Gitee 失败不阻断 GitHub 发布）
+  # （单一来源：GitHub updates-dist 仓清单 + GitHub Release 安装包；Gitee 分发已下线）
   publish-updater:
     name: Publish updater manifest
     needs: build
@@ -149,7 +148,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
       # job 级 env 不允许引用 env context（GitHub 求值限制），此处直接取触发源
       TAG: ${{ inputs.tag_name || github.ref_name }}
     steps:
@@ -163,7 +161,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Assemble manifest and publish (GitHub + Gitee)
+      - name: Assemble manifest and publish (GitHub)
         run: |
           set -euo pipefail
           VER="${TAG#v}"
@@ -225,123 +223,3 @@ jobs:
           git add -A
           git commit -m "ergemd: $TAG" || true
           git push origin HEAD:main
-
-      # Gitee 流（尽力而为）：updates-dist 镜像仓建 release + 传附件 + gitee 版清单
-      # （url 指 Gitee 附件）。境外 runner 向 Gitee 上传附件可能超时——失败时
-      # updates-gitee.json 缺失，updater 自动回退 GitHub 源，不阻断主发布链路
-      - name: Publish Gitee updates-dist (best-effort)
-        continue-on-error: true
-        env:
-          GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
-          TAG: ${{ inputs.tag_name || github.ref_name }}
-        run: |
-          GITEE_BASE="https://gitee.com/api/v5/repos/ergeaia/updates-dist"
-          GITEE_TAG="ergemd-$TAG"
-          HTTP=$(curl -sS --max-time 60 -o /tmp/gitee-rel.json -w "%{http_code}" -X POST \
-            "$GITEE_BASE/releases" -H "Content-Type: application/json" \
-            -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$GITEE_TAG\",\"name\":\"ErgeMD $TAG\",\"prerelease\":false,\"target_commitish\":\"main\",\"body\":\"ErgeMD $TAG updater assets\"}")
-          RELEASE_ID=$(jq -r '.id // empty' /tmp/gitee-rel.json)
-          if [ -z "$RELEASE_ID" ]; then
-            RELEASE_ID=$(curl -sS --max-time 60 "$GITEE_BASE/releases/tags/$GITEE_TAG?access_token=$GITEE_TOKEN" | jq -r '.id // empty')
-          fi
-          if [ -z "$RELEASE_ID" ]; then
-            echo "::error::Gitee updates-dist release 创建/查询失败（HTTP $HTTP）"
-            exit 1
-          fi
-          for f in "$RELEASE_DIR"/*; do
-            curl -sS --max-time 300 -X POST \
-              -H "Authorization: token $GITEE_TOKEN" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$f" \
-              "$GITEE_BASE/releases/$RELEASE_ID/assets?name=$(basename "$f")" > /dev/null
-          done
-          node - "$VER" "$GITEE_TAG" <<'EOF'
-          const fs = require("fs");
-          const [ver, giteeTag] = process.argv.slice(2);
-          const base = `https://gitee.com/ergeaia/updates-dist/releases/download/${giteeTag}`;
-          const platforms = {};
-          const sig = (f) => fs.readFileSync(`release-assets/${f}.sig`, "utf8").trim();
-          platforms["windows-x86_64"] = { signature: sig(`ErgeMD_${ver}_x64-setup.exe`), url: `${base}/ErgeMD_${ver}_x64-setup.exe` };
-          platforms["darwin-aarch64"] = { signature: sig(`ErgeMD_${ver}_aarch64.app.tar.gz`), url: `${base}/ErgeMD_${ver}_aarch64.app.tar.gz` };
-          platforms["linux-x86_64"] = { signature: sig(`ErgeMD_${ver}_amd64.AppImage`), url: `${base}/ErgeMD_${ver}_amd64.AppImage` };
-          const manifest = {
-            version: ver,
-            notes: fs.readFileSync("notes.md", "utf8"),
-            pub_date: new Date().toISOString(),
-            platforms,
-          };
-          fs.writeFileSync("updates-dist/ergemd/updates-gitee.json", JSON.stringify(manifest, null, 2) + "\n");
-          EOF
-          cd updates-dist
-          git remote add gitee "https://ergeaia:$GITEE_TOKEN@gitee.com/ergeaia/updates-dist.git" 2>/dev/null || true
-          git add -A
-          git commit -m "ergemd gitee manifest: $TAG" || true
-          git push gitee HEAD:main
-
-  # 双平台仓库同步：源码由 git push gitee 同步，这里把 release 元数据同步到 Gitee
-  # （正文 = CHANGELOG 对应版本段落 + GitHub 下载指引，产物不上传——
-  #  更新检测只读 Gitee release 的 tag/body，下载走 GitHub Release）
-  sync-gitee:
-    name: Sync release to Gitee
-    needs: build
-    if: ${{ needs.build.result == 'success' }}
-    runs-on: ubuntu-latest
-    env:
-      GITEE_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
-      TAG: ${{ inputs.tag_name || github.ref_name }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag_name || github.ref_name }}
-      - name: Skip if token not configured
-        if: ${{ env.GITEE_TOKEN == '' }}
-        run: echo "::warning::GITEE_ACCESS_TOKEN secret 未配置，跳过 Gitee 同步"
-      - name: Build release notes from CHANGELOG
-        if: ${{ env.GITEE_TOKEN != '' }}
-        run: |
-          # CHANGELOG 标题为 ## [0.4.3]（无 v 前缀），TAG 为 v0.4.3
-          VER="${TAG#v}"
-          awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \
-            CHANGELOG.md > gitee-body.md
-          if [ ! -s gitee-body.md ]; then
-            echo "::error::CHANGELOG 中未找到 $VER 段落"
-            exit 1
-          fi
-          {
-            echo ""
-            echo "---"
-            echo ""
-            echo "## 下载安装"
-            echo ""
-            echo "各平台安装包（Windows / macOS / Linux）请前往 GitHub Release 下载："
-            echo "https://github.com/ErgeAIA/ErgeMD/releases/tag/$TAG"
-          } >> gitee-body.md
-      - name: Create or update Gitee release
-        if: ${{ env.GITEE_TOKEN != '' }}
-        run: |
-          BODY_JSON=$(jq -Rs . gitee-body.md)
-          # Gitee 怪癖：tag 不存在时查询返回 HTTP 200 + 字面 null（而非 404），
-          # 必须再校验 .id；curl 对 4xx 默认退出码为 0，需校验响应体
-          HTTP=$(curl -sS -o /tmp/rel.json -w "%{http_code}" \
-            "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/tags/$TAG?access_token=$GITEE_TOKEN")
-          RELEASE_ID=""
-          if [ "$HTTP" = "200" ]; then
-            RELEASE_ID=$(jq -r '.id // empty' /tmp/rel.json)
-          fi
-          if [ -n "$RELEASE_ID" ]; then
-            echo "Gitee release 已存在（id=$RELEASE_ID），更新正文"
-            # Gitee 的 PATCH 接口同样要求 tag_name/name 必填
-            RESP=$(curl -sS -X PATCH -H "Content-Type: application/json" \
-              -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$TAG\",\"name\":\"ErgeMD $TAG\",\"body\":$BODY_JSON}" \
-              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases/$RELEASE_ID")
-            echo "$RESP" | jq -e '.id' > /dev/null || { echo "::error::Gitee release 更新失败: $RESP"; exit 1; }
-            echo "更新成功"
-          else
-            echo "Gitee release 不存在（HTTP $HTTP），创建"
-            RESP=$(curl -sS -X POST -H "Content-Type: application/json" \
-              -d "{\"access_token\":\"$GITEE_TOKEN\",\"tag_name\":\"$TAG\",\"name\":\"ErgeMD $TAG\",\"prerelease\":false,\"target_commitish\":\"main\",\"body\":$BODY_JSON}" \
-              "https://gitee.com/api/v5/repos/ErgeAIA/ErgeMD/releases")
-            echo "$RESP" | head -c 300
-            echo "$RESP" | jq -e '.id' > /dev/null || { echo "::error::Gitee release 创建失败: $RESP"; exit 1; }
-            echo "创建成功"
-          fi

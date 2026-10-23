@@ -2,7 +2,7 @@
 title: AGENTS.md Changelog
 type: agents-changelog
 project: ErgeMD
-updated: 2026-10-18
+updated: 2026-10-23
 description: >
   AGENTS.md 的变更记录，AGENTS.md 每改动一次就追加一行，不随日常开发更新。
   只追加，不删除或改写历史。AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -90,3 +90,7 @@ description: >
 - `<project-overview.md「历史档案」节> → update → <改写为「文档归档与迁移」终态：3 份已迁入 / 3 类内容已蒸馏同步 / 2 份有意不迁移及理由>`
 - `<project-progress.md 当前状态> → update → <反映蒸馏与迁移完成；新增「已知未决事项」表 5 条（SVG 导出横线 / Event Modeling / Mermaid CJK / portable 命名 / macOS x64），自历史交接文档回收>`
 - `<experience/ 为空目录> → merge → <首轮蒸馏建成 5 域 28 条（🔴12 / 🟡11 / 🟢5），台账见 experience/changelog.md>`
+
+## 2026-10-23 分发收敛为 GitHub 单一来源（DEC-040 配套）
+
+- `<Conventions「发布流程固定」> → update → <原「→ 等 CI 发版 → Gitee 手动建发行版」改为「→ 等 CI 发版（GitHub Release 为唯一发布源，不再同步 / 手动建 Gitee 发行版）」；源码双平台托管与 tag 双推口径不变>`

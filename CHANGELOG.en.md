@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed the never-read, never-written workspaces table
+- **Gitee dual-channel distribution**: installers and update manifests now ship solely through GitHub Releases — no Gitee release sync, no Gitee asset uploads, and update checks query GitHub only (source mirroring and tag pushes to both hosts are unchanged)
 
 ## [0.4.4] - 2026-09-10
 

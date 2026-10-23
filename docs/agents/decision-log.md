@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-10-21
+updated: 2026-10-23
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -15,6 +15,15 @@ description: >
 > **优先级高于 PRD**：冲突时以本文件最新决策为准，并回写 PRD/ADR。
 > 格式：`## DEC-NNN: 标题`，新条目置顶，NNN 三位递增。
 > 字段：`- **日期**：` / `- **背景**：` / `- **决策**：` / `- **验证**：`
+
+---
+
+## DEC-040: 分发收敛为 GitHub 单一来源，下线 Gitee 产物 / Release / 更新检测
+
+- **日期**：2026-10-23（用户决定：「产物只放到 GitHub 上，Gitee 的取消，不做双线支持了」）
+- **背景**：v0.5.0 发版期间 Gitee 链路暴露三个结构性问题——① 删旧 tag 建新 tag 时 GitHub 会把原 Release 降级为 draft，导致补跑新建的 Release 缺 mac/Windows 产物，需人工从草稿捞产物补传；② Gitee 附件上传是 best-effort，境外 runner 超时即静默缺资产，国内下载链路实际不可靠；③ 更新检测双 endpoint（GitHub raw + Gitee raw）下，Gitee 清单缺资产时 updater 回退行为难以观测。产物与源码镜像的收益不对称：源码镜像（git push gitee）零成本且有价值，产物镜像成本高、故障点多。
+- **决策**：① CI 删除 `sync-gitee` job 与 `publish-updater` 内的「Publish Gitee updates-dist (best-effort)」步骤，不再生成 `updates-gitee.json`、不再向 Gitee 上传附件或建发行版；`workflow_dispatch` 输入说明与 job 注释同步改为 GitHub 单一来源。② `src-tauri/tauri.conf.json` 的 `plugins.updater.endpoints` 只保留 GitHub raw 清单。③ 源码双平台托管与 tag 双推口径不变（AGENTS.md「双平台托管」不动），仅「发布流程固定」去掉「Gitee 手动建发行版」。④ GITEE_ACCESS_TOKEN secret 暂留（仓库源码仍走 Gitee 推送不需要它；后续如清理 secret 需单独决定）。
+- **验证**：`python yaml.safe_load` 校验 release.yml 合法；全仓检索 gitee 仅剩 workflow 内一处说明性注释；本地 `pnpm build` 未受影响。**下一次发版（v0.5.1 或更高）实机验证：GitHub Release 五产物齐全、updater 只查 GitHub 源**（本次 v0.5.0 已按新口径人工补齐产物）
 
 ---
 
