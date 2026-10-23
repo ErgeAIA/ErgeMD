@@ -19,6 +19,33 @@ env:
   TAG_NAME: ${{ inputs.tag_name || github.ref_name }}
 
 jobs:
+  # 发版前清理过期 artifact：GitHub 的 artifact 存储配额按**账号**计（Free 500 MB / Pro 1 GB），
+  # 与 Packages 共用同一个池，且**跨仓库累加**——本仓三轮重试留下的 485 MB 一度把
+  # AI-Vault 的 v0.5.0 发版一起堵死（2026-10-23，upload 报 Artifact storage quota has been hit）。
+  # 不挂 needs：与 test/build 并行，按「14 天前」过滤不会碰到本次产物；失败也不阻断发布。
+  cleanup-artifacts:
+    name: Purge stale artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete artifacts older than 14 days
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cutoff="$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)"
+          echo "deleting artifacts older than ${cutoff}"
+          gh api --paginate "repos/${REPO}/actions/artifacts?per_page=100" \
+            --jq ".artifacts[] | select(.created_at < \"${cutoff}\") | .id" |
+          while read -r id; do
+            [ -n "${id}" ] || continue
+            echo "delete artifact ${id}"
+            gh api -X DELETE "repos/${REPO}/actions/artifacts/${id}" || true
+          done
+
   test:
     name: Lint & Test
     runs-on: ubuntu-latest
@@ -123,6 +150,9 @@ jobs:
             src-tauri/target/**/release/bundle/appimage/*.AppImage
             src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
           if-no-files-found: error
+          # 只有同一次 run 的 publish-updater 会读这些中间件，默认 90 天纯占账号配额；
+          # 留 7 天够复看（安装包本体已进 GitHub Release）
+          retention-days: 7
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
