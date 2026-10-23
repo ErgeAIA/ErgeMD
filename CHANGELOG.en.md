@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Updates are checked automatically on every launch** — no waiting or manual check from the About page; the update card has been redesigned with clearer change grouping
+
 ## [0.5.0] - 2026-10-23
 
 ### Added

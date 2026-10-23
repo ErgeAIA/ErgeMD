@@ -122,6 +122,9 @@ jobs:
             src-tauri/target/**/release/bundle/macos/*.app.tar.gz.sig
             src-tauri/target/**/release/bundle/appimage/*.AppImage
             src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
+            src-tauri/target/**/release/bundle/dmg/ErgeMD-*-macos-*.dmg
+            src-tauri/target/**/release/bundle/deb/*.deb
+            ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip
           if-no-files-found: error
       # Release 页正文 = CHANGELOG 对应版本段落（与更新卡片同源）；缺段落时回退占位文案
       - name: Extract release notes from CHANGELOG
@@ -196,6 +199,12 @@ jobs:
           cp "$TARGZSIG" "$RELEASE_DIR/ErgeMD_${VER}_aarch64.app.tar.gz.sig"
           cp "$APPIMAGE" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage"
           cp "$APPIMAGESIG" "$RELEASE_DIR/ErgeMD_${VER}_amd64.AppImage.sig"
+
+          # 全量产物镜像：主仓库 Release 的全部产物在 updates-dist 同步一份
+          # （updater 三件套用上方规范名；dmg / deb / portable.zip 沿用 Release 同名文件）
+          find artifacts -name "ErgeMD-*.dmg" -exec cp {} "$RELEASE_DIR/" \;
+          find artifacts -name "ErgeMD-*.deb" -exec cp {} "$RELEASE_DIR/" \;
+          find artifacts -name "ErgeMD-*-portable.zip" -exec cp {} "$RELEASE_DIR/" \;
 
           # notes：CHANGELOG 对应版本段落（与更新卡片的分组解析同源）
           awk -v start="## [$VER]" 'index($0, start) == 1 { f = 1; next } f && /^## \[/ { exit } f' \

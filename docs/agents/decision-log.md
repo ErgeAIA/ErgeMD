@@ -18,6 +18,15 @@ description: >
 
 ---
 
+## DEC-041: 更新链路三改——每次启动检查、updates-dist 全量镜像、更新卡片重设计
+
+- **日期**：2026-10-23（用户需求：updates-dist 与主仓库保持同步且额外发布一份全量产物；启动自动检测更新，无需手动点「关于」；更新提示 UI 重设计）
+- **背景**：① `UpdateChecker` 启动虽有自动检查但带 24h 节流（`TWENTY_FOUR_HOURS`），用户感知为「必须手动点关于」；② updates-dist 的 `ergemd-<tag>` release 只有 updater 三件套（nsis exe / app.tar.gz / AppImage + sig），主仓库 Release 的 dmg / deb / portable.zip 无镜像；③ 更新卡片为初版样式，底部居中悬浮且展开态信息层级弱。
+- **决策**：① 去掉 24h 节流，改为每次启动（挂载后 3s）检查一次，`checkUpdateEnabled` 与静默失败语义不变；`lastCheckUpdateTime` 仍写入但不再作为节流依据。② 构建期 artifact 扩展为全量产物（追加 dmg / deb / portable.zip 的 glob），`publish-updater` 组装阶段把三件额外产物按 Release 同名复制进 `RELEASE_DIR` 一并上传，updater manifest 三件套规范名不变——updates-dist 从「更新通道」升级为「全量镜像」。③ 卡片重设计：定位从底部居中改为右下角（`bottom-14 right-6`，不再需要 translateX 补偿）、420px 窄卡、展开态加图标徽章 + 版本胶囊 + 分组圆点 + 百分比进度条 + 分隔线页脚；「跳过此版本」从折叠态移入展开态页脚。全部沿用既有主题 token（`--toast-info-*` / `--accent-cyan` / `--bg-code` / `--text-*`），未新增依赖与 i18n key。
+- **验证**：`tsc --noEmit` 0 错误、`pnpm lint` 0 错误（47 存量 warning）、`pnpm test` 329/329；release.yml YAML 校验通过。**UI 观感与启动检查行为待用户实机验证；updates-dist 全量镜像待下次发版实机验证**。遗留：`src-tauri/src/commands/update.rs` 的 `check_update` 命令为前端已弃用的遗留双源轮询实现（lib.rs 仍注册），暂不清理，待单独决定。
+
+---
+
 ## DEC-040: 分发收敛为 GitHub 单一来源，下线 Gitee 产物 / Release / 更新检测
 
 - **日期**：2026-10-23（用户决定：「产物只放到 GitHub 上，Gitee 的取消，不做双线支持了」）

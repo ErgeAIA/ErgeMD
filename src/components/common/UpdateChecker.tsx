@@ -7,7 +7,6 @@ import packageJson from "../../../package.json";
 import { formatReleaseDate, parseReleaseNotes } from "../../utils/releaseNotes";
 import { useSettingsStore } from "../../stores/settingsStore";
 
-const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 const CHECK_TIMEOUT_MS = 10_000;
 const RELEASES_URL = "https://github.com/ErgeAIA/ErgeMD/releases";
 
@@ -41,7 +40,6 @@ export const forceCheckUpdate = async (): Promise<ForceCheckResult> => {
 const UpdateChecker: React.FC = memo(() => {
   const { t } = useTranslation();
   const checkUpdateEnabled = useSettingsStore((s) => s.checkUpdateEnabled);
-  const lastCheckUpdateTime = useSettingsStore((s) => s.lastCheckUpdateTime);
   const skippedVersion = useSettingsStore((s) => s.skippedVersion);
   const setLastCheckUpdateTime = useSettingsStore((s) => s.setLastCheckUpdateTime);
   const setSkippedVersion = useSettingsStore((s) => s.setSkippedVersion);
@@ -71,17 +69,12 @@ const UpdateChecker: React.FC = memo(() => {
     }
   }, [setLastCheckUpdateTime]);
 
+  // 每次启动自动检查一次更新（3s 延迟等窗口就绪；失败静默，不打扰启动流程）
   useEffect(() => {
     if (!checkUpdateEnabled) return;
-
-    const now = Date.now();
-    const elapsed = lastCheckUpdateTime ? now - lastCheckUpdateTime : Infinity;
-
-    if (elapsed >= TWENTY_FOUR_HOURS) {
-      const timer = setTimeout(doCheck, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [checkUpdateEnabled, lastCheckUpdateTime, doCheck]);
+    const timer = setTimeout(doCheck, 3000);
+    return () => clearTimeout(timer);
+  }, [checkUpdateEnabled, doCheck]);
 
   // 关于页手动检查 → 拉取共享的 update 对象并展开卡片
   useEffect(() => {
@@ -161,30 +154,28 @@ const UpdateChecker: React.FC = memo(() => {
 
   return (
     <div
-      // 不用 `-translate-x-1/2`：见 FloatingTOC.tsx 同款问题注释（@zenuml/core 注入的未分层
-      // 通用选择器会重置 `--tw-translate-x/y`，让 Tailwind v4 的 transform 工具类失效）
-      className="fixed z-50 bottom-12 left-1/2 rounded-lg text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
+      className="fixed z-50 bottom-14 right-6 rounded-xl text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
       style={{
-        transform: "translateX(-50%)",
-        maxWidth: "560px",
-        width: "min(560px, calc(100vw - 48px))",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
+        width: "min(420px, calc(100vw - 48px))",
+        boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
         ...glassStyle,
       }}
     >
       {!expanded ? (
-        // ── 折叠态：一秒略过 ──
-        <div className="flex items-center gap-3 px-4 py-2.5">
+        // ── 折叠态：一条通知，一秒略过 ──
+        <div className="flex items-center gap-3 px-4 py-3">
           <UpdateIcon />
-          <span className="flex-1" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
+          <span className="flex-1 font-medium" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
             {t("update.newVersionAvailable", { version: update.version })}
             {releasedOn && (
-              <span style={{ color: "var(--text-muted)", marginLeft: 8 }}>{releasedOn}</span>
+              <span className="font-normal" style={{ color: "var(--text-muted)", marginLeft: 8 }}>
+                {releasedOn}
+              </span>
             )}
           </span>
           <button
             onClick={() => setExpanded(true)}
-            className="shrink-0 px-3 py-1 rounded text-[12px] font-medium cursor-pointer"
+            className="shrink-0 px-3 py-1 rounded-full text-[12px] font-medium cursor-pointer"
             style={{
               background: "var(--accent-cyan, #00FFFF)",
               color: "var(--bg-page, #0A0A0F)",
@@ -193,41 +184,74 @@ const UpdateChecker: React.FC = memo(() => {
           >
             {t("update.details")}
           </button>
-          <TextButton onClick={handleSkip}>{t("update.skipVersion")}</TextButton>
           <CloseButton onClick={() => setDismissed(true)} />
         </div>
       ) : (
-        // ── 展开态：决策信息 + 应用内更新 ──
-        <div className="px-4 pt-3 pb-3">
-          <div className="flex items-center gap-2">
-            <UpdateIcon />
-            <span className="font-medium" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
-              {t("update.whatsNew")} · v{update.version}
-            </span>
-            {releasedOn && (
-              <span style={{ color: "var(--text-muted)" }}>{releasedOn}</span>
-            )}
-            <span className="flex-1" />
+        // ── 展开态：更新内容 + 应用内更新 ──
+        <div className="px-4 pt-3.5 pb-3.5">
+          <div className="flex items-start gap-2.5">
+            <div
+              className="shrink-0 flex items-center justify-center rounded-lg"
+              style={{
+                width: 34,
+                height: 34,
+                background: "var(--bg-code, rgba(255,255,255,0.08))",
+                border: "1px solid var(--toast-info-border)",
+              }}
+            >
+              <UpdateIcon size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{t("update.whatsNew")}</span>
+                <span
+                  className="px-2 py-0.5 rounded-full text-[11px] font-medium"
+                  style={{
+                    background: "var(--bg-code, rgba(255,255,255,0.08))",
+                    color: "var(--accent-cyan, #00FFFF)",
+                  }}
+                >
+                  v{update.version}
+                </span>
+              </div>
+              {releasedOn && (
+                <div className="mt-0.5 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  {releasedOn}
+                </div>
+              )}
+            </div>
             <CloseButton onClick={() => setDismissed(true)} />
           </div>
 
           {groups.length > 0 && (
             <div
-              className="mt-2 pr-1 flex flex-col gap-2"
-              style={{ maxHeight: 240, overflowY: "auto" }}
+              className="mt-3 pr-1 flex flex-col gap-3"
+              style={{ maxHeight: 264, overflowY: "auto" }}
             >
               {groups.map((group) => (
                 <div key={group.category}>
-                  <div
-                    className="text-[11px] uppercase tracking-wide mb-1"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {group.category}
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span
+                      className="rounded-full shrink-0"
+                      style={{
+                        width: 4,
+                        height: 4,
+                        background: "var(--accent-cyan, #00FFFF)",
+                      }}
+                    />
+                    <span
+                      className="text-[11px] uppercase tracking-wide"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {group.category}
+                    </span>
                   </div>
                   <ul className="flex flex-col gap-1 m-0 pl-0 list-none">
                     {group.items.map((item, idx) => (
                       <li key={idx} className="flex gap-2 leading-relaxed">
-                        <span style={{ color: "var(--accent-cyan, #00FFFF)" }}>·</span>
+                        <span className="shrink-0" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
+                          ·
+                        </span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -238,20 +262,23 @@ const UpdateChecker: React.FC = memo(() => {
           )}
 
           {installProgress !== null && (
-            <div className="mt-3">
+            <div className="mt-3 flex items-center gap-2">
               <div
-                className="h-1.5 rounded-full overflow-hidden"
+                className="h-1 rounded-full flex-1"
                 style={{ background: "var(--bg-code, rgba(255,255,255,0.08))" }}
               >
                 <div
+                  className="h-full rounded-full"
                   style={{
                     width: `${installProgress}%`,
-                    height: "100%",
                     background: "var(--accent-cyan, #00FFFF)",
                     transition: "width 200ms ease",
                   }}
                 />
               </div>
+              <span className="text-[11px] shrink-0" style={{ color: "var(--text-muted)" }}>
+                {installProgress}%
+              </span>
             </div>
           )}
 
@@ -261,11 +288,14 @@ const UpdateChecker: React.FC = memo(() => {
             </div>
           )}
 
-          <div className="flex items-center gap-2 mt-3">
+          <div
+            className="flex items-center gap-2 mt-3 pt-3"
+            style={{ borderTop: "1px solid var(--toast-info-border)" }}
+          >
             {installed ? (
               <button
                 onClick={handleRelaunch}
-                className="px-3 py-1.5 rounded text-[12px] font-medium cursor-pointer"
+                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer"
                 style={{
                   background: "var(--accent-cyan, #00FFFF)",
                   color: "var(--bg-page, #0A0A0F)",
@@ -278,7 +308,7 @@ const UpdateChecker: React.FC = memo(() => {
               <button
                 onClick={handleInstall}
                 disabled={installProgress !== null}
-                className="px-3 py-1.5 rounded text-[12px] font-medium cursor-pointer"
+                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer"
                 style={{
                   background: "var(--accent-cyan, #00FFFF)",
                   color: "var(--bg-page, #0A0A0F)",
@@ -295,6 +325,9 @@ const UpdateChecker: React.FC = memo(() => {
               {t("update.viewFullLog")}
             </TextButton>
             <span className="flex-1" />
+            {!installed && installProgress === null && (
+              <TextButton onClick={handleSkip}>{t("update.skipVersion")}</TextButton>
+            )}
             <TextButton onClick={() => setExpanded(false)}>{t("update.collapse")}</TextButton>
           </div>
         </div>
@@ -303,10 +336,10 @@ const UpdateChecker: React.FC = memo(() => {
   );
 });
 
-const UpdateIcon: React.FC = () => (
+const UpdateIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
   <svg
-    width="16"
-    height="16"
+    width={size}
+    height={size}
     viewBox="0 0 16 16"
     fill="none"
     stroke="currentColor"
