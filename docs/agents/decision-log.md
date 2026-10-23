@@ -18,6 +18,30 @@ description: >
 
 ---
 
+## DEC-043: 依赖缓存自主清理作业（只删永不复用的那部分）
+
+- **日期**：2026-10-23（来源：用户在 AI-Vault 侧提出同一问题「Actions cache 现在就要做准备，每次发版要么清空、要么只保留上一次，最佳实践是什么、清了有什么影响」，定「1 和 2 一起做」：清掉本仓 tag 死重 + 两仓加清理作业。与 AI-Vault `DEC-318` 同口径）
+- **事实（GitHub 文档）**：缓存**每仓库 10 GiB**、按每小时峰值计量、与 artifact 是两条独立配额；**只有撞到上限才逐出，顺序是最后访问时间最旧先删**；缓存有**分支作用域**（默认分支的才能被其他分支/PR 取到）；官方建议自己的删除跑在逐出策略之前。
+- **本仓实测**：清理前 12 条 / 5002 MiB，其中 **5 条共 2194 MiB 挂在 `refs/heads/refs/tags/v0.5.0`**（Linux `v0-rust-test` 819 MiB + `v0-rust-build` 560 MiB + node 141 MiB；Windows `v0-rust-build` 535 MiB + node 140 MiB）——tag 作用域的条目下一次运行永远取不到，而 main 上同 key 各有一份活的，故删除零影响。删后 7 条 / 2808 MiB，ref 分布只剩 `refs/heads/main`。
+- **决策**：`release.yml` 新增 `cleanup-caches` 作业，`needs: [test, build]` + `if: always()` + `permissions: actions: write` + `continue-on-error`；删除范围两条——① ref 非默认分支全删；② 默认分支内同一 key 只留 `createdAt` 最新一条。**取不到默认分支名即 `exit 0` 整步跳过**（否则 `select(.ref != "")` 会把全部缓存判成删除项）。
+- **为什么不「每次发版全清」**：全清会让下一次三平台冷编译（AI-Vault 同轮实测 warm 下 Windows 编译 22 分钟、macOS 各 3.4 分钟），而真正的死重只占 2.1/4.9 GiB 且可精确定位；顺带 `test` 作业在 tag 上跑也会继续产生永不复用的条目，由规则①兜住。
+- **验证**：两条 `gh cache list --jq` 表达式用真实数据本地跑过（本仓与 AI-Vault 现均返回空 → 作业今后是 no-op）；反证：把默认分支写成不存在的值，表达式立刻选出全部 7 条。YAML 解析通过、各 bash 段 `bash -n` 通过。**未验证**：真实 runner 上整段作业，下一次发版看 `cleanup-caches` 日志确认。
+- **未采用**：`gh cache delete --all`（连主线活缓存一起删）；给 rust-cache 加 `save-if`（选项语义未核实，不为未验证的开关改 CI）；按年龄清缓存（失效判据是作用域与 key，不是年龄）。
+
+---
+
+## DEC-042: 发布产物附同名 zip（网盘会删可执行文件），裸包继续供更新器
+
+- **日期**：2026-10-23（来源：用户在 AI-Vault 侧提出同一需求后要求 ErgeMD 一并做掉；zip 由 AI-Vault 侧先落地，本仓同口径移植）
+- **决策一（附加而非替换）**：Release 页为每个产物额外挂一个 `<产物名>.zip`，裸包继续原样上传。判据：更新清单从 Actions artifact 里的裸包与 `.sig` 算签名，把发布物换成 zip 会让已装客户端校验失败、收不到更新；而网盘删的是 `.exe` / `.dmg` / `.AppImage` / `.deb`。两份并存解开两难。
+- **决策二（逐产物成包）**：不打整批大压缩包——平台按文件校验，一个被删就全批作废，且用户只想取自己平台那颗。已是 zip 的 `*-windows-x64-portable.zip` 与 `.sig` 跳过。
+- **决策三（只用系统自带工具 + 回读自证）**：Windows 用 PowerShell 内置 `Compress-Archive`/`Expand-Archive`，类 unix 用 `zip -q -j -X`/`unzip`（`-j` 保证包内成员是原文件名）。不赌 runner 装没装 7-Zip，也不用 `tar`——git-bash 自带的是 GNU tar，写不出 zip。每个包生成后立刻解压回读，成员名与字节都对得上才算成功，对不上直接 `exit 1`；本轮找不到任何产物也 `exit 1`（宁可不发，不静默少传）。
+- **验证**：本机以假产物实跑 Windows 分支——4 个产物 → 4 个 zip，`.sig` 与 portable.zip 正确跳过，回读校验通过；负例（tag 与产物名不符）按预期报「本轮没找到任何可压缩的发布产物」并 exit 1；工作流 YAML 解析通过。**未验证**：类 unix 分支本机无 `zip` 命令，未实跑，由 CI 内同一套回读自证兜住。
+- **连带**：`publish-updater` 未受影响（它读 artifact 的裸包与签名，zip 只进 Release）。与 AI-Vault 侧 DEC-317 同口径，两仓差异仅在发布方式（本仓 softprops 直传 Release，那边 build 直传 updates-dist）。
+- **未采用**：只发 zip（更新链路当场废）；整批一个大包（按文件校验时一删全废）；用 7z 固定路径（镜像版本会漂）。
+
+---
+
 ## DEC-041: 更新链路三改——每次启动检查、updates-dist 全量镜像、更新卡片重设计
 
 - **日期**：2026-10-23（用户需求：updates-dist 与主仓库保持同步且额外发布一份全量产物；启动自动检测更新，无需手动点「关于」；更新提示 UI 重设计）
