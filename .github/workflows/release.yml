@@ -300,3 +300,43 @@ jobs:
           git add -A
           git commit -m "ergemd: $TAG" || true
           git push origin HEAD:main
+  # 依赖缓存清理：与 AI-Vault 同口径（DEC-043）。规则只两条，都不碰默认分支的活缓存，命中率不受影响：
+  #   ① ref 不是默认分支的一律删——缓存有分支作用域，tag 上写下的那一份下一次运行永远取不到
+  #      （本仓实测 5 条 / 2.1 GiB 挂在 refs/heads/refs/tags/v0.5.0 上，2026-10-23 手工清掉）；
+  #   ② 默认分支内同一 key 只保留最新一条，等价于「只保留上一次的缓存」。
+  # GitHub 只在仓库撞到每仓库 10 GiB 上限时才按最后访问时间逐出，平时不清，所以要自己跑在逐出之前。
+  # 挂在构建之后（if: always()）：build/test 作业开头要 restore，抢先删会让那一次冷编译。
+  cleanup-caches:
+    needs: [test, build]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete caches that can never be reused
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          # 读不到默认分支就收手：否则 select(.ref != "") 会把全部缓存判成「非默认分支」删光
+          branch="$(gh api "repos/${GH_REPO}" --jq .default_branch)" || branch=""
+          if [ -z "$branch" ]; then
+            echo "::error::拿不到默认分支名，跳过缓存清理（宁可不删）"
+            exit 0
+          fi
+          DEFAULT_REF="refs/heads/${branch}"
+          echo "默认分支 ${DEFAULT_REF}"
+          off="$(gh cache list --limit 100 --json id,ref,key,sizeInBytes \
+            --jq "[.[] | select(.ref != \"${DEFAULT_REF}\")] | .[] | \"\(.id) \(.sizeInBytes)B \(.ref) \(.key)\"" || true)"
+          dup="$(gh cache list --limit 100 --json id,ref,key,createdAt \
+            --jq "[.[] | select(.ref == \"${DEFAULT_REF}\")] | group_by(.key)[] | sort_by(.createdAt) | .[:-1][] | \"\(.id) \(.key)\"" || true)"
+          echo "非默认分支作用域：$(printf '%s\n' "$off" | grep -c '^[0-9]') 条"
+          printf '%s\n' "$off" | sed '/^[0-9]/!d'
+          echo "同 key 冗余：$(printf '%s\n' "$dup" | grep -c '^[0-9]') 条"
+          printf '%s\n' "$dup" | sed '/^[0-9]/!d'
+          for id in $(printf '%s\n' "$off" "$dup" | sed -n 's/^\([0-9][0-9]*\).*/\1/p'); do
+            echo "delete cache ${id}"
+            gh cache delete "$id" || true
+          done

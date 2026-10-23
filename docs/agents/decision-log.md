@@ -18,6 +18,18 @@ description: >
 
 ---
 
+## DEC-043: 依赖缓存自主清理作业（只删永不复用的那部分）
+
+- **日期**：2026-10-23（来源：用户在 AI-Vault 侧提出同一问题「Actions cache 现在就要做准备，每次发版要么清空、要么只保留上一次，最佳实践是什么、清了有什么影响」，定「1 和 2 一起做」：清掉本仓 tag 死重 + 两仓加清理作业。与 AI-Vault `DEC-318` 同口径）
+- **事实（GitHub 文档）**：缓存**每仓库 10 GiB**、按每小时峰值计量、与 artifact 是两条独立配额；**只有撞到上限才逐出，顺序是最后访问时间最旧先删**；缓存有**分支作用域**（默认分支的才能被其他分支/PR 取到）；官方建议自己的删除跑在逐出策略之前。
+- **本仓实测**：清理前 12 条 / 5002 MiB，其中 **5 条共 2194 MiB 挂在 `refs/heads/refs/tags/v0.5.0`**（Linux `v0-rust-test` 819 MiB + `v0-rust-build` 560 MiB + node 141 MiB；Windows `v0-rust-build` 535 MiB + node 140 MiB）——tag 作用域的条目下一次运行永远取不到，而 main 上同 key 各有一份活的，故删除零影响。删后 7 条 / 2808 MiB，ref 分布只剩 `refs/heads/main`。
+- **决策**：`release.yml` 新增 `cleanup-caches` 作业，`needs: [test, build]` + `if: always()` + `permissions: actions: write` + `continue-on-error`；删除范围两条——① ref 非默认分支全删；② 默认分支内同一 key 只留 `createdAt` 最新一条。**取不到默认分支名即 `exit 0` 整步跳过**（否则 `select(.ref != "")` 会把全部缓存判成删除项）。
+- **为什么不「每次发版全清」**：全清会让下一次三平台冷编译（AI-Vault 同轮实测 warm 下 Windows 编译 22 分钟、macOS 各 3.4 分钟），而真正的死重只占 2.1/4.9 GiB 且可精确定位；顺带 `test` 作业在 tag 上跑也会继续产生永不复用的条目，由规则①兜住。
+- **验证**：两条 `gh cache list --jq` 表达式用真实数据本地跑过（本仓与 AI-Vault 现均返回空 → 作业今后是 no-op）；反证：把默认分支写成不存在的值，表达式立刻选出全部 7 条。YAML 解析通过、各 bash 段 `bash -n` 通过。**未验证**：真实 runner 上整段作业，下一次发版看 `cleanup-caches` 日志确认。
+- **未采用**：`gh cache delete --all`（连主线活缓存一起删）；给 rust-cache 加 `save-if`（选项语义未核实，不为未验证的开关改 CI）；按年龄清缓存（失效判据是作用域与 key，不是年龄）。
+
+---
+
 ## DEC-042: 发布产物附同名 zip（网盘会删可执行文件），裸包继续供更新器
 
 - **日期**：2026-10-23（来源：用户在 AI-Vault 侧提出同一需求后要求 ErgeMD 一并做掉；zip 由 AI-Vault 侧先落地，本仓同口径移植）
