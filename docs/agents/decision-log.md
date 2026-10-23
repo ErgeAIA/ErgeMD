@@ -18,6 +18,18 @@ description: >
 
 ---
 
+## DEC-042: 发布产物附同名 zip（网盘会删可执行文件），裸包继续供更新器
+
+- **日期**：2026-10-23（来源：用户在 AI-Vault 侧提出同一需求后要求 ErgeMD 一并做掉；zip 由 AI-Vault 侧先落地，本仓同口径移植）
+- **决策一（附加而非替换）**：Release 页为每个产物额外挂一个 `<产物名>.zip`，裸包继续原样上传。判据：更新清单从 Actions artifact 里的裸包与 `.sig` 算签名，把发布物换成 zip 会让已装客户端校验失败、收不到更新；而网盘删的是 `.exe` / `.dmg` / `.AppImage` / `.deb`。两份并存解开两难。
+- **决策二（逐产物成包）**：不打整批大压缩包——平台按文件校验，一个被删就全批作废，且用户只想取自己平台那颗。已是 zip 的 `*-windows-x64-portable.zip` 与 `.sig` 跳过。
+- **决策三（只用系统自带工具 + 回读自证）**：Windows 用 PowerShell 内置 `Compress-Archive`/`Expand-Archive`，类 unix 用 `zip -q -j -X`/`unzip`（`-j` 保证包内成员是原文件名）。不赌 runner 装没装 7-Zip，也不用 `tar`——git-bash 自带的是 GNU tar，写不出 zip。每个包生成后立刻解压回读，成员名与字节都对得上才算成功，对不上直接 `exit 1`；本轮找不到任何产物也 `exit 1`（宁可不发，不静默少传）。
+- **验证**：本机以假产物实跑 Windows 分支——4 个产物 → 4 个 zip，`.sig` 与 portable.zip 正确跳过，回读校验通过；负例（tag 与产物名不符）按预期报「本轮没找到任何可压缩的发布产物」并 exit 1；工作流 YAML 解析通过。**未验证**：类 unix 分支本机无 `zip` 命令，未实跑，由 CI 内同一套回读自证兜住。
+- **连带**：`publish-updater` 未受影响（它读 artifact 的裸包与签名，zip 只进 Release）。与 AI-Vault 侧 DEC-317 同口径，两仓差异仅在发布方式（本仓 softprops 直传 Release，那边 build 直传 updates-dist）。
+- **未采用**：只发 zip（更新链路当场废）；整批一个大包（按文件校验时一删全废）；用 7z 固定路径（镜像版本会漂）。
+
+---
+
 ## DEC-041: 更新链路三改——每次启动检查、updates-dist 全量镜像、更新卡片重设计
 
 - **日期**：2026-10-23（用户需求：updates-dist 与主仓库保持同步且额外发布一份全量产物；启动自动检测更新，无需手动点「关于」；更新提示 UI 重设计）

@@ -135,6 +135,65 @@ jobs:
           if [ ! -s release-notes.md ]; then
             echo "See the assets to download and install this version." > release-notes.md
           fi
+      # 网盘分发用的逐个压缩包：夸克等平台会自动删除可执行文件（.exe / .AppImage / .deb / .dmg），
+      # 传上去等于没传。**zip 是附加资产，不替换裸包**——更新清单从 artifact 里的裸包与 .sig 算签名，
+      # 把产物换成 zip 会让已装客户端校验失败、再也收不到更新。
+      # 工具只用系统自带的：Windows → PowerShell Compress-Archive/Expand-Archive；其余 → zip/unzip。
+      # 不用 tar：git-bash 自带的 tar 是 GNU tar，写不出 zip（AI-Vault 同轮实测）。
+      - name: Zip each release asset for netdisk sharing
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf release-zips && mkdir -p release-zips
+          # 判 OS 用 if/then 而不是 `uname | grep -q … && win=1`：后者的失败被 set -e 豁免
+          # （&& 列表里非末位的命令不触发退出，本机实测复合语句返回 1 而脚本照跑），
+          # 但它让整个复合语句返回非零、读起来像在 set -e 下会中止——if/then 消掉这层歧义。
+          win=0
+          if uname -s | grep -qiE 'mingw|msys'; then win=1; fi
+          zip_one() {
+            local f="$1" out="release-zips/$(basename "$f").zip"
+            if [ "$win" = 1 ]; then
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "Compress-Archive -Path '$f' -DestinationPath '$out' -Force"
+            else
+              # -j 去路径：包内成员必须是原文件名，用户解出来就能直接跑
+              zip -q -j -X "$out" "$f"
+            fi
+          }
+          verify_one() {
+            local f="$1" base out="release-zips/$(basename "$f").zip"
+            base="$(basename "$f")"
+            rm -rf _verify && mkdir -p _verify
+            if [ "$win" = 1 ]; then
+              powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '$out' -DestinationPath '_verify' -Force"
+            else
+              unzip -q -o "$out" -d _verify
+            fi
+            if [ ! -f "_verify/$base" ] || ! cmp -s "$f" "_verify/$base"; then
+              echo "::error::$base.zip 解压回读校验失败（成员名或字节与裸包不一致）"
+              ls -l _verify || true
+              exit 1
+            fi
+            rm -rf _verify
+          }
+          made=0
+          while IFS= read -r f; do
+            case "$(basename "$f")" in *.zip|*.sig) continue ;; esac   # 已是压缩包的不重复包
+            zip_one "$f"
+            out="release-zips/$(basename "$f").zip"
+            [ -s "$out" ] || { echo "::error::$out 没生成或为空"; exit 1; }
+            verify_one "$f"
+            made=$((made + 1))
+          done < <(find . -path ./release-zips -prune -o -type f \( \
+                      -name "ErgeMD-${TAG_NAME}-setup.exe" \
+                      -o -name "ErgeMD-${TAG_NAME}-macos-*.dmg" \
+                      -o -name "ErgeMD-${TAG_NAME}-linux-*.AppImage" \
+                      -o -name "ErgeMD-${TAG_NAME}-linux-*.deb" \) -print)
+          if [ "$made" -eq 0 ]; then
+            echo "::error::本轮没找到任何可压缩的发布产物（命名与 TAG_NAME=$TAG_NAME 不符？）"
+            exit 1
+          fi
+          echo "本轮生成并回读校验 $made 个压缩包："
+          ls -l release-zips
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
@@ -144,6 +203,7 @@ jobs:
             **/ErgeMD-${{ env.TAG_NAME }}-linux-*.AppImage
             **/ErgeMD-${{ env.TAG_NAME }}-linux-*.deb
             ErgeMD-${{ env.TAG_NAME }}-windows-x64-portable.zip
+            release-zips/*.zip
           tag_name: ${{ env.TAG_NAME }}
           name: 'ErgeMD ${{ env.TAG_NAME }}'
           body_path: release-notes.md
