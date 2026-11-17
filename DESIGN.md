@@ -269,7 +269,7 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Shape:** 图标按钮 32×32（标题栏为满高 32 宽），无背景、无边框；关于页社交图标按钮 36×36、8px 圆角，`divider` 描边，悬停转 `accent-cyan` 描边
 - **Filled（主操作，仅通知面）:** 实心 `accent-cyan` 底 + 画布色文字（更新卡片的「详情」「立即更新」）。正文与阅读外壳不用实心按钮
 - **Tonal（次级）:** `accent-cyan` 10% alpha 底 + 20% alpha 边，悬停升到 15%；secondary 用白（暗色）/ 黑（亮色）5% alpha 底 + 10% alpha 边。这两档由 `--btn-primary-*` / `--btn-secondary-*` token 提供，当前仅欢迎页与设置面使用
-- **Hover / Focus:** 颜色与背景 100ms ease 过渡；`:focus-visible` 用 1px `active-border`（30% alpha：暗色主题取 `accent-cyan`，亮色主题取 `brand-primary`——派生层历史遗留的不一致，新代码优先 `accent-cyan`）。不使用外发光焦点环——glow 已分配给外壳强调态
+- **Hover / Focus:** 颜色与背景 100ms ease 过渡；`:focus-visible` 用 1px `active-border`（交互色 30% alpha）。不使用外发光焦点环——glow 已分配给外壳强调态
 - **Icon-only:** 16px 线性图标（`stroke-width: 1.2`），默认 `ink-muted`，悬停升到 `ink-secondary` 并加 `hover-bg-light` 底；危险图标悬停转 `accent-red` 并加 `danger-hover-bg`
 
 ### Chips
@@ -317,4 +317,4 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Don't** 混用 Tailwind 断点做响应式排版——桌面窗口只有宽度变化，用面板收起与页宽自适应，不引入移动端断点体系。
 - **Don't** 把正文里的引用块与 Callout 做成「左侧色条 + 卡片」的通用强调卡。左侧竖线是 Markdown 语义，只给引用与提示（关于页的「左竖线 + 圆角卡」是品牌展示面，不适用于正文）。
 - **Don't** 用投影表达 hover。Hover 一律用 100ms 的背景/颜色过渡。
-- **Don't** 在 `themePreviewColors` 这类预览表里手写真值——当前 14 套主题的预览色点全部与生成后 token 不一致（如 cyberpunk 预览仍是改造前的 #0A0A0F / #BF00FF）。预览色应读源色表或生成物，不另立一份。
+- **Don't** 在预览表里手写主题色值。色卡已改为运行时读取主题 CSS 变量（`src/utils/themePreview.ts`），新增主题无需登记任何色值；手写副本必然与生成物漂移。

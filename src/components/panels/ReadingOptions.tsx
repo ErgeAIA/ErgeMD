@@ -1,27 +1,10 @@
 import { ConfigLevelSelector } from "@/components/settings/ConfigLevelSelector";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { MindmapLayout, MindmapStyle, ThemeMode } from "@/types";
+import { getThemePreviewColors } from "@/utils/themePreview";
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-/** 每个主题的预览色（4 个特征色圆点） */
-const themePreviewColors: Record<string, string[]> = {
-  cyberpunk: ["#0A0A0F", "#00FFFF", "#BF00FF", "#FF6496"],
-  dark: ["#1E1E1E", "#569CD6", "#CE9178", "#DCDCAA"],
-  light: ["#F5F5F5", "#1565C0", "#E65100", "#6A1B9A"],
-  falcon: ["#282A36", "#65BCD9", "#9876AA", "#6AAB73"],
-  aurora: ["#0B1628", "#00D4AA", "#4FC3F7", "#7C4DFF"],
-  "cherry-blossom": ["#1A1220", "#FFB7C5", "#D4A5FF", "#A5D6A7"],
-  "desert-sunset": ["#1A1410", "#FFB347", "#E07A5F", "#F2CC8F"],
-  forest: ["#0D1A12", "#4CAF50", "#AED581", "#FFD54F"],
-  monochrome: ["#1A1A1A", "#BDBDBD", "#9E9E9E", "#757575"],
-  ocean: ["#0A1628", "#42A5F5", "#26C6DA", "#80DEEA"],
-  "solar-flare": ["#1A1408", "#FFD740", "#FF9100", "#FFAB40"],
-  "tokyo-night": ["#1A1B2E", "#7AA2F7", "#BB9AF7", "#7DCFFF"],
-  "neon-cyberpunk": ["#0A0010", "#00FFFF", "#FF00FF", "#FFFF00"],
-  "solarized-light": ["#fdf6e3", "#2aa198", "#268bd2", "#b58900"],
-};
 
 /** 主题分类：14 套主题均为内置，不再按明暗分组；默认品牌色双主题（亮/暗）置顶 */
 const themeCategories = [
@@ -279,12 +262,7 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
                   }}
                 >
                   {cat.themes.map((theme) => {
-                    const colors = themePreviewColors[theme] || [
-                      "#333",
-                      "#666",
-                      "#999",
-                      "#ccc",
-                    ];
+                    const colors = getThemePreviewColors(theme);
                     const active = isActive(theme);
                     return (
                       <button
