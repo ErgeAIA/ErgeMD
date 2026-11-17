@@ -2,7 +2,7 @@
 title: Project Progress
 type: project-progress
 project: ErgeMD
-updated: 2026-10-23
+updated: 2026-11-17
 description: >
   项目开发进度实时记录：阶段、分支、代码状态、最近进展。每次会话更新。
   AI 在本文件新增进展或修改当前状态后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -21,6 +21,7 @@ description: >
 - **阶段**：主题色板契约重构**已验收交付**（设计 → 三阶段实施 → 14/14 迁移 → 实机验收闭环）；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-17 设计系统文档化（Impeccable init + document，`024ddc2` 已双推）：新增 `PRODUCT.md`（产品定位、用户、四条硬约束、品牌承诺；主用户项按推断记录，已注明）与 `DESIGN.md` + `.impeccable/design.json`（14 套主题四层变量与契约表提取为 frontmatter token + 8 个规范章节 + 9 个组件快照，组件快照经无头 Edge 实测渲染尺寸）。北极星取「阅读画框」，组件手感「精确克制」，深度「平面分层、阴影只给浮层」。对照代码记录三处此前无人写下的偏差：① 交互色 `--accent-cyan` 与品牌色 `--brand-primary` 在暖色主题（夜灯 `#F2570F` / 晨光 `#FF6A2B`）分离，此前被当成同一个「主题色」；② `active-border` 暗色走 accent-cyan、亮色走 brand-primary，派生层遗留不一致；③ `ReadingOptions.tsx` 的 `themePreviewColors` 14/14 套主题预览色点全部与生成后 token 不一致（如 cyberpunk 仍是改造前 `#0A0A0F` / `#BF00FF`）。①②③ 均只记录未改码。仅新增文档，未改代码与构建配置
 - 2026-10-23 发布 v0.5.0（接导出修复收尾）：变更日志精简为面向用户的发布说明——去掉根因推演、缓存版本号、CSS 变量名等实现细节，同类修复合并（如 6 条图表描边/配色修复 → 4 条、3 条浮动目录修复 → 1 条），中英两份同步；版本号三处同步 0.5.0（package.json / Cargo.toml / tauri.conf.json）并补同步 Cargo.lock，README 中英下载链接更新至 v0.5.0，变更日志归档为 `[0.5.0] - 2026-10-23`。本版面向用户的主要内容：导出与屏幕所见一致（PDF 图表不再放大裁切、色块与桑基彩带正常）、思维导图横向逻辑图布局与四种配色、浮动目录可固定、图表悬停高亮、万行级文档目录精准跳转、大文档打开更快
 - 2026-10-23 两条 CI 分支已收尾：`ci/artifact-retention`（artifact 保留 7 天 + 14 天清理）与 `ci/zip-release-assets`（附 zip + `cleanup-caches`）依次 `--no-ff` 合入 main（`0764a79` / `83879c6`）并推送，分支本地与远程均删（删前各 `merge-base --is-ancestor` 证过已在 main 内）。一处冲突手工解：retention 分支把 `retention-days: 7` 加在上传步骤末尾，而 main 上新增的「Extract release notes from CHANGELOG」步骤正好紧邻同一位置 → 解法是把 retention 归回上传步骤、notes 步骤原样保留，两边内容都留；合并后复验 YAML 解析通过、五作业齐（cleanup-artifacts / test / build / publish-updater / cleanup-caches）、`retention-days: 7` 与 `release-zips/*.zip` 与 zip 步骤俱在、各 bash 段 `bash -n` 通过、`cleanup-caches` 仅一份。工作区干净，main 与 origin 同步。另：本地 `feature/macos-support`、`fix/review-hardening`、`refactor/platform-decouple` 三条历史分支经 `--is-ancestor` 核实均已并入 main，未擅自删除（删分支属红线，等用户点头）。
 - 2026-10-23 依赖缓存自主清理（DEC-043，与 AI-Vault DEC-318 同口径）：`release.yml` 新增 `cleanup-caches` 作业（needs [test,build] + if always + actions:write + continue-on-error），删除范围两条——ref 非默认分支的缓存全删（tag 作用域永不复用）、默认分支内同一 key 只留最新一条，取不到默认分支名则整步跳过。本轮手工清掉实测死重 5 条 / 2194 MiB（挂在 `refs/heads/refs/tags/v0.5.0`，main 有同 key 活副本），现存 7 条 / 2808 MiB、ref 只剩 main。**不采用「每次发版全清」**：全清会让下次三平台冷编译，而死重可精确定位。两条 `--jq` 表达式已在真实数据上正反各验一次（两仓现均返回空 = no-op）；YAML 与各 bash 段 `bash -n` 通过；未验证真实 runner 上的整段作业，下轮发版看日志。与本仓 zip 改动同分支 `ci/zip-release-assets`（该分支与 `ci/artifact-retention` 已于同日合入 main，见上一条）。

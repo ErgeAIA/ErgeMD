@@ -1,0 +1,641 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T00:00:00.000Z",
+  "title": "Design System: ErgeMD",
+  "extensions": {
+    "colorMeta": {
+      "canvas-page": {
+        "role": "neutral",
+        "displayName": "Deep Space Page",
+        "canonical": "#282830",
+        "tonalRamp": [
+          "#121218",
+          "#191920",
+          "#1F1F27",
+          "#282830",
+          "#34343C",
+          "#45454E",
+          "#60606B",
+          "#8A8A96"
+        ]
+      },
+      "canvas-reader": {
+        "role": "neutral",
+        "displayName": "Reading Canvas",
+        "canonical": "#2E2E38",
+        "tonalRamp": [
+          "#141419",
+          "#1B1B21",
+          "#232329",
+          "#2E2E38",
+          "#3A3A45",
+          "#4C4C58",
+          "#696977",
+          "#9595A3"
+        ]
+      },
+      "canvas-sidebar": {
+        "role": "neutral",
+        "displayName": "Shell Canvas",
+        "canonical": "#222230",
+        "tonalRamp": [
+          "#0E0E16",
+          "#15151D",
+          "#1B1B26",
+          "#222230",
+          "#2E2E3E",
+          "#404050",
+          "#5C5C6E",
+          "#8B8B9D"
+        ]
+      },
+      "canvas-code": {
+        "role": "neutral",
+        "displayName": "Code Canvas",
+        "canonical": "#262630",
+        "tonalRamp": [
+          "#111116",
+          "#17171D",
+          "#1E1E25",
+          "#262630",
+          "#32323D",
+          "#44444F",
+          "#61616E",
+          "#8F8F9C"
+        ]
+      },
+      "ink-heading": {
+        "role": "neutral",
+        "displayName": "Heading White",
+        "canonical": "#FAFAFA",
+        "tonalRamp": [
+          "#1C1C1C",
+          "#333333",
+          "#4D4D4D",
+          "#6B6B6B",
+          "#8E8E8E",
+          "#B4B4B4",
+          "#D9D9D9",
+          "#FAFAFA"
+        ]
+      },
+      "ink-primary": {
+        "role": "neutral",
+        "displayName": "Body Grey",
+        "canonical": "#E0E0E0",
+        "tonalRamp": [
+          "#1A1A1A",
+          "#2F2F2F",
+          "#474747",
+          "#626262",
+          "#828282",
+          "#A6A6A6",
+          "#C6C6C6",
+          "#E0E0E0"
+        ]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Metadata Grey",
+        "canonical": "#A6A6A6",
+        "tonalRamp": [
+          "#141414",
+          "#232323",
+          "#363636",
+          "#4C4C4C",
+          "#666666",
+          "#A6A6A6",
+          "#C6C6C6",
+          "#E7E7E7"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Grey",
+        "canonical": "#989898",
+        "tonalRamp": [
+          "#121212",
+          "#202020",
+          "#323232",
+          "#464646",
+          "#5E5E5E",
+          "#989898",
+          "#BABABA",
+          "#DCDCDC"
+        ]
+      },
+      "brand-primary": {
+        "role": "primary",
+        "displayName": "Neon Cyan",
+        "canonical": "#00FFFF",
+        "tonalRamp": [
+          "#003A3A",
+          "#005C5C",
+          "#008080",
+          "#00A6A6",
+          "#00CCCC",
+          "#00FFFF",
+          "#66FFFF",
+          "#B3FFFF"
+        ]
+      },
+      "brand-secondary": {
+        "role": "secondary",
+        "displayName": "Electric Magenta",
+        "canonical": "#FF00FF",
+        "tonalRamp": [
+          "#3A003A",
+          "#5C005C",
+          "#800080",
+          "#A600A6",
+          "#CC00CC",
+          "#FF00FF",
+          "#FF66FF",
+          "#FFB3FF"
+        ]
+      },
+      "accent-pink": {
+        "role": "tertiary",
+        "displayName": "Optimized Pink",
+        "canonical": "#FF6496",
+        "tonalRamp": [
+          "#3A1622",
+          "#5C2337",
+          "#80334D",
+          "#A64463",
+          "#CC557A",
+          "#FF6496",
+          "#FF9DB8",
+          "#FFCFDC"
+        ]
+      },
+      "accent-green": {
+        "role": "tertiary",
+        "displayName": "Neon Green",
+        "canonical": "#00FF00",
+        "tonalRamp": [
+          "#003A00",
+          "#005C00",
+          "#008000",
+          "#00A600",
+          "#00CC00",
+          "#00FF00",
+          "#66FF66",
+          "#B3FFB3"
+        ]
+      },
+      "accent-yellow": {
+        "role": "tertiary",
+        "displayName": "Neon Yellow",
+        "canonical": "#FFFF00",
+        "tonalRamp": [
+          "#3A3A00",
+          "#5C5C00",
+          "#808000",
+          "#A6A600",
+          "#CCCC00",
+          "#FFFF00",
+          "#FFFF66",
+          "#FFFFB3"
+        ]
+      },
+      "accent-orange": {
+        "role": "tertiary",
+        "displayName": "Fluorescent Orange",
+        "canonical": "#FF8000",
+        "tonalRamp": [
+          "#3A1D00",
+          "#5C2E00",
+          "#804000",
+          "#A65200",
+          "#CC6600",
+          "#FF8000",
+          "#FFA64D",
+          "#FFCD99"
+        ]
+      },
+      "accent-red": {
+        "role": "tertiary",
+        "displayName": "Laser Red",
+        "canonical": "#FF0040",
+        "tonalRamp": [
+          "#3A000E",
+          "#5C0017",
+          "#800020",
+          "#A60029",
+          "#CC0033",
+          "#FF0040",
+          "#FF6680",
+          "#FFB3BF"
+        ]
+      },
+      "heading-1": {
+        "role": "neutral",
+        "displayName": "H1 White",
+        "canonical": "#EBEBEB",
+        "tonalRamp": [
+          "#1B1B1B",
+          "#1F1F1F",
+          "#2E2E2E",
+          "#474747",
+          "#6B6B6B",
+          "#959595",
+          "#C2C2C2",
+          "#EBEBEB"
+        ]
+      },
+      "heading-2": {
+        "role": "primary",
+        "displayName": "H2 Cyan",
+        "canonical": "#00FFFF",
+        "tonalRamp": [
+          "#003A3A",
+          "#005C5C",
+          "#008080",
+          "#00A6A6",
+          "#00CCCC",
+          "#00FFFF",
+          "#66FFFF",
+          "#B3FFFF"
+        ]
+      },
+      "heading-3": {
+        "role": "secondary",
+        "displayName": "H3 Magenta",
+        "canonical": "#FF3DFE",
+        "tonalRamp": [
+          "#3A0E3A",
+          "#5C175C",
+          "#802080",
+          "#A629A6",
+          "#CC33CB",
+          "#FF3DFE",
+          "#FF84FE",
+          "#FFC2FE"
+        ]
+      },
+      "heading-4": {
+        "role": "tertiary",
+        "displayName": "H4 Orange",
+        "canonical": "#FF8000",
+        "tonalRamp": [
+          "#3A1D00",
+          "#5C2E00",
+          "#804000",
+          "#A65200",
+          "#CC6600",
+          "#FF8000",
+          "#FFA64D",
+          "#FFCD99"
+        ]
+      },
+      "heading-5": {
+        "role": "tertiary",
+        "displayName": "H5 Green",
+        "canonical": "#00FF00",
+        "tonalRamp": [
+          "#003A00",
+          "#005C00",
+          "#008000",
+          "#00A600",
+          "#00CC00",
+          "#00FF00",
+          "#66FF66",
+          "#B3FFB3"
+        ]
+      },
+      "heading-6": {
+        "role": "neutral",
+        "displayName": "H6 Grey",
+        "canonical": "#8E96A4",
+        "tonalRamp": [
+          "#121519",
+          "#1B1F26",
+          "#262B34",
+          "#333A45",
+          "#464F5E",
+          "#8E96A4",
+          "#B4BAC4",
+          "#D8DCE2"
+        ]
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Divider",
+        "canonical": "#3C3C45",
+        "tonalRamp": [
+          "#151518",
+          "#1C1C21",
+          "#26262C",
+          "#3C3C45",
+          "#4E4E59",
+          "#686874",
+          "#8D8D99",
+          "#B9B9C2"
+        ]
+      },
+      "border-subtle": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#373740",
+        "tonalRamp": [
+          "#131316",
+          "#1A1A1E",
+          "#24242A",
+          "#373740",
+          "#484852",
+          "#61616C",
+          "#868691",
+          "#B2B2BC"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Long-form Body",
+        "purpose": "正文默认：16px / 1.8 行高 / 段距 16px / 页宽 800px，五项全部开放给用户调整。"
+      },
+      "display": {
+        "displayName": "H1",
+        "purpose": "文档主标题，全文唯一 700 权重，带 1px underline 边。"
+      },
+      "headline": {
+        "displayName": "H2",
+        "purpose": "章节标题，带下边框但内距更小。"
+      },
+      "title": {
+        "displayName": "H3",
+        "purpose": "小节标题，自此无下边框。"
+      },
+      "subtitle": {
+        "displayName": "H4",
+        "purpose": "与正文仅差 10%，靠色相拉开层级。"
+      },
+      "label": {
+        "displayName": "UI Label",
+        "purpose": "标签栏、状态栏、Toast 的 12px 文字。"
+      },
+      "app-name": {
+        "displayName": "App Name",
+        "purpose": "标题栏 ErgeMD 字样，唯一带字距的文字。"
+      },
+      "mono": {
+        "displayName": "Code",
+        "purpose": "代码块、快捷键提示、性能参数表。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "menu",
+        "value": "0 4px 16px rgba(0, 0, 0, 0.4)",
+        "purpose": "右键菜单、下拉菜单，叠加 1px border-subtle 收边。"
+      },
+      {
+        "name": "popup",
+        "value": "0 4px 24px rgba(0, 0, 0, 0.5)",
+        "purpose": "图片预览、Toast（亮色主题降到 0.15）。"
+      },
+      {
+        "name": "toc-expanded",
+        "value": "0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.06)",
+        "purpose": "目录展开态的双环浮层信号。"
+      },
+      {
+        "name": "glow-shell",
+        "value": "0 0 8px var(--accent-cyan)",
+        "purpose": "仅外壳：app 名悬停、滑杆拇指、目录当前章节。图表与正文不使用。"
+      },
+      {
+        "name": "modal",
+        "value": "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+        "purpose": "编辑模态这一层最大的浮面（shadow-2xl）。"
+      },
+      {
+        "name": "floating-card",
+        "value": "0 12px 40px rgba(0, 0, 0, 0.4)",
+        "purpose": "更新卡片、彩蛋大卡。"
+      },
+      {
+        "name": "chart-tooltip",
+        "value": "0 8px 32px rgba(0, 0, 0, 0.5)",
+        "purpose": "图表明细浮层。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "hover-fast",
+        "value": "80ms ease-out",
+        "purpose": "右键菜单项背景与文字。"
+      },
+      {
+        "name": "state",
+        "value": "100ms ease",
+        "purpose": "标签、文件项、图标按钮、滑杆的悬停过渡。"
+      },
+      {
+        "name": "toc-line",
+        "value": "120ms ease-out",
+        "purpose": "目录指示线宽高与透明度。"
+      },
+      {
+        "name": "icon",
+        "value": "150ms ease",
+        "purpose": "图标按钮透明度与背景。"
+      },
+      {
+        "name": "panel",
+        "value": "200ms ease-out",
+        "purpose": "目录展开、进度条 scaleX、链接下划线。"
+      },
+      {
+        "name": "autohide-in",
+        "value": "300ms ease-out",
+        "purpose": "标题栏渐显。"
+      },
+      {
+        "name": "autohide-out",
+        "value": "3000ms ease-in-out",
+        "purpose": "标题栏渐隐——离开比回来慢。"
+      },
+      {
+        "name": "status-opacity",
+        "value": "700ms",
+        "purpose": "状态栏 0.2 / 0.6 / 0.8 三段透明度过渡。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "min-window",
+        "value": "900px"
+      },
+      {
+        "name": "default-window",
+        "value": "1480px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Title Bar",
+      "kind": "nav",
+      "refersTo": "titlebar",
+      "description": "36px 无边框窗口标题栏，左为面板切换与 app 名，中为标签栏，右为窗口控制。",
+      "html": "<div class=\"ds-titlebar\"><div class=\"ds-titlebar-left\"><button class=\"ds-icon-btn\" aria-label=\"文件树\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\"><rect x=\"1\" y=\"1\" width=\"14\" height=\"14\" rx=\"2\"/><line x1=\"5\" y1=\"1\" x2=\"5\" y2=\"15\"/></svg></button><span class=\"ds-app-name\">ErgeMD</span></div><div class=\"ds-titlebar-right\"><button class=\"ds-icon-btn is-active\" aria-label=\"置顶\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"currentColor\"><path d=\"M9 1L13 5L9.5 5.5L8 9L5 6L8.5 4.5L9 1Z\"/></svg></button><button class=\"ds-icon-btn\" aria-label=\"最小化\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" stroke=\"currentColor\" stroke-width=\"1.2\"><line x1=\"1\" y1=\"5\" x2=\"9\" y2=\"5\"/></svg></button><button class=\"ds-icon-btn ds-close\" aria-label=\"关闭\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" stroke=\"currentColor\" stroke-width=\"1.2\"><line x1=\"1\" y1=\"1\" x2=\"9\" y2=\"9\"/><line x1=\"9\" y1=\"1\" x2=\"1\" y2=\"9\"/></svg></button></div></div>",
+      "css": ".ds-titlebar { box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; height:36px; background:#222230; border-bottom:1px solid #373740; box-sizing:border-box; user-select:none; } .ds-titlebar-left { display:flex; align-items:center; height:100%; gap:2px; } .ds-titlebar-right { display:flex; align-items:center; height:100%; } .ds-app-name { display:flex; align-items:center; height:100%; padding:0 12px; font-size:14px; font-weight:700; letter-spacing:0.05em; color:#00FFFF; border-right:1px solid #373740; cursor:pointer; transition:text-shadow 200ms, opacity 200ms; } .ds-app-name:hover { text-shadow:0 0 8px #00FFFF; } .ds-icon-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; color:#989898; background:transparent; border:none; padding:0; cursor:pointer; transition:color 100ms ease, background 100ms ease; } .ds-icon-btn:hover { color:#A6A6A6; background:rgba(255,255,255,0.05); } .ds-icon-btn.is-active { color:#00FFFF; } .ds-icon-btn.ds-close:hover { color:#FF0040; background:rgba(255,0,64,0.15); }"
+    },
+    {
+      "name": "Tab",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "标题栏内的文档标签，激活态靠 2px 品牌色下边框 + 淡底，不靠填充。",
+      "html": "<div class=\"ds-tabs\"><div class=\"ds-tab is-active\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"currentColor\" opacity=\"0.6\"><path d=\"M2 1C1.45 1 1 1.45 1 2V10C1 10.55 1.45 11 2 11H8C8.55 11 9 10.55 9 10V4L6 1H2Z\"/></svg><span>设计文档.md</span></div><div class=\"ds-tab\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"currentColor\" opacity=\"0.6\"><path d=\"M2 1C1.45 1 1 1.45 1 2V10C1 10.55 1.45 11 2 11H8C8.55 11 9 10.55 9 10V4L6 1H2Z\"/></svg><span>更新日志.md</span></div></div>",
+      "css": ".ds-tabs { box-sizing:border-box; display:flex; align-items:stretch; height:36px; background:#222230; } .ds-tab { box-sizing:border-box; display:flex; align-items:center; gap:8px; height:100%; padding:0 12px; max-width:180px; font-size:12px; color:#A6A6A6; border-bottom:2px solid transparent; background:transparent; cursor:pointer; transition:background 100ms ease; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; } .ds-tab:hover { background:rgba(0,255,255,0.03); } .ds-tab.is-active { color:#00FFFF; border-bottom-color:#00FFFF; background:rgba(0,255,255,0.05); }"
+    },
+    {
+      "name": "Context Menu",
+      "kind": "card",
+      "refersTo": "context-menu",
+      "description": "自定义右键菜单，8px 圆角、1px 描边、12px 背景模糊，快捷键右对齐。",
+      "html": "<div class=\"ds-menu\"><div class=\"ds-menu-item\">复制<span class=\"ds-kbd\">Ctrl+C</span></div><div class=\"ds-menu-item\">全选<span class=\"ds-kbd\">Ctrl+A</span></div><div class=\"ds-menu-sep\"></div><div class=\"ds-menu-item ds-danger\">关闭标签页<span class=\"ds-kbd\">Ctrl+W</span></div></div>",
+      "css": ".ds-menu { box-sizing:border-box; min-width:180px; max-width:280px; padding:4px 0; border-radius:8px; border:1px solid #3C3C45; background:#222230; backdrop-filter:blur(12px); box-shadow:0 4px 16px rgba(0,0,0,0.4); } .ds-menu-item { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:6px 12px; font-size:13px; color:#E0E0E0; cursor:pointer; white-space:nowrap; transition:background 80ms ease-out, color 80ms ease-out; } .ds-menu-item:hover { background:rgba(255,255,255,0.06); color:#FAFAFA; } .ds-kbd { font-size:11px; color:#989898; flex-shrink:0; } .ds-menu-item:hover .ds-kbd { color:#A6A6A6; } .ds-menu-sep { height:1px; margin:4px 0; background:#3C3C45; } .ds-menu-item.ds-danger { color:#FF0040; } .ds-menu-item.ds-danger:hover { background:rgba(255,0,64,0.15); }"
+    },
+    {
+      "name": "Floating TOC Item",
+      "kind": "custom",
+      "refersTo": "toc-panel",
+      "description": "收起态只显示长短递减的指示线，激活项用品牌色并加 8px 发光。",
+      "html": "<div class=\"ds-toc\"><div class=\"ds-toc-item\"><span class=\"ds-toc-line l1\"></span></div><div class=\"ds-toc-item is-active\"><span class=\"ds-toc-line l2 is-active\"></span></div><div class=\"ds-toc-item\"><span class=\"ds-toc-line l2\"></span></div><div class=\"ds-toc-item\"><span class=\"ds-toc-line l3\"></span></div></div>",
+      "css": ".ds-toc { box-sizing:border-box; width:64px; padding:12px 0; background:transparent; display:flex; flex-direction:column; gap:10px; } .ds-toc-item { display:flex; align-items:center; height:12px; padding-right:8px; } .ds-toc-line { display:block; height:2px; border-radius:1px; background:rgba(0,255,255,0.35); transition:width 120ms ease-out, background 120ms ease-out; } .ds-toc-line.l1 { width:44px; } .ds-toc-line.l2 { width:34px; margin-left:6px; } .ds-toc-line.l3 { width:24px; margin-left:12px; } .ds-toc-line.is-active { width:54px; background:#00FFFF; box-shadow:0 0 8px rgba(0,255,255,0.6); }"
+    },
+    {
+      "name": "Code Block",
+      "kind": "card",
+      "refersTo": "code-block",
+      "description": "6px 圆角代码容器：语言标签钉在左上角（11px 橙字 + 淡底 + 右下单角圆角），复制图标悬浮右上角，代码区等宽 0.9em / 1.6 行高。",
+      "html": "<div class=\"ds-code\"><span class=\"ds-lang\">typescript</span><button class=\"ds-copy\" aria-label=\"复制代码\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"4.5\" y=\"4.5\" width=\"7\" height=\"7\" rx=\"1\"/><path d=\"M9.5 4.5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v5.5a1 1 0 0 0 1 1h1.5\"/></svg></button><pre><code><span class=\"tok-kw\">const</span> <span class=\"tok-fn\">theme</span> = <span class=\"tok-str\">\"cyberpunk\"</span>;</code></pre></div>",
+      "css": ".ds-code { box-sizing:border-box; position:relative; border-radius:6px; overflow:hidden; background:#262630; border:1px solid rgba(0,255,255,0.08); } .ds-lang { position:absolute; top:0; left:0; padding:4px 12px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px; color:#FF8000; background:rgba(0,255,255,0.03); border-bottom:1px solid #373740; border-bottom-right-radius:6px; user-select:none; } .ds-copy { position:absolute; top:6px; right:8px; display:flex; align-items:center; justify-content:center; width:28px; height:28px; border:none; border-radius:2px; background:transparent; color:#989898; opacity:0.6; cursor:pointer; transition:color 150ms ease-out, background 150ms ease; } .ds-copy:hover { color:#00FFFF; background:rgba(255,255,255,0.05); opacity:1; } .ds-code pre { margin:0; padding:32px 16px 16px; overflow-x:auto; } .ds-code code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.9em; line-height:1.6; color:#E0E0E0; } .tok-kw { color:#FF00FF; } .tok-fn { color:#00FFFF; } .tok-str { color:#00FF00; }"
+    },
+    {
+      "name": "Range Slider",
+      "kind": "input",
+      "description": "字号/行距/页宽控制：4px 轨道、14px 圆形拇指、accent-cyan 填充段与 4px 发光。",
+      "html": "<div class=\"ds-field\"><div class=\"ds-field-row\"><label>字号</label><span class=\"ds-value\">16</span></div><input class=\"ds-range\" type=\"range\" min=\"14\" max=\"32\" value=\"16\"></div>",
+      "css": ".ds-field { box-sizing:border-box; width:220px; } .ds-field-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; font-size:12px; color:#A6A6A6; } .ds-value { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px; color:#E0E0E0; } .ds-range { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px; background:linear-gradient(to right, #00FFFF 0%, #00FFFF 12%, #262630 12%, #262630 100%); outline:none; } .ds-range::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#00FFFF; border:2px solid #222230; box-shadow:0 0 4px rgba(0,255,255,0.3); cursor:pointer; } .ds-range::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:#00FFFF; border:2px solid #222230; box-shadow:0 0 4px rgba(0,255,255,0.3); cursor:pointer; }"
+    },
+    {
+      "name": "Search Bar",
+      "kind": "input",
+      "refersTo": "search-bar",
+      "description": "阅读区顶部浮层搜索，8px 圆角、投影、命中计数与上下跳转。",
+      "html": "<div class=\"ds-search\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" stroke=\"#989898\" stroke-width=\"1.5\"><circle cx=\"6\" cy=\"6\" r=\"4.5\"/><path d=\"M9.5 9.5L13 13\"/></svg><input placeholder=\"搜索...\" value=\"Markdown\"><span class=\"ds-count\">3 / 12</span><button class=\"ds-nav\" aria-label=\"上一个\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" stroke=\"#989898\" stroke-width=\"1.5\" fill=\"none\"><path d=\"M2 8L6 4L10 8\"/></svg></button></div>",
+      "css": ".ds-search { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:360px; padding:8px 12px; border-radius:8px; background:#222230; border:1px solid rgba(100,200,200,0.15); box-shadow:0 4px 20px rgba(0,0,0,0.4); } .ds-search input { flex:1; background:transparent; border:none; outline:none; font-size:13px; color:#E0E0E0; } .ds-search input::placeholder { color:#989898; } .ds-count { font-size:11px; color:#A6A6A6; font-variant-numeric:tabular-nums; } .ds-nav { display:flex; align-items:center; justify-content:center; width:22px; height:22px; border:none; background:transparent; cursor:pointer; border-radius:4px; transition:background 150ms ease; } .ds-nav:hover { background:rgba(255,255,255,0.05); }"
+    },
+    {
+      "name": "Theme Swatch",
+      "kind": "chip",
+      "description": "主题选择行：画布、主强调、副强调、第三色四枚 8px 圆点 + 名称，选中靠 accent-cyan 描边不靠填充。",
+      "html": "<div class=\"ds-themes\"><div class=\"ds-theme is-active\"><span class=\"ds-dots\"><i style=\"background:#282830\"></i><i style=\"background:#00FFFF\"></i><i style=\"background:#FF00FF\"></i><i style=\"background:#FF6496\"></i></span><span class=\"ds-theme-name\">赛博朋克</span></div><div class=\"ds-theme\"><span class=\"ds-dots\"><i style=\"background:#1A1714\"></i><i style=\"background:#F2570F\"></i><i style=\"background:#FF7A3D\"></i><i style=\"background:#FF7A3D\"></i></span><span class=\"ds-theme-name\">夜灯</span></div></div>",
+      "css": ".ds-themes { box-sizing:border-box; display:flex; flex-direction:column; gap:4px; width:200px; } .ds-theme { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; border:1px solid #373740; background:transparent; cursor:pointer; transition:background 100ms ease, border-color 100ms ease; } .ds-theme:hover { background:rgba(0,255,255,0.03); } .ds-theme.is-active { border-color:#00FFFF; background:rgba(255,255,255,0.05); } .ds-dots { display:flex; gap:3px; flex-shrink:0; } .ds-dots i { display:block; width:8px; height:8px; border-radius:50%; } .ds-theme-name { font-size:12px; color:#E0E0E0; } .ds-theme.is-active .ds-theme-name { color:#00FFFF; }"
+    },
+    {
+      "name": "Drop Zone",
+      "kind": "custom",
+      "refersTo": "drop-zone",
+      "description": "欢迎页主入口：10px 圆角虚线框，点击开文件、右键开文件夹。",
+      "html": "<div class=\"ds-drop\"><span class=\"ds-drop-main\">拖拽 Markdown 文件到窗口打开</span><div class=\"ds-drop-sub\"><span>点击打开文件</span><i class=\"ds-sep\"></i><span>右键打开文件夹</span></div></div>",
+      "css": ".ds-drop { box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; width:560px; height:240px; border-radius:10px; border:1px dashed rgba(0,255,255,0.2); background:transparent; cursor:pointer; transition:border-color 200ms ease, background 200ms ease; } .ds-drop:hover { border-color:rgba(0,255,255,0.4); background:rgba(0,255,255,0.03); } .ds-drop-main { font-size:16px; font-weight:500; color:#A6A6A6; } .ds-drop-sub { display:flex; align-items:center; gap:16px; font-size:13px; color:#989898; } .ds-sep { display:block; width:1px; height:10px; background:#3C3C45; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "阅读画框",
+    "overview": "ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的标题栏、标签、目录、状态栏是画框。画框该在时精确在位，该退时整块淡出——用户滚动起来之后，36px 标题栏以 3000ms 淡出到 0，鼠标回到顶部再 300ms 渐显；底部状态栏静止压到 0.2 透明度，滚动时升到 0.6，悬停升到 0.8。消失不是简化，是这个产品最核心的交互。\n\n整套视觉建立在一次分层分权上：UI 外壳可以高唤醒，正文画布必须低唤醒，代码区保留出身原配。理由写进了主题契约——唤醒度与停留时长成反比，标题栏停留数秒，正文停留数十分钟。所以外壳允许赛博霓虹与发光，正文只允许一种东西抢注意力：内容本身。14 套主题在同一套变量契约下换装，切换一次，标题、图表、Callout、代码高亮同步改色，不残留默认黑描边，不出现白底白字。\n\n控件手感是精确克制：36px 高的外壳条、32px 见方的图标按钮、1px 细边框、2–8px 的小圆角、半透明交互色淡底做悬停。阅读工作面上没有大圆角卡片，没有投影堆叠，没有渐变按钮；大圆角与投影只出现在模态、更新卡这类被单独注视的浮面。密度偏紧但每行字留足 1.8 倍行高，因为紧的是外壳，松的是正文。",
+    "keyCharacteristics": [
+      "沉浸式浮层：阅读区 100vh 全屏滚动，标题栏 / 状态栏 / 目录 / 左右面板全部 position: fixed 浮动其上",
+      "平面分层：零阴影分层，靠画布明度阶梯（sidebar → code → page → reader）区分层级；阴影只给弹层",
+      "主题即变量：14 套主题只交源色，其余 token 由构建脚本推导，切换零闪烁",
+      "功能性着色：标题多色相是层级身份，正文墨色近中性，发光只留在外壳",
+      "动效只动 transform 与 opacity 做位移/尺寸/淡入淡出（颜色与底色过渡另算），时长 80–200ms，另有 3000ms 的渐隐长过渡"
+    ],
+    "rules": [
+      {
+        "name": "The Reading Cost Rule",
+        "body": "正文画布上不允许出现发光、渐变文字与高饱和底色；唤醒度属于外壳，不属于正文。正文对比度 ≥ 7:1、标题与功能位 ≥ 4.5:1，护栏是硬指标。",
+        "section": "colors"
+      },
+      {
+        "name": "The One Hue, One Job Rule",
+        "body": "同一色相只承担一类语义：青 = 交互与当前态，品红 = 品牌渐变与 H3，橙 = 字面量与标签，黄 = 搜索，绿 = 成功，红 = 危险。新增语义优先复用现有槽位，不新增第七种强调色。",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Kinds of Accent Rule",
+        "body": "--accent-cyan 是交互色（外壳所有「当前/可操作」状态），--brand-primary 是品牌色（Logo、目录高亮、图钉）。两者在赛博朋克同值，在暖色主题（夜灯 #F2570F / 晨光 #FF6A2B）明确分离。",
+        "section": "colors"
+      },
+      {
+        "name": "The Theme-Is-A-Table Rule",
+        "body": "任何颜色只能来自 token。主题文件内出现字面量十六进制即违约——源色表是唯一手写处。",
+        "section": "colors"
+      },
+      {
+        "name": "The 1.8 Rule",
+        "body": "正文行高默认 1.8，下限 1.0 只在用户显式选择时出现；任何新增长文排版控件都必须以 1.8 为默认值。",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono-Only-Inside Rule",
+        "body": "等宽字体只用于代码、快捷键提示与性能参数表。",
+        "section": "typography"
+      },
+      {
+        "name": "The One Scroll Container Rule",
+        "body": "只有一个元素滚动。祖先链上禁止 overflow，否则 position: fixed 的浮层会被裁切。",
+        "section": "typography"
+      },
+      {
+        "name": "The 36/32 Rule",
+        "body": "标题栏 36px 高，图标按钮 32×32。底部状态栏是唯一例外（24px），因为它不进指针主路径。",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "静止状态零阴影。阴影只作为「这是一层浮在上面的东西」的信号出现。",
+        "section": "elevation"
+      },
+      {
+        "name": "The Glow Stays Outside Rule",
+        "body": "发光只允许出现在标题栏、Logo、滑杆、目录指示线；正文与全部图表一律无发光。",
+        "section": "elevation"
+      },
+      {
+        "name": "The Two-Radius-Layer Rule",
+        "body": "阅读工作面的圆角止步 10px；12–16px 只留给停留型浮面（模态、更新卡、关于页、设置下拉）。",
+        "section": "shapes"
+      },
+      {
+        "name": "The Pill-Only-in-Notifications Rule",
+        "body": "胶囊形状只出现在更新提示卡与状态徽章；阅读工作面用无底图标按钮或小圆角淡底按钮。",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do 让正文画布保持低唤醒：正文、标题、链接、表格上不加发光、不加渐变文字、不加高饱和底色。",
+      "Do 用 alpha 六档（0.03 / 0.05 / 0.06 / 0.10 / 0.15 / 0.30）表达悬停、选中、激活，而不是换颜色。",
+      "Do 用画布明度阶梯表达层级：sidebar 最暗、code 次之、page 再次、reader 最亮。",
+      "Do 把一切颜色写成 token；新增主题只交源色表，跑 pnpm theme:generate 生成，跑 pnpm theme:generate:check 校验。",
+      "Do 保持正文行高 1.8、段距 16px、页宽 800px 为默认值。",
+      "Do 让浮层投影、让正文扁平；阴影是「浮在上面的信号」，不是「更重要的信号」。",
+      "Do 新增 UI 文案同时补 zh-CN.json 与 en-US.json 两个键。"
+    ],
+    "donts": [
+      "Don't 在正文画布上使用外投影、text-shadow 或 filter: drop-shadow。发光属于外壳；kbd 的 1px inset 下边线是唯一允许的正文内阴影。",
+      "Don't 给阅读工作面（标签、菜单、目录、搜索栏）套 12px 以上的圆角或胶囊形状；大圆角只属于模态、更新卡、关于页这类停留型浮面。",
+      "Don't 给滚动容器的祖先加 overflow，会裁切 position: fixed 的浮层。",
+      "Don't 在主题 CSS 里手写字面量颜色。文件头写着 GENERATED 的文件只能由脚本重写。",
+      "Don't 混用 Tailwind 断点做响应式排版——桌面窗口只有宽度变化，用面板收起与页宽自适应，不引入移动端断点体系。",
+      "Don't 把正文里的引用块与 Callout 做成「左侧色条 + 卡片」的通用强调卡。左侧竖线是 Markdown 语义，只给引用与提示（关于页的「左竖线 + 圆角卡」是品牌展示面，不适用于正文）。",
+      "Don't 用投影表达 hover。Hover 一律用 100ms 的背景/颜色过渡。",
+      "Don't 在 themePreviewColors 这类预览表里手写真值——当前 14 套主题的预览色点全部与生成后 token 不一致。预览色应读源色表或生成物。"
+    ]
+  }
+}
