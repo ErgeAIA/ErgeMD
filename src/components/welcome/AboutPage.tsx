@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import packageJson from "../../../package.json";
 import { forceCheckUpdate } from "../common/UpdateChecker";
 import { useReaderStore } from "../../stores/readerStore";
+import Portal from "../Portal";
 import AppIcon from "./AppIcon";
 
 // 静态资源路径
@@ -95,6 +96,15 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
     };
   }, []);
 
+  // Esc 关闭（关闭按钮的 tooltip 已承诺此行为）
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const handleVersionClick = async () => {
     if (checkingUpdate) return;
     setCheckingUpdate(true);
@@ -181,7 +191,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
         {/* 关闭按钮 */}
         <button
           onClick={onClose}
-          title="按 Esc 可关闭"
+          title={t("about.escToClose")}
           style={{
             position: "absolute",
             top: "12px",
@@ -617,54 +627,56 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           </div>
 
           {/* ===== 居中弹窗 ===== */}
+          {/* 用 Portal 渲染到 body：卡片带 transform + overflowY，会裁切 fixed 子元素 */}
           {hoveredQr && qrMap[hoveredQr] && (
-            <div
-              style={{
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 300,
-                background: "var(--bg-secondary)",
-                border: "1px solid var(--divider)",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "var(--shadow-popup)",
-              }}
-              onMouseEnter={() => setHoveredQr(hoveredQr)}
-              onMouseLeave={() => setHoveredQr(null)}
-            >
+            <Portal>
               <div
                 style={{
-                  background: "var(--bg-page, #fff)",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  position: "fixed",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 300,
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--divider)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  boxShadow: "var(--shadow-popup)",
                 }}
+                onMouseLeave={() => setHoveredQr(null)}
               >
-                <img
-                  src={qrMap[hoveredQr].src}
-                  alt={qrMap[hoveredQr].label}
+                <div
                   style={{
-                    maxHeight: "400px",
-                    width: "auto",
-                    objectFit: "contain",
+                    background: "var(--bg-page, #fff)",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <img
+                    src={qrMap[hoveredQr].src}
+                    alt={qrMap[hoveredQr].label}
+                    style={{
+                      maxHeight: "400px",
+                      width: "auto",
+                      objectFit: "contain",
+                    }}
+                  />
+                </div>
+                <p
+                  style={{
+                    margin: "12px 0 0 0",
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    textAlign: "center",
+                  }}
+                >
+                  {qrMap[hoveredQr].label}
+                </p>
               </div>
-              <p
-                style={{
-                  margin: "12px 0 0 0",
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  textAlign: "center",
-                }}
-              >
-                {qrMap[hoveredQr].label}
-              </p>
-            </div>
+            </Portal>
           )}
 
           {/* ===== 底部 ===== */}

@@ -2,7 +2,7 @@
 title: Project Progress
 type: project-progress
 project: ErgeMD
-updated: 2026-11-17
+updated: 2026-11-18
 description: >
   项目开发进度实时记录：阶段、分支、代码状态、最近进展。每次会话更新。
   AI 在本文件新增进展或修改当前状态后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -21,6 +21,7 @@ description: >
 - **阶段**：主题色板契约重构**已验收交付**（设计 → 三阶段实施 → 14/14 迁移 → 实机验收闭环）；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-18 四面评审 P0 修复（BUG-082，分支 `fix/design-audit-findings`）：① 阅读选项面板去掉 30% 遮罩与焦点陷阱，`aria-modal` → `role="region"`，调排版时正文可读可交互；② 搜索改按解析块统计全文命中，`readerStore` 加 `scrollToBlockIndex` 注册位、`VirtualMarkdownView` 注册虚拟跳转、`SearchBar` 滚到目标块后就地高亮，硬编码高亮色改 token；③ `read_file` 增加 BOM → UTF-8 → GB18030 → lossy 解码链并返回 `encoding`/`had_errors`，前端每会话提示一次（中英）；④ 关于页二维码弹层改 Portal 挂 body 并补 Esc。同步修性能级别下拉 `w-80` 溢出的关联 P1。tsc 0 错 / eslint 0 error / vitest 343 / cargo test 全绿（新增 Rust 编码测试 5 条）。**待实机验收**：面板观感、大文档搜索跳转、GBK 文件解码提示
 - 2026-11-17 四面设计评审（Impeccable critique，双评估 A 设计评审 ×4 + B 检测器 ×4，互相隔离）：欢迎页 20/40、关于页 21/40、阅读选项面板 20/40、阅读区 21/40，全部落在 Acceptable 带。四个 P0：① 阅读选项面板 30% 遮罩压暗正文（调排版看不见正文）+ `aria-modal` 摘除无障碍树；② 阅读区搜索只遍历活 DOM，虚拟化下折叠线以下不可搜；③ `read_file` UTF-8 lossy 解码丢弃 `had_errors`，GBK 文档整页乱码。跨面共性：设计系统的「壳」已成体系，「内容层」仍有两代代码并存——内联样式压过 markdown.css 五处、手写色表压过 token、`outline:none` 压过焦点环、硬编码中文压过 i18n，根因是 DESIGN.md 之前没有出口检查。快照已落 `.impeccable/critique/`（运行时目录自带 gitignore）
 - 2026-11-17 设计偏差修复（DEC-044，分支 `fix/design-audit-findings`）：① `theme-derived.css` 亮色族交互色（选区/选中/焦点边框/表头/代码标签/信息 Toast）由 `brand-primary` 改为 `accent-cyan`，与暗色族及 D1 分权一致——晨光主题不再同屏出现靛蓝下划线 + 橙色选中行；② 新增 `src/utils/themePreview.ts` 运行时读主题 CSS 变量生成色卡四色点，删除 `ReadingOptions.tsx` 手写 `themePreviewColors`（此前 14/14 套与生成物不符）；③ 新增 `themePreview.test.ts` 守「四色互不相同」。tsc / eslint 0 error / vitest 329+14 全绿；无头 Edge 实渲染 A/B 与 14 套色卡网格已核。待用户 `pnpm tauri dev` 实机确认亮色观感
 - 2026-11-17 设计系统文档化（Impeccable init + document，`024ddc2` 已双推）：新增 `PRODUCT.md`（产品定位、用户、四条硬约束、品牌承诺；主用户项按推断记录，已注明）与 `DESIGN.md` + `.impeccable/design.json`（14 套主题四层变量与契约表提取为 frontmatter token + 8 个规范章节 + 9 个组件快照，组件快照经无头 Edge 实测渲染尺寸）。北极星取「阅读画框」，组件手感「精确克制」，深度「平面分层、阴影只给浮层」。对照代码记录三处此前无人写下的偏差：① 交互色 `--accent-cyan` 与品牌色 `--brand-primary` 在暖色主题（夜灯 `#F2570F` / 晨光 `#FF6A2B`）分离，此前被当成同一个「主题色」；② `active-border` 暗色走 accent-cyan、亮色走 brand-primary，派生层遗留不一致；③ `ReadingOptions.tsx` 的 `themePreviewColors` 14/14 套主题预览色点全部与生成后 token 不一致（如 cyberpunk 仍是改造前 `#0A0A0F` / `#BF00FF`）。①②③ 均只记录未改码。仅新增文档，未改代码与构建配置

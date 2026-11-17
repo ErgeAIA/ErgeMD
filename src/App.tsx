@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ToastContainer from "./components/common/Toast";
 import UpdateChecker from "./components/common/UpdateChecker";
 import ContextMenu from "./components/context-menu/ContextMenu";
@@ -29,6 +29,7 @@ import { useReadingProgress } from "./hooks/useReadingProgress";
 import { useTheme } from "./hooks/useTheme";
 import { useFileStore } from "./stores/fileStore";
 import { useReaderStore } from "./stores/readerStore";
+import i18n from "./i18n";
 import type { FileNode, TabInfo } from "./types";
 import { exportHtml } from "./utils/export";
 import { exportDocx } from "./utils/exportDocx";
@@ -42,6 +43,9 @@ import { countWords } from "./utils/wordCount";
 const MAX_RESIDENT_TABS = 3;
 
 function App() {
+  /** 同一条编码提醒每个会话只提示一次，避免恢复多标签时刷屏 */
+  const notifiedEncodingRef = useRef(new Set<string>());
+
   // 主题切换 — 自动同步 data-theme 属性到 <html>
   useTheme();
 
@@ -96,6 +100,37 @@ function App() {
   // 数据库就绪状态（解决 init_database 与 get_recent_files 的竞态条件）
   const [dbReady, setDbReady] = useState(false);
 
+  /**
+   * 读取 Markdown（含编码探测结果）。非 UTF-8 解码或存在替换字符时提示一次：
+   * Rust 侧按 BOM → UTF-8 → GB18030 → UTF-8 lossy 顺序解码，避免 GBK 文档整页乱码。
+   */
+  const readMarkdown = useCallback(async (path: string) => {
+    const result = await invoke<{
+      content: string;
+      word_count: number;
+      encoding: string;
+      had_errors: boolean;
+    }>("read_file", { path });
+
+    const key = result.had_errors
+      ? "lossy"
+      : result.encoding !== "utf-8"
+        ? result.encoding
+        : null;
+    if (key && !notifiedEncodingRef.current.has(key)) {
+      notifiedEncodingRef.current.add(key);
+      useReaderStore.getState().addToast({
+        type: result.had_errors ? "warning" : "info",
+        message: result.had_errors
+          ? i18n.t("reader.encodingLossy")
+          : i18n.t("reader.encodingFallback", {
+              encoding: result.encoding.toUpperCase(),
+            }),
+      });
+    }
+    return result;
+  }, []);
+
   // 最近活动的 Tab 记录（常驻窗口用，审计 M3）
   const [recentTabIds, setRecentTabIds] = useState<string[]>([]);
 
@@ -127,9 +162,7 @@ function App() {
         const validTabs: TabInfo[] = [];
         for (const tab of tabs) {
           try {
-            const result = await invoke<{ content: string }>("read_file", {
-              path: tab.file_path,
-            });
+            const result = await readMarkdown(tab.file_path);
             if (cancelled) return;
             validTabs.push({
               ...tab,
@@ -279,9 +312,7 @@ function App() {
     let cancelled = false;
     (async () => {
       if (filePath) {
-        const result = await invoke<{ content: string }>("read_file", {
-          path: filePath,
-        }).catch(() => null);
+        const result = await readMarkdown(filePath).catch(() => null);
         if (cancelled || !result) return;
         const fileName = filePath.split(/[/\\]/).pop() || "Untitled";
         useFileStore.getState().openFile(filePath, fileName, result.content);
@@ -307,9 +338,7 @@ function App() {
 
     const openFilePath = async (filePath: string) => {
       try {
-        const result = await invoke<{ content: string }>("read_file", {
-          path: filePath,
-        });
+        const result = await readMarkdown(filePath);
         if (cancelled) return;
         const fileName = filePath.split(/[/\\]/).pop() || "Untitled";
         useFileStore.getState().openFile(filePath, fileName, result.content);
@@ -317,7 +346,7 @@ function App() {
         if (!cancelled) {
           useReaderStore
             .getState()
-            .addToast({ type: "error", message: "文件读取失败" });
+            .addToast({ type: "error", message: i18n.t("reader.readFailed") });
         }
       }
     };
@@ -480,12 +509,7 @@ function App() {
 
       for (const selectedPath of selectedPaths) {
         try {
-          const result = await invoke<{ content: string; encoding: string }>(
-            "read_file",
-            {
-              path: selectedPath,
-            },
-          );
+          const result = await readMarkdown(selectedPath);
           const fileName = selectedPath.split(/[/\\]/).pop() || "Untitled";
           openFile(selectedPath, fileName, result.content);
           // 记录最近打开的文件
@@ -496,13 +520,13 @@ function App() {
         } catch (err) {
           const msg = String(err);
           console.error("Failed to read file:", err);
-          let toastMsg = "文件读取失败";
+          let toastMsg = i18n.t("reader.readFailed");
           if (msg.includes("not found") || msg.includes("File not found")) {
-            toastMsg = "文件不存在";
+            toastMsg = i18n.t("reader.fileNotFound");
           } else if (msg.includes("permission") || msg.includes("Permission")) {
-            toastMsg = "权限不足";
+            toastMsg = i18n.t("reader.permissionDenied");
           } else if (msg.includes("encoding")) {
-            toastMsg = "无法识别文件编码";
+            toastMsg = i18n.t("reader.encodingLossy");
           }
           useReaderStore
             .getState()
@@ -510,7 +534,7 @@ function App() {
         }
       }
     },
-    [openFile],
+    [openFile, readMarkdown],
   );
 
   const handleOpenFolder = useCallback(
@@ -554,12 +578,7 @@ function App() {
   const handleFileSelect = useCallback(
     async (filePath: string, fileName: string) => {
       try {
-        const result = await invoke<{ content: string; encoding: string }>(
-          "read_file",
-          {
-            path: filePath,
-          },
-        );
+        const result = await readMarkdown(filePath);
         openFile(filePath, fileName, result.content);
         invoke("add_recent_file", {
           filePath: filePath,
@@ -569,10 +588,10 @@ function App() {
         console.error("Failed to read file:", err);
         useReaderStore
           .getState()
-          .addToast({ type: "error", message: "文件读取失败" });
+          .addToast({ type: "error", message: i18n.t("reader.readFailed") });
       }
     },
-    [openFile],
+    [openFile, readMarkdown],
   );
 
   // 拖拽文件打开

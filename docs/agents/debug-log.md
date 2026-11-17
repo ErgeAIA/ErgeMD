@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-10-22
+updated: 2026-11-18
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -701,3 +701,11 @@ description: >
 - **修复**：改为扫描式解析——注释原样透传；遇 `{` 时对前置段加前缀（段以 `@` 开头则原样，保护 at-rule 前置）；声明体原样输出；`svg`/`svg:` 前缀做整体替换（保持 `#id:has(...)` 语义）。缓存 `_version` v61→v62
 - **验证**：tsc 0 / lint 0 错误 / vitest 329/329；新增 2 条防回归断言——作用域化后注释与 `@media` 均保留、`#id :has(` 不出现（空格会改变语义）、声明块数量与原文一致、无残留裸 `svg …` 选择器
 - **教训**：处理 CSS 文本**不要依赖「选择器里不含 `{`/`@`」的假设**——注释、at-rule 前置、字符串值都会破坏它；解析必须显式跳过注释并识别 at-rule 前置。本项目 v56 已因 CSS 注释（`*/` 提前闭合）翻车一次，这是同一雷区的第二次，处理 mermaid 注入 CSS 时应默认「注释可能出现在任何位置」
+
+## BUG-082: 设计评审四个 P0（遮罩挡正文 / 搜索漏虚拟区 / GBK 乱码 / 关于页二维码不可达）
+- **日期**：2026-11-17（来源：Impeccable critique 四面评审，用户拍板「先收 P0 + 关联 P1」）
+- **现象**：① 打开右侧阅读选项面板，阅读区被 30% 黑遮罩压暗且带 `aria-modal`，调排版看不见正文；② 大文档（≥ 虚拟阈值）Ctrl+F 只能搜到已挂载的约 20 块，计数显示 3/140 且上/下一刻跳回顶部；③ Windows 下 GBK/GB18030 编码的 `.md` 整页替换字符且无提示；④ 关于页二维码弹层被外层卡片 `transform + overflowY:auto` 裁切，tooltip 承诺的 Esc 关闭并未实现。
+- **根因**：① 面板沿用了模态对话框模板（遮罩 + 焦点陷阱 + `aria-modal`），但它是停靠式设置面板；② `SearchBar` 用 `TreeWalker` 遍历活 DOM，虚拟列表下未挂载的块不存在于 DOM；③ `read_file` 直接 `encoding_rs::UTF_8.decode` 并丢弃 `had_errors`；④ 弹层 `position: fixed` 渲染在带 `transform` 的滚动容器内，transform 建立包含块、overflow 裁切。
+- **修复**：① 去掉遮罩与焦点陷阱，`role="dialog" aria-modal` → `role="region"` + `aria-hidden`，Esc 关闭保留；② `readerStore` 新增 `scrollToBlockIndex` 注册位，`VirtualMarkdownView` 挂载时注册虚拟列表跳转，`SearchBar` 改按 `parseMarkdownBlocks` 的块数组统计全文命中，跳转时滚到目标块再就地高亮；同步把硬编码黄色高亮换成 `--search-highlight` token；③ `read_file` 改为 BOM → 严格 UTF-8 → GB18030 → UTF-8 lossy，返回 `encoding` 与 `had_errors`，前端按「每个会话一次」提示（中英 i18n）；④ 弹层改由 `Portal` 挂到 body，补 Esc 监听，tooltip 文案入 i18n。
+- **验证**：tsc 0 错、eslint 0 error（47 存量 warning 不在改动文件）、vitest 343/343、cargo test 全绿（新增 `read_file_encoding` 5 条：UTF-8 / BOM / UTF-16LE / GBK / 兜底）。**未验证**：应用内实机观感与虚拟滚动下搜索跳转的真实手感，待用户 `pnpm tauri dev`。
+- **教训**：设计系统的偏离不会自己报错——遮罩、`outline:none`、手写色表、内联样式压过样式表，都是「能跑但不对」。功能层同类问题（搜索只搜活 DOM、解码丢弃错误位）同理：丢掉的错误标志与丢掉的 token 一样，最终由用户承担。

@@ -81,6 +81,7 @@
     "language": "Language",
     "autoSaveProgress": "Auto Save Reading Progress",
     "readingOptions": "Reading Options",
+    "panelWidth": "Resize panel",
     "fontPresets": {
       "System Default": "System Default",
       "Windows": "Windows",
@@ -161,7 +162,12 @@
     "rendering": "Rendering...",
     "renderError": "Render Error",
     "plantumlError": "PlantUML syntax may be incorrect, please check the code",
-    "preview": "Live Preview"
+    "preview": "Live Preview",
+    "readFailed": "Failed to read file",
+    "fileNotFound": "File not found",
+    "permissionDenied": "Permission denied",
+    "encodingFallback": "Decoded as {{encoding}} — please check that the text looks right",
+    "encodingLossy": "File encoding could not be fully detected; some characters may look wrong"
   },
   "about": {
     "appDescription": "ErgeMD — A Minimalist Markdown Reader\nBuilt with Tauri 2, focused on immersive, high-performance reading\nSupports multiple themes, TOC navigation, search, and progress saving",
@@ -183,6 +189,7 @@
     "footer": "© 2026 宝藏二哥AIA",
     "githubStar": "⭐ Star on GitHub",
     "menuLabel": "About ErgeMD",
+    "escToClose": "Press Esc to close",
     "qrTipLabel": "Buy Erge a cyber tea 🍵",
     "qrFriendLabel": "👉 Add friend, let's chat 👋",
     "easterEggTitle": "🔍 You found the hidden entrance!",

@@ -165,7 +165,7 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
 
         {/* 下拉菜单 */}
         {isExpanded && (
-          <div className="config-level-dropdown absolute top-full left-0 mt-2 w-80 rounded-xl shadow-2xl z-[100] overflow-hidden animate-slide-down">
+          <div className="config-level-dropdown absolute top-full left-0 mt-2 w-full min-w-[240px] rounded-xl shadow-2xl z-[100] overflow-hidden animate-slide-down">
             {/* 预览面板 */}
             {(previewLevel || configLevel) && (
               <div

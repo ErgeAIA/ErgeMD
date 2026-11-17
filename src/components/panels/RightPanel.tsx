@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ReadingOptions from "./ReadingOptions";
 
 interface RightPanelProps {
@@ -16,76 +17,27 @@ const RESIZE_EDGE_WIDTH = 8;
  * - 通过按钮切换显示/隐藏（非边缘触发）
  * - 使用 position: fixed 覆盖在正文上方，不挤压布局
  * - 从右侧滑入/滑出
- * - role="dialog" + aria-modal + 焦点陷阱
+ * - 非模态停靠面板：不加遮罩、不锁焦点，正文保持可交互与可读，
+ *   否则用户无法一边调排版一边判断效果
  * - 支持左侧边缘拖拽调整宽度
  */
 const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
 
-  // 获取面板内所有可聚焦元素
-  const getFocusableElements = useCallback((): HTMLElement[] => {
-    if (!panelRef.current) return [];
-    const selectors = [
-      "a[href]",
-      "button:not([disabled])",
-      "input:not([disabled])",
-      "select:not([disabled])",
-      '[tabindex]:not([tabindex="-1"])',
-    ];
-    return Array.from(
-      panelRef.current.querySelectorAll<HTMLElement>(selectors.join(",")),
-    ).filter((el) => el.offsetParent !== null);
-  }, []);
-
-  // 焦点陷阱
+  // Esc 关闭；非模态面板不设焦点陷阱，正文需保持可交互
   useEffect(() => {
     if (!isOpen) return;
 
-    previousFocusRef.current = document.activeElement as HTMLElement;
-
-    requestAnimationFrame(() => {
-      const focusable = getFocusableElements();
-      if (focusable.length > 0) {
-        focusable[0].focus();
-      }
-    });
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onToggle();
-        return;
-      }
-      if (e.key !== "Tab") return;
-
-      const focusable = getFocusableElements();
-      if (focusable.length === 0) return;
-
-      const firstEl = focusable[0];
-      const lastEl = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstEl) {
-          e.preventDefault();
-          lastEl.focus();
-        }
-      } else {
-        if (document.activeElement === lastEl) {
-          e.preventDefault();
-          firstEl.focus();
-        }
-      }
+      if (e.key === "Escape") onToggle();
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      previousFocusRef.current?.focus();
-    };
-  }, [isOpen, onToggle, getFocusableElements]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onToggle]);
 
   // 拖拽调整宽度逻辑
   useEffect(() => {
@@ -120,23 +72,12 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
 
   return (
     <>
-      {/* 遮罩层 */}
-      <div
-        className="fixed inset-0 z-30 transition-opacity duration-200"
-        style={{
-          background: "rgba(0, 0, 0, 0.3)",
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? "auto" : "none",
-        }}
-        onClick={onToggle}
-      />
-
-      {/* 面板 — 从右侧滑入 */}
+      {/* 面板 — 从右侧滑入；非模态，不加遮罩以免压暗正文 */}
       <div
         ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="阅读选项"
+        role="region"
+        aria-label={t("settings.readingOptions")}
+        aria-hidden={!isOpen}
         className="fixed right-0 z-40 overflow-hidden transition-transform duration-200"
         style={{
           top: "40px",
@@ -144,8 +85,9 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
           width: `${panelWidth}px`,
           minWidth: `${MIN_WIDTH}px`,
           maxWidth: `${MAX_WIDTH}px`,
-          background: "var(--bg-sidebar, #1A1A2E)",
+          background: "var(--bg-sidebar)",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
+          visibility: isOpen ? "visible" : "hidden",
           willChange: "transform",
           display: "flex",
           flexDirection: "column",
@@ -169,19 +111,19 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
               document.body.style.cursor = "";
             }
           }}
-          aria-label="调整面板宽度"
+          aria-label={t("settings.panelWidth")}
         />
 
         {/* 面板标题 */}
         <div
           className="px-4 py-3 text-[13px] font-medium tracking-wide uppercase"
           style={{
-            color: "var(--text-muted, #50505A)",
-            borderBottom: "1px solid rgba(100, 200, 200, 0.05)",
+            color: "var(--text-muted)",
+            borderBottom: "1px solid var(--divider)",
             paddingLeft: `${RESIZE_EDGE_WIDTH + 16}px`,
           }}
         >
-          阅读选项
+          {t("settings.readingOptions")}
         </div>
 
         {/* 内容区域 */}

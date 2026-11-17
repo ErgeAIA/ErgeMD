@@ -8,6 +8,8 @@ interface ReaderState {
   searchResults: number[];
   currentSearchIndex: number;
   isSearchOpen: boolean;
+  /** 虚拟滚动模式下由 VirtualMarkdownView 注册，供搜索跳转到未挂载的块 */
+  scrollToBlockIndex: ((index: number) => void) | null;
 
   // Toast 通知
   toasts: ToastMessage[];
@@ -41,6 +43,7 @@ interface ReaderState {
   closeSearch: () => void;
   nextMatch: () => void;
   prevMatch: () => void;
+  setScrollToBlockIndex: (fn: ((index: number) => void) | null) => void;
   addToast: (toast: Omit<ToastMessage, "id">) => void;
   removeToast: (id: string) => void;
   setPreviewImage: (url: string | null) => void;
@@ -67,6 +70,7 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
   searchResults: [],
   currentSearchIndex: -1,
   isSearchOpen: false,
+  scrollToBlockIndex: null,
   toasts: [],
   previewImage: null,
   fileChanged: null,
@@ -135,6 +139,10 @@ export const useReaderStore = create<ReaderState>((set, get) => ({
         ? searchResults.length - 1
         : currentSearchIndex - 1;
     set({ currentSearchIndex: prev });
+  },
+
+  setScrollToBlockIndex: (fn) => {
+    set({ scrollToBlockIndex: fn });
   },
 
   addToast: (toast) => {
