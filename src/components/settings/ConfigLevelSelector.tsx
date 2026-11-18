@@ -5,6 +5,7 @@ import {
 } from "@/config/readerConfig";
 import { useSettingsStore } from "@/stores/settingsStore";
 import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ConfigLevelSelectorProps {
   className?: string;
@@ -33,13 +34,28 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
     const configLevel = useSettingsStore((state) => state.configLevel);
     const setConfigLevel = useSettingsStore((state) => state.setConfigLevel);
     const [isExpanded, setIsExpanded] = useState(false);
+    const { t } = useTranslation();
     const [previewLevel, setPreviewLevel] = useState<ConfigLevel | null>(null);
+
+    // 语言化后的级别说明：数值参数保留，文案走 i18n
+    const localizedInfo = useCallback(
+      (level: ConfigLevel) => ({
+        ...ConfigLevelInfoMap[level],
+        name: t(`settings.configLevels.${level}.name`),
+        description: t(`settings.configLevels.${level}.description`),
+        scenario: t(`settings.configLevels.${level}.scenario`),
+        effects: t(`settings.configLevels.${level}.effects`, {
+          returnObjects: true,
+        }) as string[],
+      }),
+      [t],
+    );
 
     // 缓存级别列表
     const levels: ConfigLevel[] = useMemo(() => ["low", "medium", "high"], []);
-    const currentLevelInfo = ConfigLevelInfoMap[configLevel];
+    const currentLevelInfo = localizedInfo(configLevel);
     const previewLevelInfo = previewLevel
-      ? ConfigLevelInfoMap[previewLevel]
+      ? localizedInfo(previewLevel)
       : null;
 
     // 缓存事件处理函数
@@ -200,7 +216,9 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
                   className="text-xs mb-3"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  {previewLevel ? "预览效果：" : "当前配置："}
+                  {previewLevel
+                    ? t("settings.configLevelUI.preview")
+                    : t("settings.configLevelUI.current")}
                   {(previewLevelInfo || currentLevelInfo).scenario}
                 </p>
                 <div className="space-y-1">
@@ -234,7 +252,7 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
             {/* 级别列表 */}
             <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
               {levels.map((level) => {
-                const info = ConfigLevelInfoMap[level];
+                const info = localizedInfo(level);
                 const isSelected = level === configLevel;
                 const isPreviewing = level === previewLevel;
 
@@ -305,13 +323,13 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
                 className="text-xs mb-2"
                 style={{ color: "var(--text-secondary)" }}
               >
-                参数差异预览：
+                {t("settings.configLevelUI.params")}
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 {presetParams.map(({ level, virtualThreshold }) => (
                   <div key={level} className="text-xs">
                     <div style={{ color: "var(--text-secondary)" }}>
-                      虚拟阈值
+                      {t("settings.configLevelUI.virtualThreshold")}
                     </div>
                     <div
                       className="font-mono"
@@ -326,7 +344,7 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
                 {presetParams.map(({ level, maxCacheSize }) => (
                   <div key={level} className="text-xs">
                     <div style={{ color: "var(--text-secondary)" }}>
-                      缓存大小
+                      {t("settings.configLevelUI.cacheSize")}
                     </div>
                     <div
                       className="font-mono"

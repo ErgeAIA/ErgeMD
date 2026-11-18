@@ -115,12 +115,35 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      // 颜色从主题 token 读，避免另立一套硬编码色（原 #8B5CF6 不在任何主题里）
+      const hexToRgb = (hex: string): string => {
+        const value = hex.replace("#", "");
+        if (value.length !== 6) return "0,255,255";
+        const r = parseInt(value.slice(0, 2), 16);
+        const g = parseInt(value.slice(2, 4), 16);
+        const b = parseInt(value.slice(4, 6), 16);
+        return `${r},${g},${b}`;
       };
-      resize();
-      window.addEventListener("resize", resize);
+      const readThemeColors = () => {
+        const styles = getComputedStyle(document.documentElement);
+        const cyan = styles.getPropertyValue("--accent-cyan").trim() || "#00FFFF";
+        const secondary =
+          styles.getPropertyValue("--brand-secondary").trim() || "#FF00FF";
+        return { star: hexToRgb(cyan), tail: hexToRgb(secondary) };
+      };
+      let themeColors = readThemeColors();
+      const themeObserver = new MutationObserver(() => {
+        themeColors = readThemeColors();
+      });
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      let paused = false;
 
       // 背景星星
       interface Star {
@@ -169,6 +192,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
       let animId: number;
 
       const draw = () => {
+        if (paused) return;
         const w = canvas.width;
         const h = canvas.height;
         ctx.clearRect(0, 0, w, h);
@@ -180,8 +204,13 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
             s.baseOpacity + Math.sin(time * s.speed + s.phase) * 0.25;
           ctx.beginPath();
           ctx.arc(s.x * w, s.y * h, s.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${Math.max(0.1, Math.min(0.8, opacity))})`;
+          ctx.fillStyle = `rgba(${themeColors.star},${Math.max(0.1, Math.min(0.8, opacity))})`;
           ctx.fill();
+        }
+
+        if (reduceMotion) {
+          // 减动效偏好：只画一帧静态星空，不启动流星与逐帧刷新
+          return;
         }
 
         // 生成新流星
@@ -206,8 +235,8 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
           // 绘制流星线段（渐变）
           const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
           grad.addColorStop(0, `rgba(255,255,255,${m.opacity * 0.9})`);
-          grad.addColorStop(0.3, `rgba(180,160,255,${m.opacity * 0.5})`);
-          grad.addColorStop(1, "rgba(139,92,246,0)");
+          grad.addColorStop(0.3, `rgba(${themeColors.tail},${m.opacity * 0.5})`);
+          grad.addColorStop(1, `rgba(${themeColors.tail},0)`);
 
           ctx.beginPath();
           ctx.moveTo(m.x, m.y);
@@ -217,14 +246,11 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
           ctx.lineCap = "round";
           ctx.stroke();
 
-          // 头部发光圆点
+          // 头部圆点（不加 shadowBlur：逐帧模糊是最贵的一步）
           ctx.beginPath();
           ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255,255,255,${m.opacity * 0.8})`;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = "rgba(139,92,246,0.5)";
           ctx.fill();
-          ctx.shadowBlur = 0;
 
           // 移出画布则移除
           if (m.x < -200 || m.y > h + 200) {
@@ -234,11 +260,40 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
 
         animId = requestAnimationFrame(draw);
       };
-      animId = requestAnimationFrame(draw);
+
+      // 画布尺寸变化时同步尺寸；减动效模式下重画一帧静态星空
+      const syncCanvasSize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        if (reduceMotion) draw();
+      };
+
+      // 窗口隐藏时停掉逐帧绘制，恢复时重新起跑
+      const handleVisibility = () => {
+        if (document.hidden) {
+          paused = true;
+          cancelAnimationFrame(animId);
+        } else if (!reduceMotion) {
+          paused = false;
+          animId = requestAnimationFrame(draw);
+        }
+      };
+      document.addEventListener("visibilitychange", handleVisibility);
+
+      syncCanvasSize();
+      window.addEventListener("resize", syncCanvasSize);
+
+      if (reduceMotion) {
+        draw();
+      } else {
+        animId = requestAnimationFrame(draw);
+      }
 
       return () => {
         cancelAnimationFrame(animId);
-        window.removeEventListener("resize", resize);
+        themeObserver.disconnect();
+        document.removeEventListener("visibilitychange", handleVisibility);
+        window.removeEventListener("resize", syncCanvasSize);
       };
     }, []);
 
@@ -285,7 +340,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
             height: "500px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(139,92,246,0.04) 40%, transparent 70%)",
+              "radial-gradient(circle, rgba(var(--accent-cyan-rgb), 0.12) 0%, rgba(var(--accent-cyan-rgb), 0.04) 40%, transparent 70%)",
             transform: `translate(${mousePos.x - 250}px, ${mousePos.y - 250}px)`,
             transition: "transform 0.08s ease-out",
             pointerEvents: "none",
@@ -305,7 +360,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
               height: 0,
               borderRadius: "50%",
               transform: "translate(-50%, -50%)",
-              border: "2px solid rgba(139,92,246,0.6)",
+              border: "2px solid rgba(var(--accent-cyan-rgb), 0.6)",
               pointerEvents: "none",
               zIndex: 0,
               animation: "welcome-ripple 0.8s ease-out forwards",

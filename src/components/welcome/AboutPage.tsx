@@ -243,82 +243,56 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                 >
                   ErgeMD
                 </h2>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    padding: "2px 8px",
-                    borderRadius: "10px",
-                    background: "var(--hover-bg)",
-                    color: "var(--accent-cyan)",
-                    border: "1px solid var(--active-border)",
-                    flexShrink: 0,
-                    transition: "opacity 0.2s",
-                  }}
-                >
-                  v{packageJson.version}
-                </span>
                 <button
-                  onClick={handleVersionClick}
+                  onClick={() => {
+                    if (latestAvailable) {
+                      void openUrl(latestAvailable.releaseUrl);
+                      return;
+                    }
+                    void handleVersionClick();
+                  }}
                   disabled={checkingUpdate}
                   title={t("about.checkUpdateHint")}
-                  className="flex items-center justify-center"
                   style={{
-                    width: "22px",
-                    height: "22px",
-                    borderRadius: "50%",
-                    background: "transparent",
-                    border: "1px solid var(--active-border)",
-                    color: "var(--accent-cyan)",
-                    cursor: checkingUpdate ? "wait" : "pointer",
-                    opacity: checkingUpdate ? 0.5 : 1,
-                    flexShrink: 0,
-                    padding: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
                     fontSize: "12px",
-                    lineHeight: 1,
-                    transition: "background 0.2s, opacity 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!checkingUpdate) {
-                      (e.currentTarget as HTMLElement).style.background =
-                        "var(--hover-bg)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background =
-                      "transparent";
+                    padding: "2px 8px",
+                    borderRadius: "10px",
+                    background: "transparent",
+                    border: "1px solid",
+                    borderColor: latestAvailable
+                      ? "var(--accent-cyan)"
+                      : "var(--border-subtle)",
+                    color: latestAvailable
+                      ? "var(--accent-cyan)"
+                      : "var(--text-muted)",
+                    cursor: checkingUpdate ? "wait" : "pointer",
+                    opacity: checkingUpdate ? 0.6 : 1,
+                    flexShrink: 0,
+                    transition: "opacity 0.2s, border-color 0.2s",
                   }}
                 >
-                  {checkingUpdate ? "…" : "↻"}
+                  <span>v{packageJson.version}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    {checkingUpdate
+                      ? t("about.checking")
+                      : latestAvailable
+                        ? t("about.updateRowNew", {
+                            version: latestAvailable.version,
+                          })
+                        : t("about.checkUpdateHint")}
+                  </span>
                 </button>
                 {latestAvailable && (
-                  <button
-                    onClick={() => openUrl(latestAvailable.releaseUrl)}
-                    title={t("about.latestVersionHint", {
-                      version: latestAvailable.version,
-                    })}
-                    className="flex items-center gap-1"
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 8px",
-                      borderRadius: "10px",
-                      background: "var(--hover-bg)",
-                      color: "var(--accent-green, #00FF64)",
-                      border: "1px solid var(--accent-green, #00FF64)",
-                      flexShrink: 0,
-                      cursor: "pointer",
-                      transition: "opacity 0.2s",
-                      lineHeight: 1.4,
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.opacity = "0.7";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.opacity = "1";
-                    }}
+                  <span
+                    aria-hidden="true"
+                    style={{ color: "var(--accent-cyan)", fontSize: "12px" }}
                   >
-                    <span aria-hidden="true">↑</span>
-                    <span>v{latestAvailable.version}</span>
-                  </button>
+                    →
+                  </span>
                 )}
               </div>
               <p

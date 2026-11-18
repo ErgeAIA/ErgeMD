@@ -265,116 +265,6 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
           </button>
         </div>
 
-        {/* 主题选择 — 网格 */}
-        <div>
-          <div className="block" style={labelStyle}>
-            {t("settings.theme")}
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-          >
-            {themeCategories.map((cat) => (
-              <div key={cat.key}>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-muted)",
-                    marginBottom: "6px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {t(`themeCategory.${cat.key}`)}
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      cat.key === "system"
-                        ? "1fr"
-                        : "repeat(auto-fill, minmax(100px, 1fr))",
-                    gap: "6px",
-                  }}
-                >
-                  {cat.themes.map((theme) => {
-                    const colors = getThemePreviewColors(theme);
-                    const active = isActive(theme);
-                    return (
-                      <button
-                        key={theme}
-                        onClick={(e) => handleThemeSelect(theme, e)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "6px 8px",
-                          borderRadius: "6px",
-                          border: active
-                            ? "1px solid var(--accent-cyan)"
-                            : "1px solid var(--border-subtle)",
-                          background: active
-                            ? "var(--hover-bg-light)"
-                            : "transparent",
-                          cursor: "pointer",
-                          transition:
-                            "background 100ms ease, border-color 100ms ease",
-                          outline: "none",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!active) {
-                            (e.currentTarget as HTMLElement).style.background =
-                              "var(--hover-bg-subtle)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!active) {
-                            (e.currentTarget as HTMLElement).style.background =
-                              "transparent";
-                          }
-                        }}
-                      >
-                        {/* 色块预览 */}
-                        <div
-                          style={{ display: "flex", gap: "3px", flexShrink: 0 }}
-                        >
-                          {colors.map((color, i) => (
-                            <div
-                              key={i}
-                              style={{
-                                width: "8px",
-                                height: "8px",
-                                borderRadius: "50%",
-                                background: color,
-                              }}
-                            />
-                          ))}
-                        </div>
-                        {/* 主题名 */}
-                        <span
-                          style={{
-                            fontSize: "12px",
-                            color: active
-                              ? "var(--accent-cyan)"
-                              : "var(--text-primary)",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {t(`theme.${theme}`)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 分隔线 */}
-        <div style={{ height: "1px", background: "var(--divider)" }} />
-
         {/* 固定目录 */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <input
@@ -554,6 +444,116 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
               accentColor: "var(--accent-cyan)",
             }}
           />
+        </div>
+
+        {/* 分隔线 */}
+        <div style={{ height: "1px", background: "var(--divider)" }} />
+
+        {/* 主题选择 — 网格（日常改字号在前，主题设一次在后） */}
+        <div>
+          <div className="block" style={labelStyle}>
+            {t("settings.theme")}
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {themeCategories.map((cat) => (
+              <div key={cat.key}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {t(`themeCategory.${cat.key}`)}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      cat.key === "system"
+                        ? "1fr"
+                        : "repeat(auto-fill, minmax(100px, 1fr))",
+                    gap: "6px",
+                  }}
+                >
+                  {cat.themes.map((theme) => {
+                    const colors = getThemePreviewColors(theme);
+                    const active = isActive(theme);
+                    return (
+                      <button
+                        key={theme}
+                        onClick={(e) => handleThemeSelect(theme, e)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "6px 8px",
+                          borderRadius: "6px",
+                          border: active
+                            ? "1px solid var(--accent-cyan)"
+                            : "1px solid var(--border-subtle)",
+                          background: active
+                            ? "var(--hover-bg-light)"
+                            : "transparent",
+                          cursor: "pointer",
+                          transition:
+                            "background 100ms ease, border-color 100ms ease",
+                          outline: "none",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!active) {
+                            (e.currentTarget as HTMLElement).style.background =
+                              "var(--hover-bg-subtle)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!active) {
+                            (e.currentTarget as HTMLElement).style.background =
+                              "transparent";
+                          }
+                        }}
+                      >
+                        {/* 色块预览 */}
+                        <div
+                          style={{ display: "flex", gap: "3px", flexShrink: 0 }}
+                        >
+                          {colors.map((color, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                width: "8px",
+                                height: "8px",
+                                borderRadius: "50%",
+                                background: color,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {/* 主题名 */}
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: active
+                              ? "var(--accent-cyan)"
+                              : "var(--text-primary)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {t(`theme.${theme}`)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Mermaid 思维导图布局 */}
