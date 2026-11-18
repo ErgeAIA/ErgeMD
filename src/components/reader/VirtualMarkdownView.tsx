@@ -201,6 +201,15 @@ const VirtualMarkdownView = React.forwardRef<
     [virtualizer],
   );
 
+  // ── 向搜索注册块级跳转：搜索命中的是解析后的块，未挂载时靠它滚过去 ──
+  const setScrollToBlockIndex = useReaderStore((s) => s.setScrollToBlockIndex);
+  useEffect(() => {
+    setScrollToBlockIndex((index) => {
+      virtualizer.scrollToIndex(index, { align: "center", behavior: "smooth" });
+    });
+    return () => setScrollToBlockIndex(null);
+  }, [setScrollToBlockIndex, virtualizer]);
+
   // ── 导出模式：进入时保存滚动位置，退出时恢复，避免阅读视图跳动 ──
   const savedScrollTop = useRef(0);
   const didEnterExport = useRef(false);

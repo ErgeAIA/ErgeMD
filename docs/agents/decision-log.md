@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-10-23
+updated: 2026-11-17
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -15,6 +15,17 @@ description: >
 > **优先级高于 PRD**：冲突时以本文件最新决策为准，并回写 PRD/ADR。
 > 格式：`## DEC-NNN: 标题`，新条目置顶，NNN 三位递增。
 > 字段：`- **日期**：` / `- **背景**：` / `- **决策**：` / `- **验证**：`
+
+---
+
+## DEC-044: 交互色统一到 accent-cyan，主题色卡预览色改为运行时读 token
+
+- **日期**：2026-11-17（来源：DESIGN.md 捕获阶段对照代码发现的三处偏差，用户要求落地修复）
+- **背景**：① `theme-derived.css` 的亮色块把选区 / 选中 / 焦点边框 / 表头 / 代码标签 / 信息类 Toast 派生自 `brand-primary`，暗色块则派生自 `accent-cyan`——晨光主题下标签下划线是靛蓝、选中行与表头却是橙，同屏两套交互色；② `ReadingOptions.tsx` 手写 `themePreviewColors`，14 套主题的预览色点**全部**与生成后 token 不符（cyberpunk 仍是主题契约重构前的 `#0A0A0F` / `#BF00FF`）。
+- **决策一（亮色族派生色对齐 accent-cyan）**：亮色块中 `selection-bg` / `hover-bg-subtle` / `selected-bg` / `active-border` / `table-header-*` / `code-label-bg` / `code-border` / `toast-info-*` 由 `brand-primary-rgb` 改为 `accent-cyan-rgb`，与暗色族一致。判据：D1 三层分权里「当前可操作 / 当前生效」属交互态，而 `brand-primary` 只服务品牌标识（Logo、TOC 高亮、图钉）。A/B 实渲染对比后用 B 案——A 案（现状）让同一屏出现靛蓝下划线 + 橙色选中行。
+- **决策二（色卡预览改为运行时读 CSS 变量）**：新增 `src/utils/themePreview.ts`，用带 `data-theme` 的离屏节点 + `getComputedStyle` 读 `--bg-page` / `--brand-primary` / `--brand-secondary`，第四色从 `accent-pink → purple → green → yellow` 里取第一个与前三色不重复的值，结果按主题缓存；`system` 解析为当前系统明暗。删除手写表。判据：手写副本必然与生成物漂移，而主题 CSS 是既有真相源，新增主题零登记成本。
+- **验证**：新增 `src/utils/themePreview.test.ts`（14 套主题 × 四色互不相同）14/14 通过；tsc 通过、eslint 0 error（47 存量 warning 不在改动文件）；vitest 329 + 14 全绿；无头 Edge 实渲染亮色 A/B 对比图与 14 套色卡网格图核对通过。**未验证**：应用内实机观感（亮色两套主题的选中/表头/代码标签会由橙转靛），待用户 `pnpm tauri dev` 确认。
+- **未采用**：把 `brand-primary` 当作交互色再改组件（23 处组件已用 `accent-cyan`，改动面大且违反 D1）；把预览色写进生成器新增一份产物（多一处需要同步的构建输出）。
 
 ---
 

@@ -23,17 +23,55 @@ pub struct FileNode {
 pub struct ReadFileResult {
     pub content: String,
     pub word_count: usize,
+    pub encoding: String,
+    pub had_errors: bool,
+}
+
+/// 解码顺序：BOM → 严格 UTF-8 → GB18030 → UTF-8 lossy 兜底。
+/// Windows 中文用户在用的 .md 大量是 GBK/GB18030；此前直接按 UTF-8 lossy
+/// 解码会把整页变成替换字符且不报错。
+pub fn decode_markdown_bytes(bytes: &[u8]) -> (String, &'static str, bool) {
+    const UTF8_BOM: &[u8] = &[0xEF, 0xBB, 0xBF];
+    const UTF16_LE_BOM: &[u8] = &[0xFF, 0xFE];
+    const UTF16_BE_BOM: &[u8] = &[0xFE, 0xFF];
+
+    if bytes.starts_with(UTF8_BOM) {
+        let (text, _, had_errors) = encoding_rs::UTF_8.decode(&bytes[UTF8_BOM.len()..]);
+        return (text.into_owned(), "utf-8", had_errors);
+    }
+    if bytes.starts_with(UTF16_LE_BOM) {
+        let (text, _, had_errors) =
+            encoding_rs::UTF_16LE.decode(&bytes[UTF16_LE_BOM.len()..]);
+        return (text.into_owned(), "utf-16le", had_errors);
+    }
+    if bytes.starts_with(UTF16_BE_BOM) {
+        let (text, _, had_errors) =
+            encoding_rs::UTF_16BE.decode(&bytes[UTF16_BE_BOM.len()..]);
+        return (text.into_owned(), "utf-16be", had_errors);
+    }
+    if let Ok(text) = std::str::from_utf8(bytes) {
+        return (text.to_string(), "utf-8", false);
+    }
+    // 非 UTF-8 时优先按 GB18030 解（GBK/GB2312 的超集，覆盖绝大多数中文文档）
+    let (text, _, had_errors) = encoding_rs::GB18030.decode(bytes);
+    if !had_errors {
+        return (text.into_owned(), "gb18030", false);
+    }
+    let (text, _, had_errors) = encoding_rs::UTF_8.decode(bytes);
+    (text.into_owned(), "utf-8", had_errors)
 }
 
 #[tauri::command]
 pub async fn read_file(path: String) -> Result<ReadFileResult, String> {
     validate_path(&path)?;
     let bytes = fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))?;
-    let (content, _, _) = encoding_rs::UTF_8.decode(&bytes);
+    let (content, encoding, had_errors) = decode_markdown_bytes(&bytes);
     let word_count = count_words(&content);
     Ok(ReadFileResult {
-        content: content.into_owned(),
+        content,
         word_count,
+        encoding: encoding.to_string(),
+        had_errors,
     })
 }
 

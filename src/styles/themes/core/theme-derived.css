@@ -126,23 +126,23 @@ ErgeMD 主题系统 - theme-derived.css
   --accent-cyan-glow: rgba(var(--accent-cyan-rgb), 0.6);
 
   /* === 选区 === */
-  --selection-bg: rgba(var(--brand-primary-rgb), 0.15);
+  --selection-bg: rgba(var(--accent-cyan-rgb), 0.15);
   --selection-text: #1A1A1A;
 
   /* === 交互状态 === */
   --hover-bg: rgba(0, 0, 0, 0.04);
-  --hover-bg-subtle: rgba(var(--brand-primary-rgb), 0.03);
+  --hover-bg-subtle: rgba(var(--accent-cyan-rgb), 0.03);
   --hover-bg-light: rgba(0, 0, 0, 0.03);
   --hover-bg-medium: rgba(0, 0, 0, 0.06);
-  --selected-bg: rgba(var(--brand-primary-rgb), 0.10);
-  --active-border: rgba(var(--brand-primary-rgb), 0.30);
+  --selected-bg: rgba(var(--accent-cyan-rgb), 0.10);
+  --active-border: rgba(var(--accent-cyan-rgb), 0.30);
   /* --divider / --table-border：同暗色块，交由主题生成物派生（见 R14） */
   --danger-hover-bg: rgba(var(--accent-red-rgb), 0.10);
   --hover-close-bg: rgba(var(--accent-red-rgb), 0.6);
 
   /* === 表格 === */
-  --table-header-bg: rgba(var(--brand-primary-rgb), 0.04);
-  --table-header-text: var(--brand-primary);
+  --table-header-bg: rgba(var(--accent-cyan-rgb), 0.04);
+  --table-header-text: var(--accent-cyan);
   --table-hover-bg: rgba(0, 0, 0, 0.02);
 
   /* === 引用块 === */
@@ -154,8 +154,8 @@ ErgeMD 主题系统 - theme-derived.css
   --inline-code-text: var(--accent-pink);
 
   /* === 代码块 === */
-  --code-label-bg: rgba(var(--brand-primary-rgb), 0.05);
-  --code-border: rgba(var(--brand-primary-rgb), 0.10);
+  --code-label-bg: rgba(var(--accent-cyan-rgb), 0.05);
+  --code-border: rgba(var(--accent-cyan-rgb), 0.10);
 
   /* === TOC === */
   /* BUG-074：面板底色随主题画布（bg-page）+ alpha */
@@ -168,8 +168,8 @@ ErgeMD 主题系统 - theme-derived.css
   --toc-line-glow: rgba(var(--brand-primary-rgb), 0.6);
 
   /* === Toast === */
-  --toast-info-bg: rgba(var(--brand-primary-rgb), 0.06);
-  --toast-info-border: rgba(var(--brand-primary-rgb), 0.15);
+  --toast-info-bg: rgba(var(--accent-cyan-rgb), 0.06);
+  --toast-info-border: rgba(var(--accent-cyan-rgb), 0.15);
   --toast-success-bg: rgba(var(--accent-green-rgb), 0.06);
   --toast-success-border: rgba(var(--accent-green-rgb), 0.15);
   --toast-error-bg: rgba(var(--accent-red-rgb), 0.06);

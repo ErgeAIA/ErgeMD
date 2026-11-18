@@ -1,6 +1,8 @@
 import { useInteractionConfig } from "@/hooks/useActiveConfig";
+import { useFileStore } from "@/stores/fileStore";
 import { useReaderStore } from "@/stores/readerStore";
 import { queryActiveMarkdownBody } from "@/utils/domUtils";
+import { parseMarkdownBlocks } from "@/utils/markdownBlocks";
 import React, { memo, useCallback, useEffect, useRef } from "react";
 
 /**
@@ -25,9 +27,16 @@ const SearchBar: React.FC = memo(() => {
   const closeSearch = useReaderStore((s) => s.closeSearch);
   const nextMatch = useReaderStore((s) => s.nextMatch);
   const prevMatch = useReaderStore((s) => s.prevMatch);
+  const scrollToBlockIndex = useReaderStore((s) => s.scrollToBlockIndex);
+  const currentContent = useFileStore((s) => s.currentContent);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const highlightSpansRef = useRef<HTMLSpanElement[]>([]);
+  /** 虚拟滚动模式：按解析块记录命中位置（块索引 + 块内第几次命中） */
+  const blockMatchesRef = useRef<{ blockIndex: number; occurrence: number }[]>(
+    [],
+  );
+  const activeQueryRef = useRef("");
 
   // 打开时自动聚焦
   useEffect(() => {
@@ -100,10 +109,107 @@ const SearchBar: React.FC = memo(() => {
       // 更新高亮样式：当前匹配更亮
       items.forEach((span, i) => {
         span.style.background =
-          i === index ? "rgba(255, 255, 0, 0.5)" : "rgba(255, 255, 0, 0.25)";
+          i === index
+            ? "var(--search-highlight-active, rgba(255,255,0,0.5))"
+            : "var(--search-highlight, rgba(255,255,0,0.25))";
       });
     },
     [getScrollContainer],
+  );
+
+  /** 在指定容器内高亮 query，返回按出现顺序的 span 列表 */
+  const highlightWithin = useCallback((root: HTMLElement, query: string) => {
+    const spans: HTMLSpanElement[] = [];
+    const lowerQuery = query.toLowerCase();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const textNodes: Text[] = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode as Text;
+      if (!(node.textContent || "").toLowerCase().includes(lowerQuery)) continue;
+      textNodes.push(node);
+    }
+
+    for (const node of textNodes) {
+      const text = node.textContent || "";
+      const lower = text.toLowerCase();
+      let from = 0;
+      const fragment = document.createDocumentFragment();
+
+      while (true) {
+        const idx = lower.indexOf(lowerQuery, from);
+        if (idx === -1) break;
+        if (idx > from) {
+          fragment.appendChild(document.createTextNode(text.slice(from, idx)));
+        }
+        const span = document.createElement("span");
+        span.textContent = text.slice(idx, idx + query.length);
+        span.className = "search-highlight";
+        span.style.background = "var(--search-highlight, rgba(255,255,0,0.25))";
+        span.style.color = "inherit";
+        span.style.borderRadius = "2px";
+        span.style.padding = "0 1px";
+        fragment.appendChild(span);
+        spans.push(span);
+        from = idx + query.length;
+      }
+
+      if (from < text.length) {
+        fragment.appendChild(document.createTextNode(text.slice(from)));
+      }
+      node.parentNode?.replaceChild(fragment, node);
+    }
+
+    return spans;
+  }, []);
+
+  /**
+   * 虚拟滚动模式下跳转到第 index 个命中：先让虚拟列表滚到目标块，
+   * 等块挂载后再就地高亮并居中。
+   */
+  const gotoBlockMatch = useCallback(
+    (index: number) => {
+      const match = blockMatchesRef.current[index];
+      const query = activeQueryRef.current;
+      if (!match || !query || !scrollToBlockIndex) return;
+
+      clearHighlights();
+      scrollToBlockIndex(match.blockIndex);
+
+      const attempt = (retries: number) => {
+        const blockEl = document.querySelector<HTMLElement>(
+          `[data-index="${match.blockIndex}"]`,
+        );
+        if (!blockEl) {
+          if (retries > 0) setTimeout(() => attempt(retries - 1), 120);
+          return;
+        }
+
+        const spans = highlightWithin(blockEl, query);
+        highlightSpansRef.current = spans;
+        const target = spans[match.occurrence] ?? spans[0];
+        spans.forEach((span) => {
+          span.style.background =
+            span === target
+              ? "var(--search-highlight-active, rgba(255,255,0,0.5))"
+              : "var(--search-highlight, rgba(255,255,0,0.25))";
+        });
+
+        const scrollContainer = getScrollContainer();
+        if (!target || !scrollContainer) return;
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset =
+          targetRect.top - containerRect.top + scrollContainer.scrollTop;
+        scrollContainer.scrollTo({
+          top: offset - scrollContainer.clientHeight / 2 + targetRect.height / 2,
+          behavior: "smooth",
+        });
+      };
+
+      setTimeout(() => attempt(3), 150);
+    },
+    [clearHighlights, getScrollContainer, highlightWithin, scrollToBlockIndex],
   );
 
   // 搜索高亮
@@ -113,7 +219,38 @@ const SearchBar: React.FC = memo(() => {
       clearHighlights();
 
       if (!query.trim()) {
+        blockMatchesRef.current = [];
         setSearchResults([]);
+        return;
+      }
+
+      // ── 虚拟滚动模式：按解析块搜索全文，再滚动到块并就地高亮 ──
+      if (scrollToBlockIndex) {
+        activeQueryRef.current = query;
+        const lowerQuery = query.toLowerCase();
+        const { blocks } = parseMarkdownBlocks(currentContent);
+        const matches: { blockIndex: number; occurrence: number }[] = [];
+
+        blocks.forEach((block, blockIndex) => {
+          const raw = (block.raw || "").toLowerCase();
+          let from = 0;
+          let occurrence = 0;
+          while (true) {
+            const idx = raw.indexOf(lowerQuery, from);
+            if (idx === -1) break;
+            matches.push({ blockIndex, occurrence });
+            occurrence += 1;
+            from = idx + lowerQuery.length;
+          }
+        });
+
+        blockMatchesRef.current = matches;
+        setSearchResults(matches.map((_, i) => i));
+        if (matches.length > 0) {
+          // 先归位再置 0，确保命中下标未变化时 effect 仍会触发跳转
+          setCurrentSearchIndex(-1);
+          setTimeout(() => setCurrentSearchIndex(0), 0);
+        }
         return;
       }
 
@@ -168,7 +305,7 @@ const SearchBar: React.FC = memo(() => {
           // 高亮匹配文本
           const span = document.createElement("span");
           span.textContent = text.slice(idx, idx + query.length);
-          span.style.background = "rgba(255, 255, 0, 0.25)";
+          span.style.background = "var(--search-highlight, rgba(255,255,0,0.25))";
           span.style.color = "inherit";
           span.style.borderRadius = "2px";
           span.style.padding = "0 1px";
@@ -202,6 +339,8 @@ const SearchBar: React.FC = memo(() => {
       setCurrentSearchIndex,
       getScrollContainer,
       scrollToMatch,
+      scrollToBlockIndex,
+      currentContent,
     ],
   );
 
@@ -229,10 +368,18 @@ const SearchBar: React.FC = memo(() => {
 
   // 监听 currentSearchIndex 变化，跳转到对应匹配
   useEffect(() => {
-    if (currentSearchIndex >= 0) {
+    if (currentSearchIndex < 0) return;
+    if (scrollToBlockIndex) {
+      gotoBlockMatch(currentSearchIndex);
+    } else {
       scrollToMatch(currentSearchIndex);
     }
-  }, [currentSearchIndex, scrollToMatch]);
+  }, [
+    currentSearchIndex,
+    scrollToBlockIndex,
+    gotoBlockMatch,
+    scrollToMatch,
+  ]);
 
   // 输入变化时重新搜索（debounce）
   useEffect(() => {
