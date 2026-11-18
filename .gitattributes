@@ -1,0 +1,4 @@
+# 仅约束 shell 脚本的行尾：Windows 上 core.autocrlf=true 会把检出写成 CRLF，
+# 而 bash 执行带 CR 的脚本会在每行末尾报 “$'\r': command not found”。
+# 只收窄到 *.sh，不改动其它文件的行尾策略。
+*.sh text eol=lf
