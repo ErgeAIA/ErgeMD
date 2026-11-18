@@ -36,6 +36,7 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
     const [isExpanded, setIsExpanded] = useState(false);
     const { t } = useTranslation();
     const [previewLevel, setPreviewLevel] = useState<ConfigLevel | null>(null);
+    const [showParams, setShowParams] = useState(false);
 
     // 语言化后的级别说明：数值参数保留，文案走 i18n
     const localizedInfo = useCallback(
@@ -319,13 +320,18 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
                 borderColor: "var(--divider)",
               }}
             >
-              <div
-                className="text-xs mb-2"
+              <button
+                type="button"
+                onClick={() => setShowParams((v) => !v)}
+                className="w-full flex items-center justify-between text-xs mb-2 cursor-pointer bg-transparent border-none p-0"
                 style={{ color: "var(--text-secondary)" }}
               >
-                {t("settings.configLevelUI.params")}
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
+                <span>{t("settings.configLevelUI.params")}</span>
+                <span aria-hidden="true">{showParams ? "▾" : "▸"}</span>
+              </button>
+              {showParams && (
+                <>
+                  <div className="grid grid-cols-3 gap-2 text-center">
                 {presetParams.map(({ level, virtualThreshold }) => (
                   <div key={level} className="text-xs">
                     <div style={{ color: "var(--text-secondary)" }}>
@@ -355,6 +361,8 @@ export const ConfigLevelSelector: React.FC<ConfigLevelSelectorProps> =
                   </div>
                 ))}
               </div>
+                </>
+              )}
             </div>
           </div>
         )}

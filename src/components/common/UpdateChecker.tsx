@@ -51,6 +51,13 @@ const UpdateChecker: React.FC = memo(() => {
   const [expanded, setExpanded] = useState(false);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  /** 先播 150ms 收起动画再卸载，避免卡片瞬间消失 */
+  const handleDismiss = useCallback(() => {
+    setClosing(true);
+    window.setTimeout(() => setDismissed(true), 150);
+  }, []);
 
   // 开发期预览：VITE_UPDATE_PREVIEW=1 时注入一条假更新，便于打磨卡片本身
   useEffect(() => {
@@ -98,6 +105,16 @@ const UpdateChecker: React.FC = memo(() => {
   const [installed, setInstalled] = useState(false);
   const updateRef = useRef<Update | null>(null);
   updateRef.current = update;
+
+  // Esc 关闭更新卡（与搜索/面板的 Esc 行为保持一致）
+  useEffect(() => {
+    if (!update || dismissed) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleDismiss();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [update, dismissed, handleDismiss]);
   const receivedRef = useRef(0);
   const contentLengthRef = useRef(0);
 
@@ -108,6 +125,7 @@ const UpdateChecker: React.FC = memo(() => {
       if (result) {
         setUpdate(result);
         setDismissed(false);
+        setClosing(false);
       }
     } catch {
       // 自动检查失败保持静默（dev 模式 / 网络不通）
@@ -128,6 +146,7 @@ const UpdateChecker: React.FC = memo(() => {
       if (pendingUpdate) {
         setUpdate(pendingUpdate);
         setDismissed(false);
+        setClosing(false);
       }
       setExpanded(true);
     };
@@ -235,6 +254,13 @@ const UpdateChecker: React.FC = memo(() => {
         ...glassStyle,
       }}
     >
+      <div
+        style={{
+          opacity: closing ? 0 : 1,
+          transform: closing ? "translateY(8px)" : "none",
+          transition: "opacity 150ms ease, transform 150ms ease",
+        }}
+      >
       {!expanded ? (
         // ── 折叠态：一条窄条，不压住正文 ──
         <div
@@ -272,7 +298,7 @@ const UpdateChecker: React.FC = memo(() => {
               >
                 {t("update.details")}
               </button>
-              <CloseButton onClick={() => setDismissed(true)} label={t("titleBar.close")} />
+              <CloseButton onClick={handleDismiss} label={t("titleBar.close")} />
             </>
           )}
         </div>
@@ -302,7 +328,7 @@ const UpdateChecker: React.FC = memo(() => {
             >
               ⋯
             </button>
-            <CloseButton onClick={() => setDismissed(true)} label={t("titleBar.close")} />
+            <CloseButton onClick={handleDismiss} label={t("titleBar.close")} />
           </div>
           {releasedOn && (
             <div className="mt-1.5 text-[12px]" style={{ color: "var(--text-secondary)" }}>
@@ -492,6 +518,7 @@ const UpdateChecker: React.FC = memo(() => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 });

@@ -1,6 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useReaderStore } from "@/stores/readerStore";
 import type { ToastMessage } from "@/types";
+import i18n from "@/i18n";
 import React, { memo } from "react";
 
 // Toast 类型对应的颜色配置
@@ -69,7 +70,7 @@ const ToastItem: React.FC<{
       )}
       <button
         onClick={onClose}
-        aria-label="关闭通知"
+        aria-label={i18n.t("common.closeNotification")}
         className="hover-btn-icon flex items-center justify-center shrink-0 bg-transparent border-none cursor-pointer p-0 text-inherit"
         style={{ opacity: 0.6 }}
       >

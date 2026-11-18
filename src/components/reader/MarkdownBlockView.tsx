@@ -1,7 +1,7 @@
 import { useQuickEdit } from "@/hooks/useQuickEdit";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { MarkdownBlock } from "@/types/markdownBlock";
-import React, { memo, useMemo } from "react";
+import React, { memo, useId, useMemo } from "react";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
@@ -90,6 +90,8 @@ interface MarkdownBlockViewProps {
 
 const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
   ({ block, referenceDefinitions }) => {
+    // 每个块一个唯一渐变 id：同一文档多个分隔线时不再重复 DOM id
+    const hrGradientId = useId();
     const { startEdit } = useQuickEdit();
     const paragraphSpacing = useSettingsStore(
       (s) => s.readingSettings.paragraphSpacing,
@@ -107,8 +109,8 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
 
       return (
         <div
-          id={block.tocId}
           data-block-type="heading"
+          data-toc-id={block.tocId}
           data-raw={encodeURIComponent(block.raw)}
           className="markdown-body"
         >
@@ -219,12 +221,12 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
             style={{ display: "block" }}
           >
             <defs>
-              <linearGradient id="hr-taper-grad">
+              <linearGradient id={hrGradientId}>
                 <stop offset="0%" stopColor="var(--accent-cyan, #00FFFF)" />
                 <stop offset="100%" stopColor="var(--accent-purple, #BF00FF)" />
               </linearGradient>
             </defs>
-            <path d="M0,1 Q50,0 100,1 Q50,2 0,1 Z" fill="url(#hr-taper-grad)" />
+            <path d="M0,1 Q50,0 100,1 Q50,2 0,1 Z" fill={`url(#${hrGradientId})`} />
           </svg>
         </div>
       );
@@ -523,7 +525,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 style={{ display: "block" }}
               >
                 <defs>
-                  <linearGradient id="hr-taper-grad">
+                  <linearGradient id={hrGradientId}>
                     <stop offset="0%" stopColor="var(--accent-cyan, #00FFFF)" />
                     <stop
                       offset="100%"
@@ -533,7 +535,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 </defs>
                 <path
                   d="M0,1 Q50,0 100,1 Q50,2 0,1 Z"
-                  fill="url(#hr-taper-grad)"
+                  fill={`url(#${hrGradientId})`}
                 />
               </svg>
             </div>

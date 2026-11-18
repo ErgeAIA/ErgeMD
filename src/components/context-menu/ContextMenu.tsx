@@ -1,5 +1,6 @@
 import "@/styles/context-menu.css";
 import type { ContextMenuItem, ContextMenuState } from "@/types";
+import i18n from "@/i18n";
 import React, { memo, useCallback, useEffect, type RefObject } from "react";
 
 interface ContextMenuProps {
@@ -45,7 +46,7 @@ const ContextMenu: React.FC<ContextMenuProps> = memo(
         ref={menuRef}
         className="context-menu"
         role="menu"
-        aria-label="上下文菜单"
+        aria-label={i18n.t("menu.contextMenu")}
         data-no-drag
         style={{
           left: menuState.x,

@@ -13,9 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The update card uses far less accent color**: body text is regular ink, accent stays on the button and progress bar, and light themes get their own shadow
 - **Larger type and more breathing room in the update card**: 13px body at 1.75 line height, wider padding, and buttons are 5px rounded instead of pills
 - **Filled buttons pick a light or dark label per theme**, all 14 themes now clear 4.5:1
+- **Menus, toasts, the error screen and parse failures are localized** (these were hardcoded Chinese before)
+- **The table of contents keeps a single Tab stop** and marks the current section; Enter/Space still jumps
+- **The performance level moves under "Advanced"** with its parameter table collapsed by default
 
 ### Fixed
 
+- **Gradient rules no longer duplicate DOM ids** — each thematic break owns its own gradient
+- **Removed the duplicate Bilibili entry on the About page** (the clickable card stays)
+- **The update card closes with Esc** and plays a 150ms exit
+- **Skipped versions can be cleared from settings** instead of waiting for the next release
+- **The easter egg and its popups follow the theme** instead of a fixed cyber-cyan
 - **Skipping a version can be undone** and moved into a "more" menu
 - **Install progress is no longer hidden**: "collapse" disappears while downloading, and the narrow bar shows the percentage
 - **Update button and note text meet contrast in light themes**

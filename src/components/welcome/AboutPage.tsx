@@ -12,10 +12,8 @@ const AVATAR_IMG = "/images/avatar.png";
 const BILIBILI_LOGO = "/images/bilibili.png";
 const QR_TIP_IMG = "/images/qr-tip.png";
 const QR_FRIEND_IMG = "/images/qr-friend.png";
-const QR_BILIBILI_QR = "/images/qr-bilibili.png";
 const ICO_REWARD = "/images/reward-ico.png";
 const ICO_WECHAT = "/images/Wechat-ico.png";
-const ICO_BILIBILI = "/images/bilibili-ico.png";
 
 interface AboutPageProps {
   onClose: () => void;
@@ -147,7 +145,6 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
   const qrMap: Record<string, { src: string; label: string }> = {
     tip: { src: QR_TIP_IMG, label: t("about.qrTipLabel") },
     friend: { src: QR_FRIEND_IMG, label: t("about.qrFriendLabel") },
-    bilibili: { src: QR_BILIBILI_QR, label: t("about.bilibiliTitle") },
   };
 
   return (
@@ -493,11 +490,6 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                     imgSrc={ICO_WECHAT}
                     hovered={hoveredQr === "friend"}
                     onHover={(v) => setHoveredQr(v ? "friend" : null)}
-                  />
-                  <QrButton
-                    imgSrc={ICO_BILIBILI}
-                    hovered={hoveredQr === "bilibili"}
-                    onHover={(v) => setHoveredQr(v ? "bilibili" : null)}
                   />
                 </div>
               </div>

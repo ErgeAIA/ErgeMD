@@ -1,6 +1,7 @@
 import { getCodeBlockContextMenuItems } from "@/components/context-menu/CodeBlockContextMenu";
 import ContextMenu from "@/components/context-menu/ContextMenu";
 import { useInteractionConfig } from "@/hooks/useActiveConfig";
+import i18n from "@/i18n";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useReaderStore } from "@/stores/readerStore";
 import hljs from "highlight.js/lib/core";
@@ -223,8 +224,8 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
             opacity: 0.6,
             transition: "color 150ms ease-out",
           }}
-          aria-label={copied ? "已复制" : "复制代码"}
-          title={copied ? "Copied!" : "Copy"}
+          aria-label={copied ? i18n.t("reader.copied") : i18n.t("reader.copyCode")}
+          title={copied ? i18n.t("reader.copied") : i18n.t("reader.copyCode")}
         >
           {copied ? (
             <svg

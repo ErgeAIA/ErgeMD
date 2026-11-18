@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface TabContextMenuProps {
   hasMultipleTabs: boolean;
@@ -41,7 +42,7 @@ export function getTabContextMenuItems(
 
   items.push({
     id: "closeTab",
-    label: "关闭标签页",
+    label: i18n.t("menu.closeTab"),
     shortcut: "Ctrl+W",
     action: props.onCloseTab,
   });
@@ -49,7 +50,7 @@ export function getTabContextMenuItems(
   if (props.hasMultipleTabs) {
     items.push({
       id: "closeOtherTabs",
-      label: "关闭其他标签",
+      label: i18n.t("menu.closeOtherTabs"),
       action: props.onCloseOtherTabs,
     });
   }
@@ -57,7 +58,7 @@ export function getTabContextMenuItems(
   if (props.hasRightTabs) {
     items.push({
       id: "closeRightTabs",
-      label: "关闭右侧标签",
+      label: i18n.t("menu.closeTabsToRight"),
       action: props.onCloseRightTabs,
     });
   }
@@ -66,7 +67,7 @@ export function getTabContextMenuItems(
 
   items.push({
     id: "openInNewWindow",
-    label: "在新窗口中打开",
+    label: i18n.t("menu.openInNewWindow"),
     shortcut: "Ctrl+N",
     action: props.onOpenInNewWindow,
   });
@@ -75,14 +76,14 @@ export function getTabContextMenuItems(
 
   items.push({
     id: "copyFilePath",
-    label: "复制文件路径",
+    label: i18n.t("menu.copyFilePath"),
     shortcut: "Ctrl+⇧+C",
     action: props.onCopyFilePath,
   });
 
   items.push({
     id: "revealInExplorer",
-    label: "在资源管理器中显示",
+    label: i18n.t("menu.revealInExplorer"),
     shortcut: "Ctrl+⇧+D",
     action: props.onRevealInExplorer,
   });

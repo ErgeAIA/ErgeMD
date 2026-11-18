@@ -230,7 +230,7 @@ function App() {
         console.error("Failed to initialize database:", err);
         useReaderStore
           .getState()
-          .addToast({ type: "error", message: "数据库初始化失败" });
+          .addToast({ type: "error", message: i18n.t("reader.dbInitFailed") });
       });
   }, []);
 
@@ -539,21 +539,21 @@ function App() {
           exportHtml().catch(() => {
             useReaderStore
               .getState()
-              .addToast({ type: "error", message: "导出失败" });
+              .addToast({ type: "error", message: i18n.t("reader.exportFailed") });
           });
         },
         onExportPdf: () => {
           exportPdf().catch(() => {
             useReaderStore
               .getState()
-              .addToast({ type: "error", message: "导出失败" });
+              .addToast({ type: "error", message: i18n.t("reader.exportFailed") });
           });
         },
         onExportPdfGrayscale: () => {
           exportPdfGrayscale().catch(() => {
             useReaderStore
               .getState()
-              .addToast({ type: "error", message: "导出失败" });
+              .addToast({ type: "error", message: i18n.t("reader.exportFailed") });
           });
         },
         onExportDocx: () => {
@@ -561,7 +561,7 @@ function App() {
           exportDocx(content || "").catch(() => {
             useReaderStore
               .getState()
-              .addToast({ type: "error", message: "导出失败" });
+              .addToast({ type: "error", message: i18n.t("reader.exportFailed") });
           });
         },
         onOpenInNewWindow: () => {
@@ -646,7 +646,7 @@ function App() {
         console.error("Failed to scan workspace:", err);
         useReaderStore
           .getState()
-          .addToast({ type: "error", message: "文件夹打开失败" });
+          .addToast({ type: "error", message: i18n.t("reader.folderOpenFailed") });
       }
     },
     [setWorkspace],

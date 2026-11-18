@@ -4,6 +4,7 @@ import { useReaderStore } from "@/stores/readerStore";
 import { queryActiveMarkdownBody } from "@/utils/domUtils";
 import { parseMarkdownBlocks } from "@/utils/markdownBlocks";
 import React, { memo, useCallback, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * 文内搜索栏 — 固定在视口顶部居中。
@@ -16,6 +17,7 @@ import React, { memo, useCallback, useEffect, useRef } from "react";
  * - openSearch / closeSearch / nextMatch / prevMatch
  */
 const SearchBar: React.FC = memo(() => {
+  const { t } = useTranslation();
   const interactionConfig = useInteractionConfig();
   const searchQuery = useReaderStore((s) => s.searchQuery);
   const searchResults = useReaderStore((s) => s.searchResults);
@@ -448,8 +450,8 @@ const SearchBar: React.FC = memo(() => {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="搜索..."
-        aria-label="搜索"
+        placeholder={t("reader.search")}
+        aria-label={t("reader.search")}
         className="flex-1 bg-transparent text-[13px] outline-none border-none min-w-0"
         style={{
           color: "var(--text-primary)",
@@ -477,8 +479,8 @@ const SearchBar: React.FC = memo(() => {
           style={{
             color: "var(--text-secondary)",
           }}
-          aria-label="上一个匹配"
-          title="上一个 (Shift+Enter)"
+          aria-label={t("reader.prevMatch")}
+          title={t("reader.prevMatchHint")}
         >
           <svg
             aria-hidden="true"
@@ -502,8 +504,8 @@ const SearchBar: React.FC = memo(() => {
           style={{
             color: "var(--text-secondary)",
           }}
-          aria-label="下一个匹配"
-          title="下一个 (Enter)"
+          aria-label={t("reader.nextMatch")}
+          title={t("reader.nextMatchHint")}
         >
           <svg
             aria-hidden="true"
