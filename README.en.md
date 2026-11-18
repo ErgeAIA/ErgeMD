@@ -39,16 +39,16 @@ A desktop application focused on Markdown reading, with the core philosophy: **u
 
 ## Download
 
-Latest version **v0.6.0**:
+Latest version **v0.6.1**:
 
 | Type | Download Link |
 |------|---------------|
-| Portable (no install) | [ErgeMD-v0.6.0-windows-x64-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.0/ErgeMD-v0.6.0-windows-x64-portable.zip) |
-| NSIS Installer | [ErgeMD-v0.6.0-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.0/ErgeMD-v0.6.0-setup.exe) |
+| Portable (no install) | [ErgeMD-v0.6.1-windows-x64-portable.zip](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.1/ErgeMD-v0.6.1-windows-x64-portable.zip) |
+| NSIS Installer | [ErgeMD-v0.6.1-setup.exe](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.1/ErgeMD-v0.6.1-setup.exe) |
 
 ### macOS Downloads
 
-- [ErgeMD-v0.6.0-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.0/ErgeMD-v0.6.0-macos-arm64.dmg) — Apple Silicon native installer
+- [ErgeMD-v0.6.1-macos-arm64.dmg](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.1/ErgeMD-v0.6.1-macos-arm64.dmg) — Apple Silicon native installer
 
 > **macOS Platform Note**: The CI matrix currently builds only Apple Silicon (arm64); Intel Mac users are not provided a native build yet.
 
@@ -56,8 +56,8 @@ Latest version **v0.6.0**:
 
 ### Linux Downloads
 
-- [ErgeMD-v0.6.0-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.0/ErgeMD-v0.6.0-linux-x86_64.AppImage) — No-install portable
-- [ErgeMD-v0.6.0-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.0/ErgeMD-v0.6.0-linux-x86_64.deb) — Debian / Ubuntu package
+- [ErgeMD-v0.6.1-linux-x86_64.AppImage](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.1/ErgeMD-v0.6.1-linux-x86_64.AppImage) — No-install portable
+- [ErgeMD-v0.6.1-linux-x86_64.deb](https://github.com/ErgeAIA/ErgeMD/releases/download/v0.6.1/ErgeMD-v0.6.1-linux-x86_64.deb) — Debian / Ubuntu package
 
 **System dependencies** (Ubuntu 22.04+ / Debian 12+):
 

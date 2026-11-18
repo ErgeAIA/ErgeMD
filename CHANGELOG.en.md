@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-18
+
 ### Changed
 
 - **The update notice is now a narrow bar** that does not cover the text; details expand on demand, and each group shows its first 3 items with the rest folded into "+N more"
