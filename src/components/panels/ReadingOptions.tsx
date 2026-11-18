@@ -1,5 +1,5 @@
 import { ConfigLevelSelector } from "@/components/settings/ConfigLevelSelector";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { DEFAULT_READING_SETTINGS, useSettingsStore } from "@/stores/settingsStore";
 import type { MindmapLayout, MindmapStyle, ThemeMode } from "@/types";
 import { getThemePreviewColors } from "@/utils/themePreview";
 import { invoke } from "@tauri-apps/api/core";
@@ -228,8 +228,43 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
 
     const isActive = (theme: ThemeMode) => readingSettings.theme === theme;
 
+    const handleResetTypography = useCallback(() => {
+      updateReadingSettings({
+        fontFamily: DEFAULT_READING_SETTINGS.fontFamily,
+        fontSize: DEFAULT_READING_SETTINGS.fontSize,
+        lineHeight: DEFAULT_READING_SETTINGS.lineHeight,
+        letterSpacing: DEFAULT_READING_SETTINGS.letterSpacing,
+        paragraphSpacing: DEFAULT_READING_SETTINGS.paragraphSpacing,
+        pageWidth: DEFAULT_READING_SETTINGS.pageWidth,
+      });
+    }, [updateReadingSettings]);
+
     return (
       <div className="flex flex-col" style={{ padding: "16px", gap: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            onClick={handleResetTypography}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "2px 4px",
+              fontSize: "12px",
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              borderRadius: "4px",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--accent-cyan)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-muted)";
+            }}
+          >
+            {t("settings.resetTypography")}
+          </button>
+        </div>
+
         {/* 主题选择 — 网格 */}
         <div>
           <div className="block" style={labelStyle}>

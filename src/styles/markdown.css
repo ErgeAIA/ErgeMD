@@ -8,6 +8,8 @@
   word-wrap: break-word;
   user-select: text;
   -webkit-user-select: text;
+  /* 关闭浏览器合成斜体：中文字体没有 italic 变体，合成斜体在中文下是机械倾斜 */
+  font-synthesis: none;
 }
 
 /* ===== 标题 ===== */
@@ -38,21 +40,22 @@
 
 .markdown-body h4 {
   color: var(--h4-color) !important;
-  font-size: 1.1em;
+  font-size: 1.15em;
   font-weight: 600;
   margin: 1em 0 0.3em;
 }
 
 .markdown-body h5 {
   color: var(--h5-color) !important;
-  font-size: 1em;
+  font-size: 1.05em;
   font-weight: 600;
   margin: 1em 0 0.3em;
 }
 
 .markdown-body h6 {
   color: var(--h6-color) !important;
-  font-size: 1em;
+  font-size: 0.95em;
+  letter-spacing: 0.02em;
   font-weight: 600;
   margin: 1em 0 0.3em;
 }

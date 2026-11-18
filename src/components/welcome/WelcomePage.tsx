@@ -17,6 +17,7 @@ interface WelcomePageProps {
 }
 
 /** 快捷键分组 */
+/** 零文档状态下真正可按的快捷键：其余项在空状态按了不会有反应，不在首屏教 */
 const SHORTCUT_GROUPS = [
   {
     label: "file" as const,
@@ -24,36 +25,13 @@ const SHORTCUT_GROUPS = [
       { key: "openFile", keys: "Ctrl+O" },
       { key: "openFolder", keys: "Ctrl+Alt+O" },
       { key: "newWindow", keys: "Ctrl+N" },
-      { key: "saveHint", keys: "Ctrl+S" },
-      { key: "closeTab", keys: "Ctrl+W" },
-      { key: "switchTab", keys: "Ctrl+Tab" },
-      { key: "pinTab", keys: "Ctrl+⇧+P" },
-      { key: "copyFilePath", keys: "Ctrl+⇧+C" },
-      { key: "revealInExplorer", keys: "Ctrl+⇧+D" },
-    ],
-  },
-  {
-    label: "export" as const,
-    items: [
-      { key: "exportHtml", keys: "Ctrl+E" },
-      { key: "exportWord", keys: "Ctrl+⇧+E" },
-      { key: "exportPdf", keys: "Ctrl+P" },
-      { key: "exportPdfGrayscale", keys: "Ctrl+⇧+P" },
     ],
   },
   {
     label: "view" as const,
     items: [
-      { key: "search", keys: "Ctrl+F" },
-      { key: "toggleSidebar", keys: "Ctrl+L" },
-      { key: "pinToc", keys: "Ctrl+⇧+L" },
-      { key: "goHome", keys: "Ctrl+⇧+R" },
-      { key: "toggleTheme", keys: "Ctrl+⇧+T" },
       { key: "settings", keys: "Ctrl+," },
-      { key: "adjustFont", keys: "Ctrl+↑/↓" },
-      { key: "resetFont", keys: "Ctrl+0" },
       { key: "fullscreen", keys: "F11" },
-      { key: "esc", keys: "Esc" },
     ],
   },
 ] as const;
@@ -74,6 +52,8 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
   ({ onOpenFile, onOpenFolder, onShowAbout, dbReady }) => {
     const { t } = useTranslation();
     const [recentFiles, setRecentFiles] = useState<RecentFileItem[]>([]);
+    /** 最近列表是否已从数据库取回：未取回时不能断言「没有最近文件」 */
+    const [recentLoaded, setRecentLoaded] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [ripples, setRipples] = useState<
@@ -86,8 +66,11 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
     useEffect(() => {
       if (!dbReady) return;
       invoke<RecentFileItem[]>("get_recent_files", { limit: 10 })
-        .then(setRecentFiles)
-        .catch(() => {});
+        .then((files) => {
+          setRecentFiles(files);
+          setRecentLoaded(true);
+        })
+        .catch(() => setRecentLoaded(true));
     }, [dbReady]);
 
     const handleRecentClick = useCallback(
@@ -98,11 +81,9 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
     );
 
     const handleClearRecent = useCallback(async () => {
+      // 只清空最近列表；阅读进度属于用户数据，不能随列表一起抹掉
       try {
-        await Promise.all([
-          invoke("clear_recent_files"),
-          invoke("clear_all_reading_progress"),
-        ]);
+        await invoke("clear_recent_files");
         setRecentFiles([]);
       } catch {
         setRecentFiles([]);
@@ -352,8 +333,11 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
           {/* Logo */}
           <AppIcon size="min(160px, 20vh)" style={{ marginBottom: "2vh" }} />
 
-          {/* 虚线拖拽框（左键=打开文件） */}
+          {/* 虚线拖拽框（左键=打开文件；键盘 Enter/Space 同效） */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-label={t("welcome.clickToOpen")}
             className="flex flex-col items-center justify-center cursor-pointer"
             style={{
               width: "min(560px, 70vw)",
@@ -364,6 +348,21 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
               gap: "10px",
             }}
             onClick={() => onOpenFile()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenFile();
+              }
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "var(--drop-zone-hover-border)";
+              e.currentTarget.style.outline = "1px solid var(--active-border)";
+              e.currentTarget.style.outlineOffset = "2px";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "var(--drop-zone-border)";
+              e.currentTarget.style.outline = "none";
+            }}
           >
             {/* 主提示 */}
             <span
@@ -612,7 +611,9 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
                 )}
               </div>
 
-              {recentFiles.length === 0 ? (
+              {!recentLoaded ? (
+                <div style={{ height: "18px", marginTop: "12px" }} />
+              ) : recentFiles.length === 0 ? (
                 <p
                   style={{
                     fontSize: "13px",

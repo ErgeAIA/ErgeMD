@@ -16,8 +16,8 @@ interface StatusBarProps {
  *
  * 沉浸式阅读逻辑（由父组件 App.tsx 控制）：
  * - 鼠标移到底部 → opacity 升至 0.8
- * - 鼠标离开 → opacity 降至 0.6
- * - 滚动中 → opacity 降至 0.2
+ * - 滚动中 → opacity 降至 0.6
+ * - 静止 → opacity 降至 0.45（低于此值字数与进度不可读）
  */
 const StatusBar: React.FC<StatusBarProps> = memo(
   ({ wordCount, percentage, opacity, onHoverChange }) => {

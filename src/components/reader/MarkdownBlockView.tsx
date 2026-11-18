@@ -350,8 +350,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 marginLeft: 0,
                 marginRight: 0,
                 marginBottom: "1em",
-                color: "var(--text-secondary)",
-                fontStyle: "italic",
+                color: "var(--blockquote-text)",
                 ...incomingStyle,
               }}
             >
@@ -370,7 +369,7 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                   width: "100%",
                   borderCollapse: "collapse",
                   color: "var(--text-primary)",
-                  fontSize: "0.95em",
+                  fontSize: "0.9em",
                   ...incomingStyle,
                 }}
               >
@@ -468,9 +467,10 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
               <code
                 style={{
                   background: "var(--inline-code-bg)",
-                  color: "var(--accent-pink)",
-                  padding: "2px 6px",
-                  borderRadius: "3px",
+                  color: "var(--inline-code-text)",
+                  border: "1px solid rgba(var(--accent-pink-rgb), 0.16)",
+                  padding: "0.12em 0.32em",
+                  borderRadius: "0.25em",
                   fontSize: "0.9em",
                   fontFamily: "var(--font-mono)",
                   ...incomingStyle,
@@ -550,8 +550,8 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
             <strong
               {...rest}
               style={{
-                color: "var(--text-heading)",
-                fontWeight: 600,
+                color: "inherit",
+                fontWeight: 700,
                 ...incomingStyle,
               }}
             >
@@ -608,9 +608,9 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
                 fontFamily: "var(--font-mono)",
                 color: "var(--text-primary)",
                 backgroundColor: "var(--bg-code)",
-                border: "1px solid var(--divider)",
-                borderRadius: "4px",
-                boxShadow: "0 1px 1px rgba(0,0,0,0.2)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "0.25em",
+                boxShadow: "inset 0 -1px 0 var(--border-subtle)",
                 ...incomingStyle,
               }}
             >
@@ -625,10 +625,10 @@ const MarkdownBlockView: React.FC<MarkdownBlockViewProps> = memo(
             <mark
               {...rest}
               style={{
-                backgroundColor: "var(--accent-yellow)",
-                color: "var(--bg-page)",
-                padding: "1px 4px",
-                borderRadius: "2px",
+                backgroundColor: "var(--search-highlight)",
+                color: "var(--text-primary)",
+                padding: "0.05em 0.2em",
+                borderRadius: "0.2em",
                 ...incomingStyle,
               }}
             >

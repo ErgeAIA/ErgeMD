@@ -82,6 +82,7 @@
     "autoSaveProgress": "Auto Save Reading Progress",
     "readingOptions": "Reading Options",
     "panelWidth": "Resize panel",
+    "resetTypography": "Reset typography",
     "fontPresets": {
       "System Default": "System Default",
       "Windows": "Windows",
@@ -189,6 +190,8 @@
     "footer": "© 2026 宝藏二哥AIA",
     "githubStar": "⭐ Star on GitHub",
     "menuLabel": "About ErgeMD",
+    "authorName": "宝藏二哥 AIA",
+    "license": "AGPL-3.0 · Free · Open source",
     "escToClose": "Press Esc to close",
     "qrTipLabel": "Buy Erge a cyber tea 🍵",
     "qrFriendLabel": "👉 Add friend, let's chat 👋",
