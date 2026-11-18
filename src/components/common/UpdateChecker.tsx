@@ -237,7 +237,10 @@ const UpdateChecker: React.FC = memo(() => {
     >
       {!expanded ? (
         // ── 折叠态：一条窄条，不压住正文 ──
-        <div className="flex items-center gap-2.5 px-4 py-3">
+        <div
+          className="flex items-center gap-2.5"
+          style={{ padding: "12px 16px" }}
+        >
           <UpdateIcon size={16} />
           <button
             type="button"
@@ -275,7 +278,7 @@ const UpdateChecker: React.FC = memo(() => {
         </div>
       ) : (
         // ── 展开态：更新内容 + 应用内更新 ──
-        <div className="px-5 pt-4 pb-4">
+        <div style={{ padding: "16px 20px" }}>
           <div className="flex items-center gap-2.5">
             <UpdateIcon size={16} />
             <span className="font-semibold text-[14px]">{t("update.whatsNew")}</span>
@@ -308,7 +311,7 @@ const UpdateChecker: React.FC = memo(() => {
           )}
 
           {groups.length > 0 && (
-            <div className="mt-4 flex flex-col gap-4">
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
               {groups.map((group) => {
                 const shown = showAllNotes
                   ? group.items
@@ -317,14 +320,21 @@ const UpdateChecker: React.FC = memo(() => {
                 return (
                   <div key={group.category}>
                     <div
-                      className="text-[12px] mb-1.5"
-                      style={{ color: "var(--text-secondary)" }}
+                      className="text-[12px]"
+                      style={{ color: "var(--text-secondary)", marginBottom: 6 }}
                     >
                       {group.category}
                     </div>
                     <ul
-                      className="flex flex-col gap-1.5 m-0 pl-3 list-none"
-                      style={{ borderLeft: "2px solid var(--border-subtle)" }}
+                      style={{
+                        borderLeft: "2px solid var(--border-subtle)",
+                        paddingLeft: 12,
+                        margin: 0,
+                        listStyle: "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
                     >
                       {shown.map((item, idx) => (
                         <li
@@ -338,8 +348,8 @@ const UpdateChecker: React.FC = memo(() => {
                     </ul>
                     {hidden > 0 && (
                       <div
-                        className="text-[12px] mt-1.5"
-                        style={{ color: "var(--text-muted)" }}
+                        className="text-[12px]"
+                        style={{ color: "var(--text-muted)", marginTop: 6 }}
                       >
                         {t("update.moreItems", { count: hidden })}
                       </div>
@@ -364,7 +374,8 @@ const UpdateChecker: React.FC = memo(() => {
 
           {installProgress !== null && (
             <div
-              className="mt-3 flex items-center gap-2"
+              className="flex items-center gap-2"
+              style={{ marginTop: 12 }}
               role="progressbar"
               aria-valuenow={installProgress}
               aria-valuemin={0}
@@ -400,8 +411,12 @@ const UpdateChecker: React.FC = memo(() => {
           )}
 
           <div
-            className="relative flex items-center gap-2 mt-4 pt-3.5"
-            style={{ borderTop: "1px solid var(--border-subtle)" }}
+            className="relative flex items-center gap-2"
+            style={{
+              borderTop: "1px solid var(--border-subtle)",
+              marginTop: 16,
+              paddingTop: 14,
+            }}
           >
             {installed ? (
               <button
