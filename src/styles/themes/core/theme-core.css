@@ -173,6 +173,8 @@ html:not([data-theme]) {
 
   /* === 阴影 fallback === */
   --shadow-popup: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --shadow-floating-card: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --text-on-accent: #0A0A0F;
   --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.4);
 
   /* === 交互状态 fallback === */

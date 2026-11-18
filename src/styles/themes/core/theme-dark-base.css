@@ -130,6 +130,9 @@ ErgeMD 主题系统 - theme-dark-base.css
 
   /* === 阴影 === */
   --shadow-popup: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --shadow-floating-card: 0 12px 40px rgba(0, 0, 0, 0.4);
+  /* 实心品牌色按钮上的文字：暗色主题用近黑，亮色主题另给近黑以过 AA */
+  --text-on-accent: #0A0A0F;
   --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.4);
 
   /* === Overlay === */

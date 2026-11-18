@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The update notice is now a narrow bar** that does not cover the text; details expand on demand, and each group shows its first 3 items with the rest folded into "+N more"
+- **The update card uses far less accent color**: body text is regular ink, accent stays on the button and progress bar, and light themes get their own shadow
+
+### Fixed
+
+- **Skipping a version can be undone** and moved into a "more" menu
+- **Install progress is no longer hidden**: "collapse" disappears while downloading, and the narrow bar shows the percentage
+- **Update button and note text meet contrast in light themes**
+
 ## [0.6.0] - 2026-11-18
 
 ### Added

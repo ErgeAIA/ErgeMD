@@ -412,7 +412,7 @@
       },
       {
         "name": "floating-card",
-        "value": "0 12px 40px rgba(0, 0, 0, 0.4)",
+        "value": "var(--shadow-floating-card) — 暗色 0 12px 40px rgba(0,0,0,0.4) / 亮色 0.15",
         "purpose": "更新卡片、彩蛋大卡。"
       },
       {

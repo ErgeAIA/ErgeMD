@@ -261,6 +261,13 @@
     "installNow": "Update now",
     "downloading": "Downloading",
     "restartToUpdate": "Restart to finish update",
-    "installFailed": "Update installation failed, please try again later"
+    "installFailed": "Update installation failed, please try again later",
+    "moreActions": "More actions",
+    "showAllItems": "Show all {{count}} items",
+    "showLessItems": "Show less",
+    "moreItems": "{{count}} more",
+    "skipped": "Skipped v{{version}}",
+    "undoSkip": "Undo",
+    "installing": "Updating"
   }
 }
