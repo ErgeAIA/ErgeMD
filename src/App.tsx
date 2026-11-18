@@ -90,6 +90,10 @@ function App() {
   // 面板切换状态
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const toggleRightPanel = useCallback(
+    () => setRightPanelOpen((v) => !v),
+    [],
+  );
 
   // TitleBar 自动隐藏（顶部触发）
   const { visible: titleBarVisible, transition: titleBarTransition } =
@@ -864,7 +868,7 @@ function App() {
           visible={effectiveTitleBarVisible}
           transition={titleBarTransition}
           onToggleLeftPanel={() => setLeftPanelOpen((v) => !v)}
-          onToggleRightPanel={() => setRightPanelOpen((v) => !v)}
+          onToggleRightPanel={toggleRightPanel}
           showLeftPanelButton={hasWorkspace}
         />
       </div>
@@ -926,7 +930,7 @@ function App() {
         {hasOpenFile && (
           <RightPanel
             isOpen={rightPanelOpen}
-            onToggle={() => setRightPanelOpen((v) => !v)}
+            onToggle={toggleRightPanel}
           />
         )}
       </div>

@@ -39,6 +39,31 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onToggle]);
 
+  // 点面板外任意位置收起：正文、空白、搜索栏都算；标题栏与开关按钮除外，
+  // 免得拖窗口或点开关时先被收起、再被开关切回来
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      if (target.closest("[data-titlebar]")) return;
+      onToggle();
+    };
+
+    // 放到下一拍注册，避免打开面板的那次点击立刻把它关掉
+    const timer = window.setTimeout(() => {
+      document.addEventListener("mousedown", handleMouseDown);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
+  }, [isOpen, onToggle]);
+
   // 拖拽调整宽度逻辑
   useEffect(() => {
     if (!isResizing) return;

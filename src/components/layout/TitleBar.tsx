@@ -51,6 +51,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
 
     return (
       <div
+        data-titlebar
         onMouseDown={startDrag}
         onContextMenu={(e) => e.preventDefault()}
         className="flex items-center select-none shrink-0 relative"
@@ -229,6 +230,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
           {/* 阅读选项切换按钮 */}
           {onToggleRightPanel && (
             <button
+              data-right-panel-toggle
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleRightPanel();
