@@ -318,9 +318,14 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                 return (
                   <div
                     key={item.id || String(index)}
-                    tabIndex={0}
+                    tabIndex={
+                      index === (highlightIndex >= 0 ? highlightIndex : 0)
+                        ? 0
+                        : -1
+                    }
                     role="link"
                     aria-label={item.text}
+                    aria-current={isActive ? "true" : undefined}
                     onClick={(e) => handleClick(e, item)}
                     onKeyDown={(e) => handleItemKeyDown(e, item)}
                     onContextMenu={(e) => handleContextMenu(e, item)}

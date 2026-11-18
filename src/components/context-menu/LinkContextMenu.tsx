@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface LinkContextMenuProps {
   href: string;
@@ -19,12 +20,12 @@ export function getLinkContextMenuItems(
   const items: ContextMenuEntry[] = [
     {
       id: "openLink",
-      label: "打开链接",
+      label: i18n.t("menu.openLink"),
       action: props.onOpenLink,
     },
     {
       id: "copyLinkAddress",
-      label: "复制链接地址",
+      label: i18n.t("menu.copyLinkAddress"),
       shortcut: "Ctrl+C",
       action: props.onCopyLinkAddress,
     },
@@ -34,7 +35,7 @@ export function getLinkContextMenuItems(
   if (props.onEditLink) {
     items.push({
       id: "editLink",
-      label: "编辑链接",
+      label: i18n.t("menu.editLink"),
       action: props.onEditLink,
     });
   }

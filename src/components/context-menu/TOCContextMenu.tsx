@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface TOCContextMenuProps {
   sectionId: string;
@@ -20,13 +21,13 @@ export function getTOCContextMenuItems(
   return [
     {
       id: "copySectionTitle",
-      label: "复制章节标题",
+      label: i18n.t("menu.copySectionTitle"),
       action: props.onCopySectionTitle,
     },
     { id: "sep1", separator: true },
     {
       id: "exportSectionHtml",
-      label: "导出此章节为 HTML",
+      label: i18n.t("menu.exportSectionHtml"),
       action: props.onExportSectionHtml,
     },
   ];

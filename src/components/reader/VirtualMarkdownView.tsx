@@ -15,6 +15,7 @@ import React, {
 } from "react";
 import MarkdownBlockView from "./MarkdownBlockView";
 import { useReaderStore } from "@/stores/readerStore";
+import { useTranslation } from "react-i18next";
 
 // ── 公开接口 ──────────────────────────────────────────
 
@@ -35,6 +36,7 @@ const VirtualMarkdownView = React.forwardRef<
   VirtualMarkdownViewHandle,
   VirtualMarkdownViewProps
 >(({ content, scrollContainerRef, onTocReady, onActiveBlockChange }, ref) => {
+  const { t } = useTranslation();
   const config = useActiveConfig();
   const exportMode = useReaderStore((s) => s.exportMode);
   const lines = useMemo(() => content.split(/\r?\n/), [content]);
@@ -231,7 +233,7 @@ const VirtualMarkdownView = React.forwardRef<
   if (blocks.length === 0) {
     return (
       <div style={{ padding: "1em", color: "var(--text-muted)" }}>
-        无法解析文档内容
+        {t("reader.parseError")}
       </div>
     );
   }

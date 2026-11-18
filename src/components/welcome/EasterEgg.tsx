@@ -26,10 +26,12 @@ const QrButton: React.FC<{
         width: "48px",
         height: "48px",
         borderRadius: "10px",
-        border: hovered ? "1px solid #00F0FF" : "1px solid var(--divider)",
+        border: hovered
+          ? "1px solid var(--accent-cyan)"
+          : "1px solid var(--divider)",
         background: hovered
-          ? "rgba(0,240,255,0.08)"
-          : "var(--bg-tertiary, rgba(255,255,255,0.02))",
+          ? "rgba(var(--accent-cyan-rgb), 0.08)"
+          : "var(--bg-tertiary)",
         cursor: "pointer",
         fontSize: "24px",
         transition: "border-color 0.2s, background 0.2s, transform 0.2s",
@@ -88,7 +90,7 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
           position: "fixed",
           inset: 0,
           zIndex: 100,
-          background: "rgba(0,0,0,0.6)",
+          background: "var(--overlay-bg)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
         }}
@@ -106,10 +108,10 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
           left: "50%",
           transform: "translate(-50%, -50%)",
           zIndex: 101,
-          background: "var(--bg-secondary, #1e1e1e)",
+          background: "var(--bg-secondary)",
           border: "1px solid var(--divider)",
           borderRadius: "16px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+          boxShadow: "var(--shadow-floating-card)",
           padding: "32px",
           textAlign: "center",
           maxWidth: "320px",
@@ -200,11 +202,11 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             zIndex: 300,
-            background: "var(--bg-elevated, #2a2a3e)",
+            background: "var(--bg-secondary)",
             border: "1px solid var(--divider)",
             borderRadius: "12px",
             padding: "16px",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+            boxShadow: "var(--shadow-floating-card)",
           }}
           onMouseEnter={() => setHoveredQr(hoveredQr)}
           onMouseLeave={() => setHoveredQr(null)}

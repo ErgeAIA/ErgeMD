@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface FileListContextMenuProps {
   filePath: string;
@@ -24,28 +25,28 @@ export function getFileListContextMenuItems(
   return [
     {
       id: "open",
-      label: "打开",
+      label: i18n.t("menu.open"),
       action: props.onOpen,
     },
     {
       id: "openInNewTab",
-      label: "在新标签页打开",
+      label: i18n.t("menu.openInNewTab"),
       action: props.onOpenInNewTab,
     },
     {
       id: "openInNewWindow",
-      label: "在新窗口中打开",
+      label: i18n.t("menu.openInNewWindow"),
       action: props.onOpenInNewWindow,
     },
     { id: "sep1", separator: true },
     {
       id: "copyFilePath",
-      label: "复制文件路径",
+      label: i18n.t("menu.copyFilePath"),
       action: props.onCopyFilePath,
     },
     {
       id: "revealInExplorer",
-      label: "在资源管理器中显示",
+      label: i18n.t("menu.revealInExplorer"),
       action: props.onRevealInExplorer,
     },
   ];

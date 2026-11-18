@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface CodeBlockContextMenuProps {
   codeContent: string;
@@ -21,14 +22,14 @@ export function getCodeBlockContextMenuItems(
 
   items.push({
     id: "copyCode",
-    label: "复制代码",
+    label: i18n.t("menu.copyCode"),
     action: props.onCopyCode,
   });
 
   if (props.hasSelection) {
     items.push({
       id: "copySelection",
-      label: "复制选中",
+      label: i18n.t("menu.copySelection"),
       shortcut: "Ctrl+C",
       action: props.onCopySelection,
     });
@@ -38,7 +39,7 @@ export function getCodeBlockContextMenuItems(
 
   items.push({
     id: "editCodeBlock",
-    label: "编辑代码块",
+    label: i18n.t("menu.editCodeBlock"),
     action: props.onEditCodeBlock,
   });
 

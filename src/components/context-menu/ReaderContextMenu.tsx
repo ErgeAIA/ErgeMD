@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "@/types";
+import i18n from "@/i18n";
 
 export interface ReaderContextMenuProps {
   hasSelection: boolean;
@@ -23,7 +24,7 @@ export function getReaderContextMenuItems(
 
   items.push({
     id: "copy",
-    label: "复制",
+    label: i18n.t("menu.copy"),
     shortcut: "Ctrl+C",
     disabled: !props.hasSelection,
     action: props.onCopy,
@@ -31,7 +32,7 @@ export function getReaderContextMenuItems(
 
   items.push({
     id: "selectAll",
-    label: "全选",
+    label: i18n.t("menu.selectAll"),
     shortcut: "Ctrl+A",
     action: props.onSelectAll,
   });
@@ -39,7 +40,7 @@ export function getReaderContextMenuItems(
   if (props.hasSelection) {
     items.push({
       id: "search",
-      label: "搜索...",
+      label: i18n.t("menu.search"),
       action: () => props.onSearch(props.selectedText),
     });
   }
@@ -49,8 +50,8 @@ export function getReaderContextMenuItems(
   if (props.canEditParagraph) {
     items.push({
       id: "editParagraph",
-      label: "编辑此段落",
-      shortcut: "双击",
+      label: i18n.t("menu.editParagraph"),
+      shortcut: i18n.t("menu.doubleClick"),
       action: props.onEditParagraph,
     });
 
@@ -59,28 +60,28 @@ export function getReaderContextMenuItems(
 
   items.push({
     id: "exportHtml",
-    label: "导出为 HTML",
+    label: i18n.t("menu.exportHtml"),
     shortcut: "Ctrl+E",
     action: props.onExportHtml,
   });
 
   items.push({
     id: "exportPdfGrayscale",
-    label: "导出为 PDF（黑白-推荐）",
+    label: i18n.t("menu.exportPdfGrayscale"),
     shortcut: "Ctrl+Shift+P",
     action: props.onExportPdfGrayscale,
   });
 
   items.push({
     id: "exportPdf",
-    label: "导出为 PDF（带样式）",
+    label: i18n.t("menu.exportPdf"),
     shortcut: "Ctrl+P",
     action: props.onExportPdf,
   });
 
   items.push({
     id: "exportDocx",
-    label: "导出为 Word",
+    label: i18n.t("menu.exportWord"),
     shortcut: "Ctrl+Shift+E",
     action: props.onExportDocx,
   });
@@ -89,7 +90,7 @@ export function getReaderContextMenuItems(
 
   items.push({
     id: "openInNewWindow",
-    label: "在新窗口中打开",
+    label: i18n.t("menu.openInNewWindow"),
     shortcut: "Ctrl+N",
     action: props.onOpenInNewWindow,
   });
@@ -98,7 +99,7 @@ export function getReaderContextMenuItems(
     items.push({ id: "sep4", separator: true });
     items.push({
       id: "about",
-      label: "关于 ErgeMD",
+      label: i18n.t("menu.aboutErgeMD"),
       action: props.onShowAbout,
     });
   }

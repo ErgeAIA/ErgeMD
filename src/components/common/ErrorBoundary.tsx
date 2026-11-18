@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import i18n from "@/i18n";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -51,7 +52,7 @@ export default class ErrorBoundary extends Component<
               color: "var(--text-primary, #e0e0e0)",
             }}
           >
-            Something went wrong
+            {i18n.t("reader.boundaryTitle")}
           </h2>
           <p
             style={{
@@ -62,7 +63,7 @@ export default class ErrorBoundary extends Component<
               maxWidth: "400px",
             }}
           >
-            {this.state.error?.message || "An unexpected error occurred."}
+            {this.state.error?.message ? `${i18n.t("reader.boundaryDetail")}: ${this.state.error.message}` : i18n.t("reader.boundaryDetail")}
           </p>
           <button
             onClick={this.handleReload}
@@ -76,7 +77,7 @@ export default class ErrorBoundary extends Component<
               cursor: "pointer",
             }}
           >
-            Retry
+            {i18n.t("reader.retry")}
           </button>
         </div>
       );

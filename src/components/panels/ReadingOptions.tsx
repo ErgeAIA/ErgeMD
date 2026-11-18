@@ -73,6 +73,8 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
   ({ onShowAbout }) => {
     const { t } = useTranslation();
     const readingSettings = useSettingsStore((s) => s.readingSettings);
+    const skippedVersion = useSettingsStore((s) => s.skippedVersion);
+    const setSkippedVersion = useSettingsStore((s) => s.setSkippedVersion);
     const updateReadingSettings = useSettingsStore(
       (s) => s.updateReadingSettings,
     );
@@ -82,6 +84,7 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
     const [fontSearchOpen, setFontSearchOpen] = useState(false);
     const [fontSearchQuery, setFontSearchQuery] = useState("");
     const [fontSearchLoading, setFontSearchLoading] = useState(false);
+    const [advancedOpen, setAdvancedOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -617,12 +620,18 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
           </select>
         </div>
 
-        {/* 配置级别 */}
+        {/* 配置级别（高级，默认收起） */}
         <div>
-          <label className="block" style={labelStyle}>
-            {t("settings.configLevel")}
-          </label>
-          <ConfigLevelSelector />
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((v) => !v)}
+            className="w-full flex items-center justify-between cursor-pointer bg-transparent border-none p-0"
+            style={{ ...labelStyle, marginBottom: advancedOpen ? 8 : 0 }}
+          >
+            <span>{t("settings.advanced")}</span>
+            <span aria-hidden="true">{advancedOpen ? "▾" : "▸"}</span>
+          </button>
+          {advancedOpen && <ConfigLevelSelector />}
         </div>
 
         {/* 分隔线 */}
@@ -823,6 +832,23 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
 
         {/* 分隔线 */}
         <div style={{ height: "1px", background: "var(--divider)" }} />
+
+        {/* 已跳过的更新版本 */}
+        {skippedVersion && (
+          <div className="flex items-center justify-between" style={{ gap: 8 }}>
+            <span style={{ ...labelStyle, marginBottom: 0 }}>
+              {t("settings.skippedVersion")} v{skippedVersion}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSkippedVersion(null)}
+              className="cursor-pointer bg-transparent border-none p-0"
+              style={{ fontSize: 12, color: "var(--accent-cyan)" }}
+            >
+              {t("settings.clearSkipped")}
+            </button>
+          </div>
+        )}
 
         {/* 关于 */}
         {onShowAbout && (
