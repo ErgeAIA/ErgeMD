@@ -7,9 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-18
+
+### Added
+
+- **A heads-up when the file changes on disk**: returning to the window shows "File changed on disk · Reload"; click it or press `Ctrl/Cmd+R` to reread, without interrupting your reading
+- **Automatic encoding detection**: GBK / GB18030 / UTF-16 documents no longer show as garbled text, with a one-time notice when the file is not UTF-8
+- **Search the whole document in long files**: with virtual scrolling, search now reaches content off screen and reports accurate counts and jumps
+- **Reset typography**: one click returns to the default font size, line height, letter spacing, paragraph spacing and page width
+- **The reading options panel closes when you click elsewhere**: finish adjusting and keep reading, no second click on the toggle
+
 ### Changed
 
 - **Updates are checked automatically on every launch** — no waiting or manual check from the About page; the update card has been redesigned with clearer change grouping
+- **Every theme swatch now shows the theme's real colors**
+- **Light themes use one interaction color** for tabs, selection, table headers and code labels
+- **The welcome starfield follows the current theme**, stops drawing when the window is minimized or in the background, and renders a static frame when Reduce Motion is on
+- **Clearer body hierarchy**: H4–H6 are sized apart, Chinese no longer gets a faux oblique, and table and inline-code styling is consistent
+- **The status bar's reading progress is easier to read**
+- **The About page shows one version line** with the current build and check state; when an update exists, clicking it goes straight to the download
+- **Performance level copy is localized** in the English UI
+- **Reading options list font size and line height before the theme grid**
+
+### Fixed
+
+- **Clearing the recent-files list no longer wipes reading progress**
+- **The welcome shortcut sheet lists only combinations that actually work**, dropping dead and mislabelled keys
+- **No more false "No recent files" before the list has loaded**
+- **The About page QR popup is no longer clipped by its card**, and "Press Esc to close" now works
+- **Keyboard focus is visible on theme tiles and sliders**
+- **The performance-level dropdown is no longer cut off in a narrow panel**
+- **The welcome drop zone can be opened from the keyboard**
 
 ## [0.5.0] - 2026-10-23
 

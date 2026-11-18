@@ -89,14 +89,16 @@ export default defineConfig(async () => ({
   },
   clearScreen: false,
   server: {
-    port: 5173,
+    // 三项目并存的分区：Avalon 5173（不动，工具链都按它写）· ErgeMD 5273 · AIVault 1421。
+    // HMR 原来也用 1421，与 AIVault 主端口撞车，移到 1422。
+    port: 5273,
     strictPort: true,
     host: host || false,
     hmr: host
       ? {
           protocol: "ws",
           host,
-          port: 1421,
+          port: 1422,
         }
       : undefined,
     watch: {
