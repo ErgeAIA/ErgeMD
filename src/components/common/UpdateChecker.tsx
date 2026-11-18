@@ -226,7 +226,7 @@ const UpdateChecker: React.FC = memo(() => {
     <div
       role="status"
       aria-live="polite"
-      className="fixed z-[45] bottom-14 right-6 rounded-xl text-[12px] animate-[toast-enter_200ms_ease-out_forwards]"
+      className="fixed z-[45] bottom-14 right-6 rounded-xl text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
       style={{
         width: expanded
           ? "min(420px, calc(100vw - 48px))"
@@ -237,13 +237,13 @@ const UpdateChecker: React.FC = memo(() => {
     >
       {!expanded ? (
         // ── 折叠态：一条窄条，不压住正文 ──
-        <div className="flex items-center gap-2 px-3 py-2">
-          <UpdateIcon size={14} />
+        <div className="flex items-center gap-2.5 px-4 py-3">
+          <UpdateIcon size={16} />
           <button
             type="button"
             onClick={() => setExpanded(true)}
             className="flex-1 min-w-0 truncate text-left cursor-pointer bg-transparent border-none p-0"
-            style={{ color: "var(--text-primary)", fontSize: 12 }}
+            style={{ color: "var(--text-primary)", fontSize: 13 }}
           >
             {t("update.newVersionAvailable", { version: update.version })}
           </button>
@@ -259,8 +259,13 @@ const UpdateChecker: React.FC = memo(() => {
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className="shrink-0 px-2.5 py-1 rounded-full text-[12px] cursor-pointer"
-                style={ctaStyle}
+                className="shrink-0 cursor-pointer"
+                style={{
+                  ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "4px 12px",
+                  fontSize: 13,
+                }}
               >
                 {t("update.details")}
               </button>
@@ -270,13 +275,17 @@ const UpdateChecker: React.FC = memo(() => {
         </div>
       ) : (
         // ── 展开态：更新内容 + 应用内更新 ──
-        <div className="px-4 pt-3.5 pb-3.5">
-          <div className="flex items-center gap-2">
-            <UpdateIcon size={14} />
-            <span className="font-semibold text-[13px]">{t("update.whatsNew")}</span>
+        <div className="px-5 pt-4 pb-4">
+          <div className="flex items-center gap-2.5">
+            <UpdateIcon size={16} />
+            <span className="font-semibold text-[14px]">{t("update.whatsNew")}</span>
             <span
-              className="px-2 py-0.5 rounded-full text-[12px]"
-              style={{ background: "var(--bg-code)", color: "var(--text-primary)" }}
+              className="px-2 py-0.5 text-[12px]"
+              style={{
+                background: "var(--bg-code)",
+                color: "var(--text-primary)",
+                borderRadius: 4,
+              }}
             >
               v{update.version}
             </span>
@@ -285,7 +294,7 @@ const UpdateChecker: React.FC = memo(() => {
               type="button"
               aria-label={t("update.moreActions")}
               onClick={() => setMenuOpen((v) => !v)}
-              className="shrink-0 cursor-pointer bg-transparent border-none p-0 text-[14px] leading-none"
+              className="shrink-0 cursor-pointer bg-transparent border-none p-0 text-[15px] leading-none"
               style={{ color: "var(--text-secondary)" }}
             >
               ⋯
@@ -293,13 +302,13 @@ const UpdateChecker: React.FC = memo(() => {
             <CloseButton onClick={() => setDismissed(true)} label={t("titleBar.close")} />
           </div>
           {releasedOn && (
-            <div className="mt-1 text-[12px]" style={{ color: "var(--text-secondary)" }}>
+            <div className="mt-1.5 text-[12px]" style={{ color: "var(--text-secondary)" }}>
               {releasedOn}
             </div>
           )}
 
           {groups.length > 0 && (
-            <div className="mt-3 flex flex-col gap-3">
+            <div className="mt-4 flex flex-col gap-4">
               {groups.map((group) => {
                 const shown = showAllNotes
                   ? group.items
@@ -308,20 +317,20 @@ const UpdateChecker: React.FC = memo(() => {
                 return (
                   <div key={group.category}>
                     <div
-                      className="text-[12px] mb-1"
+                      className="text-[12px] mb-1.5"
                       style={{ color: "var(--text-secondary)" }}
                     >
                       {group.category}
                     </div>
                     <ul
-                      className="flex flex-col gap-1 m-0 pl-2 list-none"
+                      className="flex flex-col gap-1.5 m-0 pl-3 list-none"
                       style={{ borderLeft: "2px solid var(--border-subtle)" }}
                     >
                       {shown.map((item, idx) => (
                         <li
                           key={idx}
-                          className="text-[12px] leading-relaxed"
-                          style={{ color: "var(--text-primary)" }}
+                          className="text-[13px]"
+                          style={{ color: "var(--text-primary)", lineHeight: 1.75 }}
                         >
                           {item}
                         </li>
@@ -329,7 +338,7 @@ const UpdateChecker: React.FC = memo(() => {
                     </ul>
                     {hidden > 0 && (
                       <div
-                        className="text-[12px] mt-1"
+                        className="text-[12px] mt-1.5"
                         style={{ color: "var(--text-muted)" }}
                       >
                         {t("update.moreItems", { count: hidden })}
@@ -342,7 +351,7 @@ const UpdateChecker: React.FC = memo(() => {
                 <button
                   type="button"
                   onClick={() => setShowAllNotes((v) => !v)}
-                  className="self-start cursor-pointer bg-transparent border-none p-0 text-[12px]"
+                  className="self-start cursor-pointer bg-transparent border-none p-0 text-[13px]"
                   style={{ color: "var(--accent-cyan)" }}
                 >
                   {showAllNotes
@@ -376,7 +385,7 @@ const UpdateChecker: React.FC = memo(() => {
                 />
               </div>
               <span
-                className="text-[12px] tabular-nums shrink-0"
+                className="text-[13px] tabular-nums shrink-0"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {installProgress}%
@@ -385,20 +394,25 @@ const UpdateChecker: React.FC = memo(() => {
           )}
 
           {installError && (
-            <div className="mt-2" style={{ color: "var(--accent-red, #FF6B6B)" }}>
+            <div className="mt-2.5 text-[13px]" style={{ color: "var(--accent-red)" }}>
               {t("update.installFailed")}
             </div>
           )}
 
           <div
-            className="relative flex items-center gap-2 mt-3 pt-3"
+            className="relative flex items-center gap-2 mt-4 pt-3.5"
             style={{ borderTop: "1px solid var(--border-subtle)" }}
           >
             {installed ? (
               <button
                 onClick={handleRelaunch}
-                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer"
-                style={ctaStyle}
+                className="cursor-pointer font-medium"
+                style={{
+                  ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "7px 14px",
+                  fontSize: 13,
+                }}
               >
                 {t("update.restartToUpdate")}
               </button>
@@ -406,9 +420,12 @@ const UpdateChecker: React.FC = memo(() => {
               <button
                 onClick={handleInstall}
                 disabled={installProgress !== null}
-                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer tabular-nums"
+                className="cursor-pointer font-medium tabular-nums"
                 style={{
                   ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "7px 14px",
+                  fontSize: 13,
                   opacity: installProgress !== null ? 0.6 : 1,
                 }}
               >
@@ -426,9 +443,9 @@ const UpdateChecker: React.FC = memo(() => {
             )}
             {menuOpen && (
               <div
-                className="absolute bottom-full right-0 mb-1 rounded-lg py-1 flex flex-col"
+                className="absolute bottom-full right-0 mb-2 rounded-lg py-1 flex flex-col"
                 style={{
-                  minWidth: 150,
+                  minWidth: 160,
                   background: "var(--bg-sidebar)",
                   border: "1px solid var(--divider)",
                   boxShadow: "var(--shadow-menu)",
@@ -440,7 +457,7 @@ const UpdateChecker: React.FC = memo(() => {
                     setMenuOpen(false);
                     void openUrl(RELEASES_URL);
                   }}
-                  className="text-left px-3 py-1.5 text-[12px] cursor-pointer bg-transparent border-none"
+                  className="text-left px-3.5 py-2 text-[13px] cursor-pointer bg-transparent border-none"
                   style={{ color: "var(--text-primary)" }}
                 >
                   {t("update.viewFullLog")}
@@ -449,7 +466,7 @@ const UpdateChecker: React.FC = memo(() => {
                   <button
                     type="button"
                     onClick={handleSkip}
-                    className="text-left px-3 py-1.5 text-[12px] cursor-pointer bg-transparent border-none"
+                    className="text-left px-3.5 py-2 text-[13px] cursor-pointer bg-transparent border-none"
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {t("update.skipVersion")}
@@ -504,7 +521,7 @@ const TextButton: React.FC<{ onClick: () => void; children: React.ReactNode }> =
 }) => (
   <button
     onClick={onClick}
-    className="shrink-0 px-2 py-1 rounded text-[12px] cursor-pointer bg-transparent"
+    className="shrink-0 px-1 py-1 text-[13px] cursor-pointer bg-transparent"
     style={{ color: "var(--text-secondary)", border: "none" }}
   >
     {children}

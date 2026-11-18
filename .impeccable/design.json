@@ -613,8 +613,8 @@
         "section": "shapes"
       },
       {
-        "name": "The Pill-Only-in-Notifications Rule",
-        "body": "胶囊形状只出现在更新提示卡与状态徽章；阅读工作面用无底图标按钮或小圆角淡底按钮。",
+        "name": "The No-Pill-Buttons Rule",
+        "body": "操作按钮（含更新卡的「详情」「立即更新」）不用胶囊，一律 4–6px 小圆角；胶囊只出现在状态徽章与圆形色标上，不承担点击。",
         "section": "shapes"
       }
     ],

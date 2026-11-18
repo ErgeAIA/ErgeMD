@@ -100,5 +100,15 @@ describe("主题对比度门禁", () => {
         `${theme}.code-text=${t["code-text"]} × bg-code=${t["bg-code"]}`,
       ).toBeGreaterThanOrEqual(BODY);
     });
+
+    it(`${theme}: 实心强调按钮文字 ≥ ${BODY}:1`, () => {
+      expect(
+        contrastRatio(
+          parseHex(t["accent-cyan"]),
+          parseHex(t["text-on-accent"]),
+        ),
+        `${theme}.accent-cyan=${t["accent-cyan"]} × text-on-accent=${t["text-on-accent"]}`,
+      ).toBeGreaterThanOrEqual(BODY);
+    });
   }
 });

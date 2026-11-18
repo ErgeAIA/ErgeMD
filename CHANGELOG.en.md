@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The update notice is now a narrow bar** that does not cover the text; details expand on demand, and each group shows its first 3 items with the rest folded into "+N more"
 - **The update card uses far less accent color**: body text is regular ink, accent stays on the button and progress bar, and light themes get their own shadow
+- **Larger type and more breathing room in the update card**: 13px body at 1.75 line height, wider padding, and buttons are 5px rounded instead of pills
+- **Filled buttons pick a light or dark label per theme**, all 14 themes now clear 4.5:1
 
 ### Fixed
 
