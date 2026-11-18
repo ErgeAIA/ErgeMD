@@ -100,7 +100,49 @@
     "loadingFonts": "Loading system fonts...",
     "noFontsFound": "No fonts found",
     "systemFont": "Choose System Font",
-    "configLevel": "Performance Level"
+    "configLevel": "Performance Level",
+    "configLevelUI": {
+      "preview": "Preview: ",
+      "current": "Current: ",
+      "params": "Parameter differences: ",
+      "virtualThreshold": "Virtualize at",
+      "cacheSize": "Cache size"
+    },
+    "configLevels": {
+      "low": {
+        "name": "Low",
+        "description": "Performance-first",
+        "scenario": "For low-spec machines, very large files, or constrained environments",
+        "effects": [
+          "Virtual scrolling kicks in earlier, saving memory",
+          "Larger parse chunks, lighter CPU load",
+          "Smaller cache footprint",
+          "Smooth basic reading"
+        ]
+      },
+      "medium": {
+        "name": "Medium",
+        "description": "Balanced",
+        "scenario": "For typical machines and everyday reading",
+        "effects": [
+          "The best balance of speed and comfort",
+          "Moderate virtualization threshold",
+          "Reasonable cache and chunking",
+          "Smooth animations"
+        ]
+      },
+      "high": {
+        "name": "High",
+        "description": "Comfort-first",
+        "scenario": "For high-performance machines when reading comfort matters most",
+        "effects": [
+          "Less virtualization, smoother rendering",
+          "Larger cache, faster response",
+          "More pre-rendering, smoother scrolling",
+          "Finer animations"
+        ]
+      }
+    }
   },
   "theme": {
     "cyberpunk": "Cyberpunk",
@@ -165,6 +207,8 @@
     "plantumlError": "PlantUML syntax may be incorrect, please check the code",
     "preview": "Live Preview",
     "readFailed": "Failed to read file",
+    "fileChanged": "File changed on disk",
+    "reload": "Reload",
     "fileNotFound": "File not found",
     "permissionDenied": "Permission denied",
     "encodingFallback": "Decoded as {{encoding}} — please check that the text looks right",
@@ -198,6 +242,8 @@
     "easterEggTitle": "🔍 You found the hidden entrance!",
     "easterEggDesc": "Feel free to enjoy, tip if you like 🍵",
     "checkUpdateHint": "Click to check for updates",
+    "checking": "Checking…",
+    "updateRowNew": "v{{version}} available",
     "noUpdate": "You're on the latest version v{{version}}",
     "newVersionAvailable": "New version v{{version}} available, please download",
     "latestVersionHint": "Click to open latest release page v{{version}}",

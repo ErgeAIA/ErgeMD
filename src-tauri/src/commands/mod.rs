@@ -75,6 +75,20 @@ pub async fn read_file(path: String) -> Result<ReadFileResult, String> {
     })
 }
 
+#[tauri::command]
+pub async fn get_file_mtime(path: String) -> Result<u64, String> {
+    validate_path(&path)?;
+    let metadata = fs::metadata(&path).map_err(|e| format!("Failed to stat file: {}", e))?;
+    let modified = metadata
+        .modified()
+        .map_err(|e| format!("Failed to read mtime: {}", e))?;
+    let millis = modified
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| format!("Invalid mtime: {}", e))?
+        .as_millis() as u64;
+    Ok(millis)
+}
+
 pub fn validate_path(path: &str) -> Result<(), String> {
     let path_buf = PathBuf::from(path);
     if path_buf.components().any(|c| c.as_os_str() == "..") {

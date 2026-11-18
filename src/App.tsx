@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ToastContainer from "./components/common/Toast";
 import UpdateChecker from "./components/common/UpdateChecker";
 import ContextMenu from "./components/context-menu/ContextMenu";
@@ -43,8 +44,11 @@ import { countWords } from "./utils/wordCount";
 const MAX_RESIDENT_TABS = 3;
 
 function App() {
+  const { t } = useTranslation();
   /** 同一条编码提醒每个会话只提示一次，避免恢复多标签时刷屏 */
   const notifiedEncodingRef = useRef(new Set<string>());
+  /** 每个已打开文件的 mtime 基线，用于窗口重新聚焦时判断外部改动 */
+  const fileMtimeRef = useRef(new Map<string, number>());
 
   // 主题切换 — 自动同步 data-theme 属性到 <html>
   useTheme();
@@ -68,6 +72,7 @@ function App() {
   const setTOCItems = useFileStore((s) => s.setTOCItems);
   const setTOCMeta = useFileStore((s) => s.setTOCMeta);
   const currentFilePath = useFileStore((s) => s.currentFilePath);
+  const externalFileChanged = useReaderStore((s) => s.fileChanged);
   const currentContent = useFileStore((s) => s.currentContent);
   const tabs = useFileStore((s) => s.tabs);
   const activeTabId = useFileStore((s) => s.activeTabId);
@@ -112,6 +117,14 @@ function App() {
       had_errors: boolean;
     }>("read_file", { path });
 
+    // 记录读取时刻的 mtime，作为外部改动的比较基线
+    try {
+      const mtime = await invoke<number>("get_file_mtime", { path });
+      fileMtimeRef.current.set(path, mtime);
+    } catch {
+      // 取不到 mtime 只是失去改动感知，不影响阅读
+    }
+
     const key = result.had_errors
       ? "lossy"
       : result.encoding !== "utf-8"
@@ -128,8 +141,79 @@ function App() {
             }),
       });
     }
+    useReaderStore.getState().setFileChanged(null);
     return result;
   }, []);
+
+  /** 窗口重新获得焦点时对比 mtime；变了只提示，不自动刷新（避免打断阅读） */
+  const checkFileChanged = useCallback(async () => {
+    const path = useFileStore.getState().currentFilePath;
+    if (!path) {
+      useReaderStore.getState().setFileChanged(null);
+      return;
+    }
+    try {
+      const mtime = await invoke<number>("get_file_mtime", { path });
+      const base = fileMtimeRef.current.get(path);
+      if (base !== undefined && mtime !== base) {
+        useReaderStore.getState().setFileChanged(path);
+      }
+    } catch {
+      // 文件被删除或暂时不可读时静默，交给下一次读取报错
+    }
+  }, []);
+
+  /** 重新读取当前文件（提示条点击与 Ctrl/Cmd+R） */
+  const reloadCurrentFile = useCallback(async () => {
+    const state = useFileStore.getState();
+    const path = state.currentFilePath;
+    if (!path) return;
+    const tab = state.tabs.find((t) => t.file_path === path);
+    const fileName = tab?.file_name ?? path.split(/[/\\]/).pop() ?? "Untitled";
+    try {
+      const result = await readMarkdown(path);
+      state.openFile(path, fileName, result.content);
+    } catch {
+      useReaderStore
+        .getState()
+        .addToast({ type: "error", message: i18n.t("reader.readFailed") });
+    }
+  }, [readMarkdown]);
+
+  // 窗口重新聚焦 / 标签页可见时检查一次外部改动（不轮询、不用文件监听）
+  useEffect(() => {
+    const handleCheck = () => {
+      void checkFileChanged();
+    };
+    const handleVisibility = () => {
+      if (!document.hidden) void checkFileChanged();
+    };
+    window.addEventListener("focus", handleCheck);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", handleCheck);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [checkFileChanged]);
+
+  // Ctrl/Cmd+R 重新读取当前文件（README 已承诺该快捷键）
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isR = e.key === "r" || e.key === "R";
+      if (!isR || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey) return;
+      if (!useFileStore.getState().currentFilePath) return;
+      e.preventDefault();
+      void reloadCurrentFile();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [reloadCurrentFile]);
+
+  // 切换到别的文件时清掉上一份文件的改动提示
+  useEffect(() => {
+    const { fileChanged, setFileChanged } = useReaderStore.getState();
+    if (fileChanged && fileChanged !== currentFilePath) setFileChanged(null);
+  }, [currentFilePath]);
 
   // 最近活动的 Tab 记录（常驻窗口用，审计 M3）
   const [recentTabIds, setRecentTabIds] = useState<string[]>([]);
@@ -787,6 +871,38 @@ function App() {
 
       {/* 搜索栏 */}
       <SearchBar />
+
+      {/* 外部改动提示：非阻塞，只提示不自动刷新 */}
+      {hasOpenFile && externalFileChanged && (
+        <div
+          className="fixed left-1/2 z-[55] flex items-center gap-2 rounded-lg px-3 py-2"
+          style={{
+            top: "92px",
+            transform: "translateX(-50%)",
+            background: "var(--bg-sidebar)",
+            border: "1px solid var(--toast-warning-border)",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
+            fontSize: "12px",
+            color: "var(--text-primary)",
+          }}
+        >
+          <span>{t("reader.fileChanged")}</span>
+          <button
+            type="button"
+            onClick={() => void reloadCurrentFile()}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "0 2px",
+              color: "var(--accent-cyan)",
+              fontSize: "12px",
+              cursor: "pointer",
+            }}
+          >
+            {t("reader.reload")}
+          </button>
+        </div>
+      )}
 
       {/* ReadingArea 容器：恢复完成后才渲染，hasOpenFile=false 时整体隐藏 */}
       <div

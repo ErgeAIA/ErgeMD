@@ -100,7 +100,49 @@
     "loadingFonts": "正在加载系统字体...",
     "noFontsFound": "未找到匹配的字体",
     "systemFont": "选择系统字体",
-    "configLevel": "性能级别"
+    "configLevel": "性能级别",
+    "configLevelUI": {
+      "preview": "预览效果：",
+      "current": "当前配置：",
+      "params": "参数差异预览：",
+      "virtualThreshold": "虚拟阈值",
+      "cacheSize": "缓存大小"
+    },
+    "configLevels": {
+      "low": {
+        "name": "低档",
+        "description": "性能优先模式",
+        "scenario": "适用于低配置设备、大文件处理或资源受限环境",
+        "effects": [
+          "更早启用虚拟滚动，减少内存占用",
+          "更大的分块解析，降低 CPU 负担",
+          "较小的缓存容量，节省内存",
+          "流畅的基本阅读体验"
+        ]
+      },
+      "medium": {
+        "name": "中档",
+        "description": "平衡模式",
+        "scenario": "适用于主流配置设备和日常阅读场景",
+        "effects": [
+          "平衡性能与体验的最佳选择",
+          "适中的虚拟滚动阈值",
+          "合理的缓存和分块策略",
+          "流畅的动画效果"
+        ]
+      },
+      "high": {
+        "name": "高档",
+        "description": "体验优先模式",
+        "scenario": "适用于高性能设备，追求极致阅读体验",
+        "effects": [
+          "更少使用虚拟滚动，渲染更流畅",
+          "更大的缓存，更快的响应",
+          "更多的预渲染，滚动更平滑",
+          "更细腻的动画效果"
+        ]
+      }
+    }
   },
   "theme": {
     "cyberpunk": "赛博朋克",
@@ -165,6 +207,8 @@
     "plantumlError": "PlantUML 语法可能有误，请检查代码",
     "preview": "实时预览",
     "readFailed": "文件读取失败",
+    "fileChanged": "文件已在外部更新",
+    "reload": "重新加载",
     "fileNotFound": "文件不存在",
     "permissionDenied": "权限不足",
     "encodingFallback": "已按 {{encoding}} 解码，请确认内容是否正常",
@@ -198,6 +242,8 @@
     "easterEggTitle": "🔍 你发现了隐藏入口！",
     "easterEggDesc": "二哥分享放心白嫖，随喜投喂 🍵",
     "checkUpdateHint": "点击检查更新",
+    "checking": "检查中…",
+    "updateRowNew": "有新版本 v{{version}}",
     "noUpdate": "已是最新版本 v{{version}}",
     "newVersionAvailable": "发现新版本 v{{version}}，请前往下载",
     "latestVersionHint": "点击打开最新版 Release 页面 v{{version}}",
