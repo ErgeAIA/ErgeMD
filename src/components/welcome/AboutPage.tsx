@@ -406,7 +406,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               >
                 <img
                   src={AVATAR_IMG}
-                  alt="宝藏二哥 AIA"
+                  alt={t("about.authorName")}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement;
@@ -425,17 +425,17 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               </div>
             </div>
 
-            {/* 作者名（居中） */}
+            {/* 作者名（居中，弱于应用名一档） */}
             <div
               style={{
                 textAlign: "center",
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "var(--text-primary)",
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "var(--text-secondary)",
                 marginBottom: "6px",
               }}
             >
-              宝藏二哥 AIA
+              {t("about.authorName")}
             </div>
 
             {/* 签名（居中，斜体，弱化） */}
@@ -548,7 +548,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                 >
                   <img
                     src={BILIBILI_LOGO}
-                    alt="B站"
+                    alt={t("about.bilibiliTitle")}
                     style={{ width: "56px", height: "56px" }}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display =
@@ -734,6 +734,8 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               </svg>
               <span>{t("about.githubStar")}</span>
             </a>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span>{t("about.license")}</span>
             <span style={{ opacity: 0.4 }}>|</span>
             {t("about.footer")}
           </div>

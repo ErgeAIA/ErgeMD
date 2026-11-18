@@ -409,6 +409,19 @@ select:focus-visible {
   border-color: var(--active-border);
 }
 
+/* ===== 键盘焦点可见 ===== */
+/* 组件里大量 outline: none，必须给键盘操作一条可见的反馈路径 */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 1px solid var(--active-border);
+  outline-offset: 2px;
+}
+
+input[type="range"]:focus-visible {
+  outline: 1px solid var(--active-border);
+  outline-offset: 4px;
+}
+
 /* ===== 动画降级 ===== */
 @media (prefers-reduced-motion: reduce) {
 

@@ -26,7 +26,7 @@ interface SettingsState {
 }
 
 // ===== 默认阅读设置 =====
-const defaultReadingSettings: ReadingSettings = {
+export const DEFAULT_READING_SETTINGS: ReadingSettings = {
   fontFamily: "system-ui, -apple-system, sans-serif",
   fontSize: 16,
   lineHeight: 1.8,
@@ -50,7 +50,7 @@ const defaultLastCheckUpdateTime: number | null = null;
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
-      readingSettings: defaultReadingSettings,
+      readingSettings: DEFAULT_READING_SETTINGS,
       configLevel: defaultConfigLevel,
       checkUpdateEnabled: defaultCheckUpdateEnabled,
       lastCheckUpdateTime: defaultLastCheckUpdateTime,
@@ -116,7 +116,7 @@ export const useSettingsStore = create<SettingsState>()(
         return {
           ...currentState,
           readingSettings: {
-            ...defaultReadingSettings,
+            ...DEFAULT_READING_SETTINGS,
             ...(persisted?.readingSettings || {}),
           },
           configLevel: persisted?.configLevel ?? defaultConfigLevel,

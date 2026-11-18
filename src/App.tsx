@@ -293,7 +293,8 @@ function App() {
   const statusBarOpacity = React.useMemo(() => {
     if (statusBarHovered) return 0.8;
     if (isScrolling) return 0.6;
-    return 0.2;
+    // 静止态下限 0.45：0.2 时字数/进度在深色画布上约 1.3:1，等于看不见
+    return 0.45;
   }, [statusBarHovered, isScrolling]);
 
   // ReadingArea scroll 容器就绪回调

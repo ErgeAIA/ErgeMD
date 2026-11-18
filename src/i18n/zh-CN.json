@@ -82,6 +82,7 @@
     "autoSaveProgress": "自动保存阅读进度",
     "readingOptions": "阅读选项",
     "panelWidth": "调整面板宽度",
+    "resetTypography": "恢复默认排版",
     "fontPresets": {
       "System Default": "系统默认",
       "Windows": "Windows",
@@ -189,6 +190,8 @@
     "footer": "© 2026 宝藏二哥AIA",
     "githubStar": "⭐ GitHub Star 支持一下",
     "menuLabel": "关于 ErgeMD",
+    "authorName": "宝藏二哥 AIA",
+    "license": "AGPL-3.0 · 免费 · 开源",
     "escToClose": "按 Esc 可关闭",
     "qrTipLabel": "请二哥喝杯赛博茶 🍵",
     "qrFriendLabel": "👉 加个好友，常来唠嗑 👋",
