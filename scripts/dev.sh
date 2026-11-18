@@ -12,10 +12,16 @@
 #   4. 端口固定（取自 vite.config.ts 的 server.port，本仓已设 strictPort），被占用
 #      直接报错退出，绝不静默漂移（漂移后 tauri devUrl 仍指旧端口，窗口白屏）。
 #
-# 用法：bash scripts/dev.sh
+# 用法：bash scripts/dev.sh [--preview-update]
+#   --preview-update 注入一条假的「新版本」提示，用于打磨更新卡片（仅 dev 生效）
 # 覆盖 target：ERGEMD_TARGET_DIR=/path/to/dir bash scripts/dev.sh
 
 set -euo pipefail
+
+PREVIEW_UPDATE=0
+case "${1:-}" in
+  --preview-update) PREVIEW_UPDATE=1 ;;
+esac
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -98,6 +104,11 @@ case "${OS_NAME}" in
 esac
 echo "CARGO_TARGET_DIR（仅本进程）：${CARGO_TARGET_DIR}"
 echo "访问地址：http://127.0.0.1:${PORT}"
+
+if [ "${PREVIEW_UPDATE}" = "1" ]; then
+  export VITE_UPDATE_PREVIEW=1
+  echo "已开启更新卡片预览（假版本 9.9.9）"
+fi
 
 cd "${REPO_ROOT}"
 pnpm tauri dev

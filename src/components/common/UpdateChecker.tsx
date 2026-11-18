@@ -51,6 +51,47 @@ const UpdateChecker: React.FC = memo(() => {
   const [expanded, setExpanded] = useState(false);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // 开发期预览：VITE_UPDATE_PREVIEW=1 时注入一条假更新，便于打磨卡片本身
+  useEffect(() => {
+    if (!(import.meta.env.DEV && import.meta.env.VITE_UPDATE_PREVIEW === "1")) {
+      return;
+    }
+    const mockBody = [
+      "### 新增",
+      "- 文件在别处被改写后会提示",
+      "- 自动识别文件编码",
+      "- 大文档也能搜到全文",
+      "- 阅读选项可恢复默认排版",
+      "- 阅读选项点空白处自动收起",
+      "### 优化",
+      "- 应用启动即自动检查更新",
+      "- 主题色卡的全部预览色与真实主题一致",
+      "- 亮色主题的标签、选中、表头与代码标签统一为同一种交互色",
+      "- 欢迎页星空跟随当前主题配色",
+      "### 修复",
+      "- 清空最近打开列表不再连带删除阅读进度",
+      "- 首屏快捷键只列出当前真正可用的组合",
+      "- 最近文件读取完成前不再误报「暂无最近打开的文件」",
+    ].join("\n");
+    const fake = {
+      version: "9.9.9",
+      currentVersion: packageJson.version,
+      date: new Date().toISOString(),
+      body: mockBody,
+      downloadAndInstall: async (
+        onEvent: (event: { event: string; data?: { contentLength?: number; chunkLength?: number } }) => void,
+      ) => {
+        onEvent({ event: "Started", data: { contentLength: 100 } });
+        for (let i = 0; i < 10; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 120));
+          onEvent({ event: "Progress", data: { chunkLength: 10 } });
+        }
+        onEvent({ event: "Finished" });
+      },
+    } as unknown as Update;
+    setUpdate(fake);
+  }, []);
   const [update, setUpdate] = useState<Update | null>(null);
   const [installProgress, setInstallProgress] = useState<number | null>(null);
   const [installError, setInstallError] = useState(false);
