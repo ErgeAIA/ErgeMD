@@ -6,9 +6,12 @@ import { useTranslation } from "react-i18next";
 import packageJson from "../../../package.json";
 import { formatReleaseDate, parseReleaseNotes } from "../../utils/releaseNotes";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useReaderStore } from "../../stores/readerStore";
 
 const CHECK_TIMEOUT_MS = 10_000;
 const RELEASES_URL = "https://github.com/ErgeAIA/ErgeMD/releases";
+/** 每组默认展示的发布说明条数；其余折叠为「还有 N 项」 */
+const NOTES_PER_GROUP = 3;
 
 /** 主动检查（关于页「检查更新」）后广播，让卡片以展开态呈现 */
 const UPDATE_CARD_EXPAND_EVENT = "ergemd:update-card-expand";
@@ -46,6 +49,49 @@ const UpdateChecker: React.FC = memo(() => {
 
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [showAllNotes, setShowAllNotes] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // 开发期预览：VITE_UPDATE_PREVIEW=1 时注入一条假更新，便于打磨卡片本身
+  useEffect(() => {
+    if (!(import.meta.env.DEV && import.meta.env.VITE_UPDATE_PREVIEW === "1")) {
+      return;
+    }
+    const mockBody = [
+      "### 新增",
+      "- 文件在别处被改写后会提示",
+      "- 自动识别文件编码",
+      "- 大文档也能搜到全文",
+      "- 阅读选项可恢复默认排版",
+      "- 阅读选项点空白处自动收起",
+      "### 优化",
+      "- 应用启动即自动检查更新",
+      "- 主题色卡的全部预览色与真实主题一致",
+      "- 亮色主题的标签、选中、表头与代码标签统一为同一种交互色",
+      "- 欢迎页星空跟随当前主题配色",
+      "### 修复",
+      "- 清空最近打开列表不再连带删除阅读进度",
+      "- 首屏快捷键只列出当前真正可用的组合",
+      "- 最近文件读取完成前不再误报「暂无最近打开的文件」",
+    ].join("\n");
+    const fake = {
+      version: "9.9.9",
+      currentVersion: packageJson.version,
+      date: new Date().toISOString(),
+      body: mockBody,
+      downloadAndInstall: async (
+        onEvent: (event: { event: string; data?: { contentLength?: number; chunkLength?: number } }) => void,
+      ) => {
+        onEvent({ event: "Started", data: { contentLength: 100 } });
+        for (let i = 0; i < 10; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 120));
+          onEvent({ event: "Progress", data: { chunkLength: 10 } });
+        }
+        onEvent({ event: "Finished" });
+      },
+    } as unknown as Update;
+    setUpdate(fake);
+  }, []);
   const [update, setUpdate] = useState<Update | null>(null);
   const [installProgress, setInstallProgress] = useState<number | null>(null);
   const [installError, setInstallError] = useState(false);
@@ -136,8 +182,20 @@ const UpdateChecker: React.FC = memo(() => {
   }, []);
 
   const handleSkip = useCallback(() => {
-    if (update) setSkippedVersion(update.version);
-  }, [update, setSkippedVersion]);
+    if (!update) return;
+    const version = update.version;
+    setSkippedVersion(version);
+    setMenuOpen(false);
+    // 跳过是永久动作，给一次可撤销的机会
+    useReaderStore.getState().addToast({
+      type: "info",
+      message: t("update.skipped", { version }),
+      action: {
+        label: t("update.undoSkip"),
+        onClick: () => setSkippedVersion(null),
+      },
+    });
+  }, [update, setSkippedVersion, t]);
 
   if (!checkUpdateEnabled) return null;
   if (!update) return null;
@@ -146,160 +204,229 @@ const UpdateChecker: React.FC = memo(() => {
   if (update.version === skippedVersion) return null;
 
   const glassStyle: React.CSSProperties = {
-    background: "var(--toast-info-bg)",
-    border: "1px solid var(--toast-info-border)",
+    background: "rgba(var(--accent-cyan-rgb), 0.04)",
+    border: "1px solid rgba(var(--accent-cyan-rgb), 0.12)",
     color: "var(--text-primary)",
     backdropFilter: "blur(8px)",
   };
 
+  const ctaStyle: React.CSSProperties = {
+    background: "var(--accent-cyan)",
+    color: "var(--text-on-accent, var(--bg-page))",
+    border: "none",
+  };
+
+  const totalItems = groups.reduce((sum, group) => sum + group.items.length, 0);
+  const visibleItems = groups.reduce(
+    (sum, group) => sum + Math.min(group.items.length, NOTES_PER_GROUP),
+    0,
+  );
+
   return (
     <div
-      className="fixed z-50 bottom-14 right-6 rounded-xl text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
+      role="status"
+      aria-live="polite"
+      className="fixed z-[45] bottom-14 right-6 rounded-xl text-[13px] animate-[toast-enter_200ms_ease-out_forwards]"
       style={{
-        width: "min(420px, calc(100vw - 48px))",
-        boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+        width: expanded
+          ? "min(420px, calc(100vw - 48px))"
+          : "min(360px, calc(100vw - 48px))",
+        boxShadow: "var(--shadow-floating-card, 0 12px 40px rgba(0, 0, 0, 0.4))",
         ...glassStyle,
       }}
     >
       {!expanded ? (
-        // ── 折叠态：一条通知，一秒略过 ──
-        <div className="flex items-center gap-3 px-4 py-3">
-          <UpdateIcon />
-          <span className="flex-1 font-medium" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
-            {t("update.newVersionAvailable", { version: update.version })}
-            {releasedOn && (
-              <span className="font-normal" style={{ color: "var(--text-muted)", marginLeft: 8 }}>
-                {releasedOn}
-              </span>
-            )}
-          </span>
+        // ── 折叠态：一条窄条，不压住正文 ──
+        <div
+          className="flex items-center gap-2.5"
+          style={{ padding: "12px 16px" }}
+        >
+          <UpdateIcon size={16} />
           <button
+            type="button"
             onClick={() => setExpanded(true)}
-            className="shrink-0 px-3 py-1 rounded-full text-[12px] font-medium cursor-pointer"
-            style={{
-              background: "var(--accent-cyan, #00FFFF)",
-              color: "var(--bg-page, #0A0A0F)",
-              border: "none",
-            }}
+            className="flex-1 min-w-0 truncate text-left cursor-pointer bg-transparent border-none p-0"
+            style={{ color: "var(--text-primary)", fontSize: 13 }}
           >
-            {t("update.details")}
+            {t("update.newVersionAvailable", { version: update.version })}
           </button>
-          <CloseButton onClick={() => setDismissed(true)} />
+          {installProgress !== null ? (
+            <span
+              className="shrink-0 tabular-nums"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {t("update.installing")} {Math.round(installProgress)}%
+            </span>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="shrink-0 cursor-pointer"
+                style={{
+                  ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "4px 12px",
+                  fontSize: 13,
+                }}
+              >
+                {t("update.details")}
+              </button>
+              <CloseButton onClick={() => setDismissed(true)} label={t("titleBar.close")} />
+            </>
+          )}
         </div>
       ) : (
         // ── 展开态：更新内容 + 应用内更新 ──
-        <div className="px-4 pt-3.5 pb-3.5">
-          <div className="flex items-start gap-2.5">
-            <div
-              className="shrink-0 flex items-center justify-center rounded-lg"
+        <div style={{ padding: "16px 20px" }}>
+          <div className="flex items-center gap-2.5">
+            <UpdateIcon size={16} />
+            <span className="font-semibold text-[14px]">{t("update.whatsNew")}</span>
+            <span
+              className="px-2 py-0.5 text-[12px]"
               style={{
-                width: 34,
-                height: 34,
-                background: "var(--bg-code, rgba(255,255,255,0.08))",
-                border: "1px solid var(--toast-info-border)",
+                background: "var(--bg-code)",
+                color: "var(--text-primary)",
+                borderRadius: 4,
               }}
             >
-              <UpdateIcon size={18} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{t("update.whatsNew")}</span>
-                <span
-                  className="px-2 py-0.5 rounded-full text-[11px] font-medium"
-                  style={{
-                    background: "var(--bg-code, rgba(255,255,255,0.08))",
-                    color: "var(--accent-cyan, #00FFFF)",
-                  }}
-                >
-                  v{update.version}
-                </span>
-              </div>
-              {releasedOn && (
-                <div className="mt-0.5 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                  {releasedOn}
-                </div>
-              )}
-            </div>
-            <CloseButton onClick={() => setDismissed(true)} />
+              v{update.version}
+            </span>
+            <span className="flex-1" />
+            <button
+              type="button"
+              aria-label={t("update.moreActions")}
+              onClick={() => setMenuOpen((v) => !v)}
+              className="shrink-0 cursor-pointer bg-transparent border-none p-0 text-[15px] leading-none"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              ⋯
+            </button>
+            <CloseButton onClick={() => setDismissed(true)} label={t("titleBar.close")} />
           </div>
+          {releasedOn && (
+            <div className="mt-1.5 text-[12px]" style={{ color: "var(--text-secondary)" }}>
+              {releasedOn}
+            </div>
+          )}
 
           {groups.length > 0 && (
-            <div
-              className="mt-3 pr-1 flex flex-col gap-3"
-              style={{ maxHeight: 264, overflowY: "auto" }}
-            >
-              {groups.map((group) => (
-                <div key={group.category}>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span
-                      className="rounded-full shrink-0"
-                      style={{
-                        width: 4,
-                        height: 4,
-                        background: "var(--accent-cyan, #00FFFF)",
-                      }}
-                    />
-                    <span
-                      className="text-[11px] uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+              {groups.map((group) => {
+                const shown = showAllNotes
+                  ? group.items
+                  : group.items.slice(0, NOTES_PER_GROUP);
+                const hidden = group.items.length - shown.length;
+                return (
+                  <div key={group.category}>
+                    <div
+                      className="text-[12px]"
+                      style={{ color: "var(--text-secondary)", marginBottom: 6 }}
                     >
                       {group.category}
-                    </span>
+                    </div>
+                    <ul
+                      style={{
+                        borderLeft: "2px solid var(--border-subtle)",
+                        paddingLeft: 12,
+                        margin: 0,
+                        listStyle: "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      {shown.map((item, idx) => (
+                        <li
+                          key={idx}
+                          className="text-[13px]"
+                          style={{ color: "var(--text-primary)", lineHeight: 1.75 }}
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    {hidden > 0 && (
+                      <div
+                        className="text-[12px]"
+                        style={{ color: "var(--text-muted)", marginTop: 6 }}
+                      >
+                        {t("update.moreItems", { count: hidden })}
+                      </div>
+                    )}
                   </div>
-                  <ul className="flex flex-col gap-1 m-0 pl-0 list-none">
-                    {group.items.map((item, idx) => (
-                      <li key={idx} className="flex gap-2 leading-relaxed">
-                        <span className="shrink-0" style={{ color: "var(--accent-cyan, #00FFFF)" }}>
-                          ·
-                        </span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                );
+              })}
+              {totalItems > visibleItems && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllNotes((v) => !v)}
+                  className="self-start cursor-pointer bg-transparent border-none p-0 text-[13px]"
+                  style={{ color: "var(--accent-cyan)" }}
+                >
+                  {showAllNotes
+                    ? t("update.showLessItems")
+                    : t("update.showAllItems", { count: totalItems })}
+                </button>
+              )}
             </div>
           )}
 
           {installProgress !== null && (
-            <div className="mt-3 flex items-center gap-2">
+            <div
+              className="flex items-center gap-2"
+              style={{ marginTop: 12 }}
+              role="progressbar"
+              aria-valuenow={installProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
               <div
-                className="h-1 rounded-full flex-1"
-                style={{ background: "var(--bg-code, rgba(255,255,255,0.08))" }}
+                className="h-1 rounded-full flex-1 overflow-hidden"
+                style={{ background: "var(--bg-code)" }}
               >
                 <div
-                  className="h-full rounded-full"
+                  className="h-full w-full rounded-full"
                   style={{
-                    width: `${installProgress}%`,
-                    background: "var(--accent-cyan, #00FFFF)",
-                    transition: "width 200ms ease",
+                    background: "var(--accent-cyan)",
+                    transform: `scaleX(${installProgress / 100})`,
+                    transformOrigin: "left",
+                    transition: "transform 200ms ease",
                   }}
                 />
               </div>
-              <span className="text-[11px] shrink-0" style={{ color: "var(--text-muted)" }}>
+              <span
+                className="text-[13px] tabular-nums shrink-0"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 {installProgress}%
               </span>
             </div>
           )}
 
           {installError && (
-            <div className="mt-2" style={{ color: "var(--accent-red, #FF6B6B)" }}>
+            <div className="mt-2.5 text-[13px]" style={{ color: "var(--accent-red)" }}>
               {t("update.installFailed")}
             </div>
           )}
 
           <div
-            className="flex items-center gap-2 mt-3 pt-3"
-            style={{ borderTop: "1px solid var(--toast-info-border)" }}
+            className="relative flex items-center gap-2"
+            style={{
+              borderTop: "1px solid var(--border-subtle)",
+              marginTop: 16,
+              paddingTop: 14,
+            }}
           >
             {installed ? (
               <button
                 onClick={handleRelaunch}
-                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer"
+                className="cursor-pointer font-medium"
                 style={{
-                  background: "var(--accent-cyan, #00FFFF)",
-                  color: "var(--bg-page, #0A0A0F)",
-                  border: "none",
+                  ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "7px 14px",
+                  fontSize: 13,
                 }}
               >
                 {t("update.restartToUpdate")}
@@ -308,11 +435,12 @@ const UpdateChecker: React.FC = memo(() => {
               <button
                 onClick={handleInstall}
                 disabled={installProgress !== null}
-                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer"
+                className="cursor-pointer font-medium tabular-nums"
                 style={{
-                  background: "var(--accent-cyan, #00FFFF)",
-                  color: "var(--bg-page, #0A0A0F)",
-                  border: "none",
+                  ...ctaStyle,
+                  borderRadius: 5,
+                  padding: "7px 14px",
+                  fontSize: 13,
                   opacity: installProgress !== null ? 0.6 : 1,
                 }}
               >
@@ -321,14 +449,46 @@ const UpdateChecker: React.FC = memo(() => {
                   : `${t("update.downloading")} ${Math.round(installProgress)}%`}
               </button>
             )}
-            <TextButton onClick={() => openUrl(RELEASES_URL)}>
-              {t("update.viewFullLog")}
-            </TextButton>
             <span className="flex-1" />
-            {!installed && installProgress === null && (
-              <TextButton onClick={handleSkip}>{t("update.skipVersion")}</TextButton>
+            {/* 安装中不提供收起：否则唯一的进度指示会消失 */}
+            {installProgress === null && (
+              <TextButton onClick={() => setExpanded(false)}>
+                {t("update.collapse")}
+              </TextButton>
             )}
-            <TextButton onClick={() => setExpanded(false)}>{t("update.collapse")}</TextButton>
+            {menuOpen && (
+              <div
+                className="absolute bottom-full right-0 mb-2 rounded-lg py-1 flex flex-col"
+                style={{
+                  minWidth: 160,
+                  background: "var(--bg-sidebar)",
+                  border: "1px solid var(--divider)",
+                  boxShadow: "var(--shadow-menu)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    void openUrl(RELEASES_URL);
+                  }}
+                  className="text-left px-3.5 py-2 text-[13px] cursor-pointer bg-transparent border-none"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {t("update.viewFullLog")}
+                </button>
+                {!installed && installProgress === null && (
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    className="text-left px-3.5 py-2 text-[13px] cursor-pointer bg-transparent border-none"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {t("update.skipVersion")}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -353,12 +513,15 @@ const UpdateIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
   </svg>
 );
 
-const CloseButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+const CloseButton: React.FC<{ onClick: () => void; label: string }> = ({
+  onClick,
+  label,
+}) => (
   <button
     onClick={onClick}
-    className="shrink-0 cursor-pointer bg-transparent border-none p-0"
-    style={{ color: "var(--text-muted)", lineHeight: 0 }}
-    aria-label="close"
+    className="shrink-0 flex items-center justify-center cursor-pointer bg-transparent border-none p-0"
+    style={{ color: "var(--text-muted)", width: 24, height: 24 }}
+    aria-label={label}
   >
     <svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" strokeWidth="1.2">
       <line x1="0" y1="0" x2="10" y2="10" />
@@ -373,7 +536,7 @@ const TextButton: React.FC<{ onClick: () => void; children: React.ReactNode }> =
 }) => (
   <button
     onClick={onClick}
-    className="shrink-0 px-2 py-1 rounded text-[12px] cursor-pointer bg-transparent"
+    className="shrink-0 px-1 py-1 text-[13px] cursor-pointer bg-transparent"
     style={{ color: "var(--text-secondary)", border: "none" }}
   >
     {children}

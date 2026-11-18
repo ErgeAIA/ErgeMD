@@ -115,6 +115,16 @@ function buildTokens(s) {
   set("brand-primary", s.brand.primary);
   set("brand-secondary", s.brand.secondary);
   set("brand-logo", s.brand.logo);
+  // 实心强调色按钮上的文字：在近黑与白之间按实测对比度二选一，
+  // 让亮色族的深色强调（如靛蓝 / 蓝绿）与暗色族的霓虹青都能过 AA
+  {
+    const accent = cs.parseHex(s.accent.cyan);
+    const darkInk = cs.parseHex("#0A0A0F");
+    const lightInk = cs.parseHex("#FFFFFF");
+    const useDark =
+      cs.contrastRatio(accent, darkInk) >= cs.contrastRatio(accent, lightInk);
+    set("text-on-accent", useDark ? "#0A0A0F" : "#FFFFFF");
+  }
   for (const key of ["primary", "secondary"]) {
     const { r, g, b } = cs.parseHex(s.brand[key]);
     set(`brand-${key}-rgb`, `${r}, ${g}, ${b}`);

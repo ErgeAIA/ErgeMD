@@ -110,6 +110,9 @@ ErgeMD 主题系统 - theme-light-base.css
 
   /* === 阴影 === */
   --shadow-popup: 0 4px 24px rgba(0, 0, 0, 0.15);
+  --shadow-floating-card: 0 12px 40px rgba(0, 0, 0, 0.15);
+  /* 亮色主题的强调色多为中明度彩色，白字不达标，统一用近黑压在色块上 */
+  --text-on-accent: #0B0B0B;
   --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.10);
 
   /* === Overlay === */

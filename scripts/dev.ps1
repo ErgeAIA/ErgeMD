@@ -12,8 +12,11 @@
 #      直接报错退出，绝不静默漂移（漂移后 tauri devUrl 仍指旧端口，窗口白屏或加载
 #      到别的项目页面）。
 #
-# 用法：pwsh -File scripts\dev.ps1
+# 用法：pwsh -File scripts\dev.ps1 [-PreviewUpdate]
+#   -PreviewUpdate 注入一条假的「新版本」提示，用于打磨更新卡片（仅 dev 生效）
 # 覆盖 target：$env:ERGEMD_TARGET_DIR='D:\somewhere'; pwsh -File scripts\dev.ps1
+
+param([switch]$PreviewUpdate)
 
 $ErrorActionPreference = 'Stop'
 
@@ -113,11 +116,16 @@ if (Test-Path $IncrementalDir) {
 }
 
 Push-Location $RepoRoot
+if ($PreviewUpdate) {
+    $env:VITE_UPDATE_PREVIEW = '1'
+    Write-Host '已开启更新卡片预览（假版本 9.9.9）' -ForegroundColor Yellow
+}
 try {
     pnpm tauri dev
     $exit = $LASTEXITCODE
 } finally {
     Pop-Location
     Remove-Item Env:\CARGO_TARGET_DIR -ErrorAction SilentlyContinue
+    Remove-Item Env:\VITE_UPDATE_PREVIEW -ErrorAction SilentlyContinue
 }
 exit $exit

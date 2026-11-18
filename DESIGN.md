@@ -239,7 +239,7 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Popup** (`0 4px 24px rgba(0, 0, 0, 0.5)`): 图片预览、Toast（亮色主题同结构降到 0.15）。
 - **TOC Expanded** (`0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.06)`): 目录展开态，双环让它在任何画布上都能被识别为浮层。
 - **Modal** (`0 25px 50px -12px rgba(0, 0, 0, 0.5)`): 编辑模态这一层最大的浮面（`shadow-2xl`）。
-- **Floating Card** (`0 12px 40px rgba(0, 0, 0, 0.4)`): 更新卡片、彩蛋大卡；图表明细浮层用 `0 8px 32px rgba(0,0,0,0.5)`。
+- **Floating Card** (`var(--shadow-floating-card)`，暗色 `0 12px 40px rgba(0,0,0,0.4)` / 亮色 `0.15`): 更新卡片、彩蛋大卡；图表明细浮层用 `0 8px 32px rgba(0,0,0,0.5)`。
 - **Glow（外壳专用）** (`0 0 8px var(--accent-cyan)`): app 名悬停、滑杆拇指、目录当前章节指示线。不进正文。
 
 ### Named Rules
@@ -262,13 +262,13 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 
 **The Two-Radius-Layer Rule.** 阅读工作面的圆角止步 10px；12–16px 只留给停留型浮面（模态、更新卡、关于页）。给标签栏、菜单、目录套 12px 圆角，会让它在沉浸阅读中显得膨胀。
 
-**The Pill-Only-in-Notifications Rule.** 胶囊形状只出现在更新提示卡与状态徽章；阅读工作面用无底图标按钮或小圆角淡底按钮，不用胶囊。
+**The No-Pill-Buttons Rule.** 操作按钮（含更新卡的「详情」「立即更新」）不用胶囊，一律 4–6px 小圆角；胶囊只出现在状态徽章与圆形色标上，不承担点击。
 
 ## Components
 
 ### Buttons
 - **Shape:** 图标按钮 32×32（标题栏为满高 32 宽），无背景、无边框；关于页社交图标按钮 36×36、8px 圆角，`divider` 描边，悬停转 `accent-cyan` 描边
-- **Filled（主操作，仅通知面）:** 实心 `accent-cyan` 底 + 画布色文字（更新卡片的「详情」「立即更新」）。正文与阅读外壳不用实心按钮
+- **Filled（主操作，仅通知面）:** 实心 `accent-cyan` 底 + `--text-on-accent` 文字（暗色近黑 / 亮色近黑，保证中明度强调色上也过 AA）；正文与阅读外壳不用实心按钮
 - **Tonal（次级）:** `accent-cyan` 10% alpha 底 + 20% alpha 边，悬停升到 15%；secondary 用白（暗色）/ 黑（亮色）5% alpha 底 + 10% alpha 边。这两档由 `--btn-primary-*` / `--btn-secondary-*` token 提供，当前仅欢迎页与设置面使用
 - **Hover / Focus:** 颜色与背景 100ms ease 过渡；`:focus-visible` 用 1px `active-border`（交互色 30% alpha）。不使用外发光焦点环——glow 已分配给外壳强调态
 - **Icon-only:** 16px 线性图标（`stroke-width: 1.2`），默认 `ink-muted`，悬停升到 `ink-secondary` 并加 `hover-bg-light` 底；危险图标悬停转 `accent-red` 并加 `danger-hover-bg`
