@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The sidebar folder tree loads one level at a time**: opening a folder reads only its first level and reads deeper levels on expand, so folders with tens of thousands of files no longer load in one go
+- **Filter the sidebar by file name**, with Enter opening the first result
+- **"Reveal current file" in the sidebar**: opening the panel expands the folders and scrolls to the file you are reading
+- **The sidebar remembers expanded folders and its width** across restarts
+
+### Changed
+
+- **Natural file name sorting**: "Chapter 2" now comes before "Chapter 10", and folders always come before files
+- **Keyboard navigation in the file tree**: move with the arrows, expand right, collapse or jump to the parent left, and jump by typing the first letters
+
+### Fixed
+
+- **An unreadable subfolder no longer shows as empty**: it shows an error row with a retry, and the rest of the folder keeps working
+- **Notes added, renamed, or deleted outside the app show up promptly**: return to the window or reopen the sidebar to see the latest list — no restart needed
+- **"Reveal in File Explorer" actually works now** and selects the file or folder (it used to do nothing)
+- **Screen readers and the keyboard can identify tree levels, sibling counts, and expanded state**
+
 ## [0.6.1] - 2026-11-18
 
 ### Changed

@@ -2,7 +2,7 @@
 title: Project Progress
 type: project-progress
 project: ErgeMD
-updated: 2026-11-18
+updated: 2026-11-19
 description: >
   项目开发进度实时记录：阶段、分支、代码状态、最近进展。每次会话更新。
   AI 在本文件新增进展或修改当前状态后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -17,10 +17,11 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（主题契约三阶段全部完成并推送双远端 @ da63ea5；2026-10-19 用户全主题视觉验收通过）
-- **阶段**：主题色板契约重构**已验收交付**（设计 → 三阶段实施 → 14/14 迁移 → 实机验收闭环）；无进行中阶段
+- **当前分支**：feat/sidebar-folder（侧边栏整改，未合并；main 停在 v0.6.1 `240958c`；另有 `fix/missing-recent-file` 已验收未合并）
+- **阶段**：侧边栏「打开文件夹」深度整改完成、待用户 UI 验收；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-19 侧边栏「打开文件夹」深度整改（分支 `feat/sidebar-folder`，未合并未发版；取证/设计/验收清单见 `docs/handoff/handoff-2026-11-19-sidebar-folder.md`）：先取证后改——旧全量扫描 500/5k/20k/50k 文件为 17ms/79.7KiB、113ms/783KiB、401–623ms/3.0MiB、1.31s/7.5MiB（20k 起越过「单次 IPC ≤1000 条」）；权限子目录实测被**静默当空目录**；外部增删改永不反映；注释声称的 roving tabindex 实为每项 `tabIndex=0`。改为按目录懒加载（`scan_directory` 单层 ≤1000 + truncated 标记）+ 文件名搜索 `search_workspace_files`（200 上限）+ 自然排序（第2章在第10章前）；5k 根层 0.88ms/7.0KiB、搜索 6.6ms。前端树按展开懒加载、展开状态与宽度持久化；回焦/开面板/手动刷新增量重扫（250ms 防抖，不做 watcher，取舍见 DEC-045）；打开面板自动定位并高亮当前文件；筛选走扁平结果（Enter 打开首个）；空/加载/错误/截断/层级过深全部 i18n；目录级错误行 + 重试；`LeftPanel` 改非模态（点外收起/无焦点陷阱）与 RightPanel 一致；右键「资源管理器显示」接通、删掉与「打开」重复的「新标签页」；ARIA 树真 roving + `aria-level/setsize/posinset` + ← 回父 + 首字母跳转；删除死状态 `fileTree`。tsc 0 / eslint 0 error / vitest 366 / cargo test 全绿 / `pnpm build` 通过；**未实机走查（无法起 GUI），待用户 UI 验收**
 - 2026-11-18 审计剩余项清零 + 发布 v0.6.1（`fix/audit-remainder` 已合入）：右键菜单/Toast/代码块/搜索栏/错误边界全部 i18n；分隔线渐变改 `useId` 唯一 id、标题外层去掉重复 slug id；目录改 roving tabindex + `aria-current`；性能级别收进「高级」、参数默认折叠；关于页去掉重复 B 站二维码；更新卡补 Esc 关闭与 150ms 收起动画，设置新增「已跳过版本」清除行；彩蛋与浮层改主题 token。tsc 0 / eslint 0 error / vitest 357 / theme:generate:check 一致 / build 通过
 - 2026-11-18 更新卡片评审与整改（critique 17/40；用户选定「配色收敛 + 窄条按需展开 + P0/P1 全做」，分支 `fix/update-card`，4 笔提交后以 `e5b4790` 合入 main 并双推、分支已删）：折叠态改 360px 窄条、正文用 `--text-primary`；青色收敛到 CTA 与进度，glass 底/描边降到 0.04/0.12；删除分组圆点与 34px 装饰徽章，分组改 2px 左边线、说明改 12px 并按组只显 3 条 + 「还有 N 项」+ 全部展开；「跳过此版本」移入 ⋯ 菜单并带撤销 Toast；安装中隐藏「收起」且折叠态显示百分比；进度条改 scaleX、补 `role=progressbar`；卡片补 `role=status aria-live`、关闭键 24×24 与中英文案；`z-50 → z-[45]` 不再盖住图片预览。新增 token `--shadow-floating-card`（亮/暗分档）与 `--text-on-accent`（由主题生成器按强调色亮度二选一，并把「实心按钮文字 ≥ 4.5:1」加入对比度门禁）；最后一轮把字号提到 13px/行高 1.75、内距改内联样式（规避 dev 会话 Tailwind 新类未即时生成导致的贴边）。tsc / eslint 0 error / vitest 357 全绿；CHANGELOG Unreleased 已记
 - 2026-11-18 发布 v0.6.0（`70240d9` + tag `v0.6.0`，双平台已推，CI Release 运行中）：合并 `fix/design-followups` 后升版本（0.5.0 → 0.6.0，三处 + Cargo.lock），CHANGELOG 中英归档 0.6.0（新增 5 条 / 优化 9 条 / 修复 7 条），README 中英下载链接更新。同轮把工作区已有的 dev 端口分区一并提交（vite 5173→5273，`devUrl` 同步，HMR 1421→1422；Avalon 5173 / AIVault 1421 不变），未提交 `docs/TestCase/MarkdownSyntaxExample.md` 的在改内容。发布前 `pnpm build` 通过
