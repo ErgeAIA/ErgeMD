@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-11-17
+updated: 2026-11-19
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -360,3 +360,11 @@ description: >
 - **决策**：新增阅读设置 `ReadingSettings.mindmapLayout`（`"radial" | "tree"`，默认 `"radial"` 即升级前观感），阅读与导出两处 `mermaid.initialize` 对 mindmap 放行 `cose-bilkent`，其余图表维持 dagre 钉定不变；布局参与 MermaidDiagram 缓存键，切换即重渲染
 - **验证**：tsc 通过、eslint 无错误、vitest 33/33；两种布局的实际观感与导出一致性待用户实机
 - **已知取舍**：cose-bilkent 为 mermaid 动态 import 的独立 chunk（构建自动分包，Tauri 离线可用）；ELK 作第三种布局暂不提供，待需求出现再评估
+
+## DEC-045: 侧边栏文件树改按目录懒加载；新鲜度用回焦增量刷新（不引入 watcher）
+
+- **日期**：2026-11-19
+- **背景**：侧边栏自初版起是「一次性全量快照」——`scan_workspace` 递归整棵目录后整包 IPC 回传。实测 20k 文件 401–623 ms / 3.0 MiB、50k 文件 1.31 s / 7.5 MiB，越过 AGENTS.md「单次 IPC ≤1000 条」；权限子目录因 `canonicalize` 失败被静默当空目录；外部新建/改名/删除永不可见；面板为遮罩+焦点陷阱的 modal，与已验收的 RightPanel 非模态模型相反；右键「资源管理器显示」为空函数。
+- **决策**：① 后端改单层 `scan_directory`（≤1000/次，`truncated` 标记）+ 文件名搜索 `search_workspace_files`（≤200），删除全量递归；排序改自然序（数字段按数值、目录在前）。② 前端按展开懒加载，展开状态与面板宽度持久化；删除死状态 `fileTree`（根层由 FileList 自行读取，App 只做「目录仍可读」校验）。③ 新鲜度：窗口回焦 / 可见性恢复 / 面板打开 / 手动刷新 → 250 ms 防抖 → 重扫根层 + 已展开目录；**不引入 watcher**，理由是新增依赖需先评估许可证与体积、Windows 网络盘与原子保存（rename）会放大实现复杂度，而金路径「外部新增后切回来打开」已被回焦刷新覆盖。④ LeftPanel 改非模态 `region`（点外收起、无遮罩/焦点陷阱），与 RightPanel 统一。⑤ 右键接通 `reveal_in_explorer`，删除与「打开」语义重复的「在新标签页打开」。
+- **验证**：5k vault 根层 0.88 ms / 7.0 KiB（改前 113–124 ms / 783 KiB），文件名搜索 6.6 ms；`tests/sidebar_scan.rs` 5 条回归（自然排序、截断、搜索、空查询、Windows 权限目录展开报错而父层可用）；vitest 366 / cargo test 全绿；`pnpm build` 通过。实机观感与交互待用户 UI 验收。
+- **已知取舍**：不做 watcher → 窗口保持前台时外部改动不自动出现（点刷新或重新聚焦即可）；目录符号链接不展开（防环），文件链接可用；不做全部展开/折叠、时间排序、创建/重命名/删除/移动（阅读器定位，非文件管理器）。

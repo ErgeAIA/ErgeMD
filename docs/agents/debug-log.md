@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-11-18
+updated: 2026-11-19
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -709,3 +709,12 @@ description: >
 - **修复**：① 去掉遮罩与焦点陷阱，`role="dialog" aria-modal` → `role="region"` + `aria-hidden`，Esc 关闭保留；② `readerStore` 新增 `scrollToBlockIndex` 注册位，`VirtualMarkdownView` 挂载时注册虚拟列表跳转，`SearchBar` 改按 `parseMarkdownBlocks` 的块数组统计全文命中，跳转时滚到目标块再就地高亮；同步把硬编码黄色高亮换成 `--search-highlight` token；③ `read_file` 改为 BOM → 严格 UTF-8 → GB18030 → UTF-8 lossy，返回 `encoding` 与 `had_errors`，前端按「每个会话一次」提示（中英 i18n）；④ 弹层改由 `Portal` 挂到 body，补 Esc 监听，tooltip 文案入 i18n。
 - **验证**：tsc 0 错、eslint 0 error（47 存量 warning 不在改动文件）、vitest 343/343、cargo test 全绿（新增 `read_file_encoding` 5 条：UTF-8 / BOM / UTF-16LE / GBK / 兜底）。**未验证**：应用内实机观感与虚拟滚动下搜索跳转的真实手感，待用户 `pnpm tauri dev`。
 - **教训**：设计系统的偏离不会自己报错——遮罩、`outline:none`、手写色表、内联样式压过样式表，都是「能跑但不对」。功能层同类问题（搜索只搜活 DOM、解码丢弃错误位）同理：丢掉的错误标志与丢掉的 token 一样，最终由用户承担。
+
+## BUG-083: 侧边栏「一次性全量快照」的四类故障（payload 超限 / 权限目录静默空 / 永不新鲜 / ARIA 假实现）
+
+- **日期**：2026-11-19（侧边栏整改取证实测；用户报「这块做得非常粗糙，一直没优化过」）
+- **现象**：① 20k/50k 文件的文件夹 401–623 ms / 3.0 MiB、1.31 s / 7.5 MiB 一次性回传；② 权限拒绝的子目录在树里显示为空，用户以为里面没笔记；③ 资源管理器里新建/改名/删除笔记后，应用内树永远停在旧快照，只能重启；④ 面板是遮罩 + 焦点陷阱的 modal，调设置/看目录时正文被压暗且不可交互；⑤ 代码注释声称 ARIA roving tabindex，实际每个节点 `tabIndex=0`，← 不回父节点、无首字母跳转；⑥ 右键「在资源管理器中显示」是空函数。
+- **根因**：全部同源——唯一入口 `scan_workspace` 把「文件系统查询」实现成一次性静态快照：整树递归 + 整包 IPC（无分页）；递归前用 `canonicalize().ok().is_some_and(...)` 做环检测，canonicalize 在权限不足时返回 Err，短路结果为 false，于是该目录**被当作叶子静默返回**，错误被吞；没有 watcher 也没有刷新路径；面板沿用模态模板；树组件按「所有节点都可聚焦」实现，注释与实现脱节。
+- **修复**：见 DEC-045——单层 `scan_directory`（≤1000/次）+ 文件名搜索 + 自然排序；前端懒加载 + 回焦/开面板/手动刷新增量重扫；目录级错误行 + 重试；非模态面板；真 roving + `aria-level/setsize/posinset` + ← 回父 + 首字母跳转；右键接通 `reveal_in_explorer`。
+- **验证**：`tests/sidebar_scan.rs`（含 Windows 权限目录：父层照常列出、展开该目录报错）；5k 根层 0.88 ms / 7.0 KiB、搜索 6.6 ms；vitest 366 / cargo test 全绿。**未实机走查**，待用户 UI 验收。
+- **教训**：① 「先取证再下结论」同样适用于自己的假设——动手前我判断权限目录会让整树扫描失败，实测是更隐蔽的静默丢失，靠注释/读码都会判错，必须造语料跑；② 把可变数据源做成一次性快照，规模、错误、新鲜度三类问题会一起出现，修一个不够；③ 注释里的无障碍承诺要有可执行断言兜底，否则会和实现长期分叉。

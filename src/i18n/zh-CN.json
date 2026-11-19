@@ -167,7 +167,6 @@
     "copySelection": "复制选中",
     "editCodeBlock": "编辑代码块",
     "open": "打开",
-    "openInNewTab": "在新标签页打开",
     "copyFilePath": "复制文件路径",
     "revealInExplorer": "在资源管理器中显示",
     "openLink": "打开链接",
@@ -208,7 +207,23 @@
   },
   "files": {
     "projectFiles": "项目文件",
-    "openFiles": "打开的文件"
+    "openFiles": "打开的文件",
+    "workspaceFallback": "工作区",
+    "loading": "正在读取文件夹…",
+    "loadFailed": "无法读取此文件夹",
+    "retry": "重试",
+    "refresh": "刷新文件列表",
+    "revealActive": "定位当前文件",
+    "filterPlaceholder": "搜索文件名…",
+    "clearFilter": "清除筛选",
+    "searchResults": "搜索结果 {{count}} 项",
+    "searchResultsLabel": "文件名搜索结果",
+    "searching": "正在搜索…",
+    "noResults": "没有匹配的文件",
+    "emptyWorkspace": "这个文件夹里没有 Markdown 文件",
+    "emptyFolder": "空文件夹",
+    "truncated": "条目过多，仅显示前 1000 项",
+    "tooDeep": "目录层级过深，已停止展开"
   },
   "tab": {
     "pin": "固定标签",

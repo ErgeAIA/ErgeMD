@@ -31,7 +31,7 @@ import { useTheme } from "./hooks/useTheme";
 import { useFileStore } from "./stores/fileStore";
 import { useReaderStore } from "./stores/readerStore";
 import i18n from "./i18n";
-import type { FileNode, TabInfo } from "./types";
+import type { DirListing, FileNode, TabInfo } from "./types";
 import { exportHtml } from "./utils/export";
 import { exportDocx } from "./utils/exportDocx";
 import { exportPdf, exportPdfGrayscale } from "./utils/exportPdf";
@@ -42,6 +42,12 @@ import { countWords } from "./utils/wordCount";
 
 /** 常驻 Tab 上限（审计 M3）：活动 + 固定 + 最近活动的 N 个常驻，超出者卸载阅读区 */
 const MAX_RESIDENT_TABS = 3;
+
+/** 工作区根目录只取一层；深层目录由 FileList 按展开懒加载 */
+async function scanRootEntries(dirPath: string): Promise<FileNode[]> {
+  const listing = await invoke<DirListing>("scan_directory", { dirPath });
+  return listing.entries;
+}
 
 function App() {
   const { t } = useTranslation();
@@ -279,18 +285,14 @@ function App() {
 
         if (state.workspacePath) {
           try {
-            const tree = await invoke<FileNode[]>("scan_workspace", {
-              folderPath: state.workspacePath,
-            });
-            if (!cancelled) {
-              useFileStore.setState({ fileTree: tree });
-            }
+            // 只验证目录仍可读；根层条目由 FileList 自行懒加载
+            await scanRootEntries(state.workspacePath);
           } catch {
             if (!cancelled) {
               useFileStore.setState({
                 workspacePath: null,
                 workspaceName: null,
-                fileTree: null,
+                expandedPaths: [],
               });
             }
           }
@@ -407,12 +409,10 @@ function App() {
         useFileStore.getState().openFile(filePath, fileName, result.content);
       }
       if (workspacePath) {
-        const tree = await invoke<FileNode[]>("scan_workspace", {
-          folderPath: workspacePath,
-        }).catch(() => null);
+        const tree = await scanRootEntries(workspacePath).catch(() => null);
         if (cancelled || !tree) return;
         const folderName = workspacePath.split(/[/\\]/).pop() || "Workspace";
-        useFileStore.getState().setWorkspace(workspacePath, folderName, tree);
+        useFileStore.getState().setWorkspace(workspacePath, folderName);
       }
     })();
 
@@ -650,11 +650,9 @@ function App() {
       }
 
       try {
-        const tree = await invoke<FileNode[]>("scan_workspace", {
-          folderPath: selectedPath,
-        });
+        await scanRootEntries(selectedPath);
         const folderName = selectedPath.split(/[/\\]/).pop() || "Workspace";
-        setWorkspace(selectedPath, folderName, tree);
+        setWorkspace(selectedPath, folderName);
         setLeftPanelOpen(true);
       } catch (err) {
         console.error("Failed to scan workspace:", err);
@@ -689,6 +687,21 @@ function App() {
         }).catch((err) => console.error("Failed to save recent file:", err));
       } catch (err) {
         console.error("Failed to read file:", err);
+        const fileName = filePath.split(/[/\\]/).pop() || "Untitled";
+        // 树/最近列表都可能已陈旧：先确认文件是否还在，再决定文案
+        const exists = await invoke<boolean>("file_exists", { path: filePath }).catch(
+          () => true,
+        );
+        if (!exists) {
+          invoke("delete_recent_file", { filePath }).catch(() => {});
+          window.dispatchEvent(new CustomEvent("ergemd:recent-files-changed"));
+          window.dispatchEvent(new CustomEvent("ergemd:workspace-refresh"));
+          useReaderStore.getState().addToast({
+            type: "warning",
+            message: i18n.t("reader.fileMissingRemoved", { name: fileName }),
+          });
+          return;
+        }
         useReaderStore
           .getState()
           .addToast({ type: "error", message: i18n.t("reader.readFailed") });
