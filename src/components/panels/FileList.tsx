@@ -41,7 +41,10 @@ interface StatusRow {
 type Row = NodeRow | StatusRow;
 
 const ROW_BASE_CLASS =
-  "hover-file-item flex items-center gap-1.5 px-2 py-1.5 cursor-pointer text-sm outline-none select-none";
+  "hover-file-item flex items-center gap-1.5 px-2 cursor-pointer text-sm outline-none select-none";
+
+/** 行内距（不依赖 Tailwind 新类生成的稳定性）：32px 行高，中文长读不挤 */
+const ROW_PADDING = { paddingTop: 6, paddingBottom: 6 } as const;
 
 const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
   const { t } = useTranslation();
@@ -511,9 +514,10 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
         aria-level={row.depth + 1}
         aria-disabled="true"
         tabIndex={-1}
-        className="flex items-center gap-2 px-2 py-1 text-xs select-none"
+        className="flex items-center gap-2 px-2 text-xs select-none"
         style={{
           paddingLeft: `${row.depth * 12 + 12}px`,
+          ...ROW_PADDING,
           color: row.variant === "error" ? "var(--danger)" : "var(--text-muted)",
         }}
       >
@@ -704,6 +708,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
                     background: "transparent",
                     border: "none",
                     paddingLeft: 16,
+                    ...ROW_PADDING,
                   }}
                   onClick={() => {
                     onFileSelect(node.path, node.name);
@@ -774,6 +779,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
                     className={ROW_BASE_CLASS}
                     style={{
                       paddingLeft: `${depth * 12 + 12}px`,
+                      ...ROW_PADDING,
                       color: isActive
                         ? "var(--accent-cyan)"
                         : isDir

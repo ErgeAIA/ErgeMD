@@ -14,6 +14,12 @@ const MAX_WIDTH = 480;
 const DEFAULT_WIDTH = 240;
 const WIDTH_STORAGE_KEY = "ergemd:left-panel-width";
 
+/** 面板动效：进场快、退场慢并渐隐；与标题栏/状态栏同属「离开比回来慢」的节奏 */
+const PANEL_TRANSITION_OPEN =
+  "transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease-out, visibility 0s linear 0s";
+const PANEL_TRANSITION_CLOSE =
+  "transform 360ms cubic-bezier(0.4, 0, 0.2, 1), opacity 320ms ease-out, visibility 0s linear 360ms";
+
 function clampWidth(width: number): number {
   return Math.min(Math.max(width, MIN_WIDTH), MAX_WIDTH);
 }
@@ -143,9 +149,11 @@ const LeftPanel: React.FC<LeftPanelProps> = memo(
           maxWidth: `${MAX_WIDTH}px`,
           background: "var(--bg-sidebar)",
           transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+          opacity: isOpen ? 1 : 0,
           visibility: isOpen ? "visible" : "hidden",
-          transition: "transform 150ms ease-out",
-          willChange: "transform",
+          pointerEvents: isOpen ? "auto" : "none",
+          transition: isOpen ? PANEL_TRANSITION_OPEN : PANEL_TRANSITION_CLOSE,
+          willChange: "transform, opacity",
           borderRight: "1px solid var(--border-subtle)",
         }}
       >
