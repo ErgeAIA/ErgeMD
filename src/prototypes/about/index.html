@@ -133,14 +133,16 @@
       .paper .p-head svg.tile { width: 72px; height: 72px; flex-shrink: 0; }
       .paper .p-head { gap: 16px; }
       .paper h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.02em; }
+      .paper .p-sub { margin: 3px 0 0; font-size: 13px; color: var(--p-muted); letter-spacing: 0.02em; }
       .paper .p-meta {
-        margin: 4px 0 0;
+        margin: 5px 0 0;
         font-family: ui-monospace, Consolas, monospace;
         font-size: 11px;
         color: var(--p-muted);
       }
       .paper .p-state { margin-left: auto; font-size: 12px; color: var(--p-muted); }
-      .paper .p-claim { margin: 16px 0 0; font-size: 14px; line-height: 1.9; white-space: pre-line; }
+      .paper .p-claim { margin: 18px 0 0; font-size: 13.5px; line-height: 1.9; }
+      .paper .p-slogan { margin: 6px 0 0; font-size: 13.5px; line-height: 1.9; color: var(--p-muted); }
       .paper .p-features {
         margin: 12px 0 0;
         font-size: 12px;
@@ -152,7 +154,7 @@
       .paper .p-author { display: flex; gap: 12px; align-items: flex-start; }
       .paper .p-author img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--p-rule); flex-shrink: 0; }
       .paper .p-author b { font-size: 14px; font-weight: 600; }
-      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.85; color: var(--p-muted); white-space: pre-line; }
+      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-muted); }
       .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); text-align: right; }
       .paper .p-links { display: flex; align-items: center; justify-content: center; gap: 18px; }
       .paper .p-links a, .paper .p-links button {
@@ -255,11 +257,11 @@
 
     <script>
       const CLAIM =
-        "ErgeMD — 极简 Markdown 阅读器\n基于 Tauri 2 构建，专注于提供沉浸式、高性能的阅读体验\n支持多主题切换、目录导航、搜索、阅读进度保存等功能";
+        "基于 Tauri 2 构建，专注沉浸、高性能的阅读：打开就是排好版的样子，多主题、目录导航、全文搜索与阅读进度都在。";
       const SLOGAN = "让每一次阅读，都回归内容本身。";
       const AUTHOR = "宝藏二哥 AIA";
       const BIO =
-        "一个热衷于分享好东西的技术大叔\n深耕 AI 绘画、AI 编程、AI 办公\n全网搜罗好用的 PC 软件与提效神器\n坚持「无门槛、无套路、无保留」三无分享";
+        "一个爱分享的技术大叔：折腾 AI 绘画、AI 编程和 AI 办公，也在全网搜罗好用的 PC 软件与提效神器；分享只守三条——无门槛、无套路、无保留。";
       const QUOTE = "AI 不应该有门槛，助力百万普通人用上 AI";
       const VERSION = "0.6.1";
       const LICENSE = "AGPL-3.0 · 免费 · 开源";
@@ -310,13 +312,14 @@
               ${APP_LOGO}
               <div>
                 <h1>ErgeMD</h1>
+                <p class="p-sub">极简 Markdown 阅读器</p>
                 <p class="p-meta">v${VERSION} · ${LICENSE}</p>
               </div>
               <span class="p-state">已是最新</span>
             </div>
-            <p class="p-claim">${CLAIM}
-— ${SLOGAN}</p>
-            <p class="p-features">Mermaid 图表 · 多主题切换 · 阅读进度保存 · 全文搜索 · 多格式导出</p>
+            <p class="p-claim">${CLAIM}</p>
+            <p class="p-slogan">— ${SLOGAN}</p>
+            <p class="p-features">Mermaid 图表 · 多格式导出</p>
             <div class="p-rule"></div>
             <div class="p-author">
               <img src="/images/avatar.png" alt="" />
