@@ -306,7 +306,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               </p>
               <p
                 style={{
-                  fontSize: "11px",
+                  fontSize: "12px",
                   fontStyle: "italic",
                   color: "var(--text-muted)",
                   margin: "6px 0 0 0",

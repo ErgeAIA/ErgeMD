@@ -47,7 +47,7 @@ export default class ErrorBoundary extends Component<
         >
           <h2
             style={{
-              fontSize: "1.5rem",
+              fontSize: "24px",
               marginBottom: "0.75rem",
               color: "var(--text-primary, #e0e0e0)",
             }}
@@ -56,7 +56,7 @@ export default class ErrorBoundary extends Component<
           </h2>
           <p
             style={{
-              fontSize: "0.875rem",
+              fontSize: "14px",
               color: "var(--text-secondary, #a0a0a0)",
               marginBottom: "1.5rem",
               textAlign: "center",
@@ -69,7 +69,7 @@ export default class ErrorBoundary extends Component<
             onClick={this.handleReload}
             style={{
               padding: "0.5rem 1.5rem",
-              fontSize: "0.875rem",
+              fontSize: "14px",
               borderRadius: "6px",
               border: "1px solid var(--border-color, #333)",
               background: "var(--bg-secondary, #252540)",

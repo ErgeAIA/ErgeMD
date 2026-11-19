@@ -265,7 +265,7 @@ const ImagePreview: React.FC = memo(() => {
           style={{
             background: "var(--hover-bg-subtle)",
             color: "var(--text-muted)",
-            fontSize: "11px",
+            fontSize: "12px",
           }}
         >
           重置
@@ -277,7 +277,7 @@ const ImagePreview: React.FC = memo(() => {
           style={{
             background: "var(--hover-bg-subtle)",
             color: "var(--text-secondary)",
-            fontSize: "11px",
+            fontSize: "12px",
           }}
         >
           <span>保存</span>

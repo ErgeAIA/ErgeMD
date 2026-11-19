@@ -323,7 +323,7 @@ const UpdateChecker: React.FC = memo(() => {
               type="button"
               aria-label={t("update.moreActions")}
               onClick={() => setMenuOpen((v) => !v)}
-              className="shrink-0 cursor-pointer bg-transparent border-none p-0 text-[15px] leading-none"
+              className="shrink-0 cursor-pointer bg-transparent border-none p-0 text-[16px] leading-none"
               style={{ color: "var(--text-secondary)" }}
             >
               ⋯
