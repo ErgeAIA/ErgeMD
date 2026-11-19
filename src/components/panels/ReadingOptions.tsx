@@ -662,18 +662,20 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
                 <option value="medium">{t("settings.autoConfig.medium")}</option>
                 <option value="high">{t("settings.autoConfig.high")}</option>
               </select>
-              <p
-                style={{
-                  margin: "6px 0 0",
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                  color: "var(--text-muted)",
-                }}
-              >
-                {t("settings.autoConfig.effective", {
-                  name: t(`settings.autoConfig.${autoEffectiveLevel}`),
-                })}
-              </p>
+              {configLevel === "auto" && (
+                <p
+                  style={{
+                    margin: "6px 0 0",
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {t("settings.autoConfig.effective", {
+                    name: t(`settings.autoConfig.${autoEffectiveLevel}`),
+                  })}
+                </p>
+              )}
             </div>
           )}
         </div>
