@@ -17,10 +17,11 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（`feat/shortcuts-dialog` 与 `fix/type-scale` 已合入）
-- **阶段**：字号阶梯与快捷键弹窗已合入 main；无进行中阶段
+- **当前分支**：feat/about-f（关于页 F 版落正式组件，未合并）
+- **阶段**：字号阶梯与快捷键弹窗已合入；关于页 F 版实现完成、待 UI 验收
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-19 关于页 F 版落地（分支 `feat/about-f`，DEC-050）：从六版原型中选定 F（暗纸宋体），正式 `AboutPage.tsx` 重写：72px AppIcon + 24px 书名 + 13px 副标题「极简 Markdown 阅读器」+ 11px 等宽元数据 + 右上检查更新；口号 16px 先行，功能/平台两段 13.5/12.5；作者区头像 30px + 姓名 14/600 + 身份行 + 简介/三无两段；GitHub/B站/微信居中（赭色下划线 + 图标），微信二维码点击展开、Esc 先收码再关页（aria-expanded/controls）；移除 emoji 特性 chip、发光头像、左竖线卡与页脚管道符。i18n 按用户定稿文案替换 about 键（中英同步），EasterEgg 所需 `qrTipLabel`/`bilibiliTitle` 保留。原型文件（A–E + 切换器）已从 `prototype/about-variants` 分支删除。tsc / eslint / vitest / build 全绿；**待实机验收**
 - 2026-11-19 快捷键总览弹窗（分支 `feat/shortcuts-dialog`）：新增 `src/config/shortcuts.ts` 作为单一事实源（4 组 24 项）与 `ShortcutsDialog`（Portal 模态：Esc/Ctrl+K/点遮罩/关闭按钮收起，打开时焦点锁定并做 Tab 循环；两列分组、kbd 胶囊走 `--bg-code`/`--divider`）；标题栏右侧新增键盘图标（`data-hint` 显示「快捷键 · Ctrl+K」），`Ctrl+K` 全局切换；欢迎页快捷键改为复用同一数据源的 5 项子集；顺带清理 welcome 下 16 个不再使用的 i18n key。弹窗字号按新阶梯定为 16/14/12。tsc / eslint / vitest 376 / build 全绿；无头 Edge 样张已核；**待实机验收**
 - 2026-11-19 外壳字号阶梯收口（分支 `fix/type-scale`，DEC-049）：全量盘点发现外壳实有七档（10–16/18/24），规范只定义 Label 12 / App Name 14；13px 以 30 处成为事实默认但无角色。按用户选择落地五档阶梯（Micro 11 / Label 12 / Compact 13 / Default 14 / Dialog Title 16），字距规则改为「正文标题 0、App Name 0.05em、大写分组 ≤0.04em」，Toast/更新卡正文归 Compact 13；把 11px 中文真文本（侧栏搜索计数与相对目录、QuickEdit 工具条、About 注释、ImagePreview 重置/保存）升到 12，UpdateChecker 关闭「×」15→16，ErrorBoundary rem 字号归一为 24/14px；11px 仅保留等宽/数字微元数据。盘点复跑确认 11px 真文本与 15px/0.6875rem 清零；tsc / eslint / vitest 376 / build 全绿
 - 2026-11-19 性能档位自动化（分支 `feat/auto-config`，DEC-048；起因：critique 14/40，用户判断档位属过度设计）：① 默认 `configLevel: "auto"`，旧持久值 `medium` 迁移为自动、显式 low/high 保留；② 新增 `resolveAutoLevel`（弱设备/强设备/超大文档规则）与 `useAutoConfig`（换文档重算初值；滚动期间 4s 内 ≥3 次 ≥60ms 长任务则只降一档，带滞回）；③ `composeReaderConfig` 固定 toc/interaction/virtualSizes 为中档，仅 performance 随档位变化，换档不再改变目录行高与动画时长；④ 删除 `ConfigLevelSelector`（预览卡/参数表/自定义下拉），「高级」改为一行原生下拉 + 「当前：{{name}}（自动）」，说明走 `data-hint`；⑤ 清理 `ConfigLevelInfoMap` 与 `configLevels/configLevelUI` i18n。新增 autoConfig 单测 6 条；vitest 376 / tsc / eslint / build 全绿；**实机与掉帧降级待验收**

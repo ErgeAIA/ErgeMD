@@ -1,77 +1,61 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import packageJson from "../../../package.json";
 import { forceCheckUpdate } from "../common/UpdateChecker";
 import { useReaderStore } from "../../stores/readerStore";
-import Portal from "../Portal";
 import AppIcon from "./AppIcon";
 
-// 静态资源路径
 const AVATAR_IMG = "/images/avatar.png";
 const BILIBILI_LOGO = "/images/bilibili.png";
-const QR_TIP_IMG = "/images/qr-tip.png";
 const QR_FRIEND_IMG = "/images/qr-friend.png";
-const ICO_REWARD = "/images/reward-ico.png";
 const ICO_WECHAT = "/images/Wechat-ico.png";
+
+const GITHUB_URL = "https://github.com/ErgeAIA/ErgeMD";
+const BILIBILI_URL = "https://space.bilibili.com/67221461";
+const UI_FONT =
+  'system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif';
 
 interface AboutPageProps {
   onClose: () => void;
 }
 
-/** 互动图标按钮（纯触发，不含弹窗） */
-const QrButton: React.FC<{
-  icon?: string;
-  imgSrc?: string;
-  hovered: boolean;
-  onHover: (v: boolean) => void;
-}> = memo(({ icon, imgSrc, hovered, onHover }) => (
-  <div onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)}>
-    <div
-      className="flex items-center justify-center"
-      style={{
-        width: "36px",
-        height: "36px",
-        borderRadius: "8px",
-        border: hovered
-          ? "1px solid var(--accent-cyan)"
-          : "1px solid var(--divider)",
-        background: hovered
-          ? "var(--hover-bg)"
-          : "var(--bg-tertiary, rgba(255,255,255,0.02))",
-        cursor: "pointer",
-        fontSize: "18px",
-        transition: "border-color 0.2s, background 0.2s",
-        overflow: "hidden",
-      }}
-    >
-      {imgSrc ? (
-        <img
-          src={imgSrc}
-          alt=""
-          style={{ width: "22px", height: "22px", objectFit: "contain" }}
-        />
-      ) : (
-        icon
-      )}
-    </div>
-  </div>
-));
-QrButton.displayName = "QrButton";
+const linkStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: 0,
+  background: "none",
+  border: "none",
+  color: "var(--brand-primary)",
+  font: "inherit",
+  fontSize: 14,
+  cursor: "pointer",
+  textDecoration: "underline",
+  textUnderlineOffset: 4,
+  textDecorationThickness: 1,
+};
 
+/**
+ * 关于页 —— 暗纸宋体的「版权页」版式（F 版）。
+ * 单列左轴、72px 应用图标、口号先行、身份与简介两段、入口居中；
+ * 二维码点击展开（Esc 先收码、再关页），不再使用悬停弹层。
+ */
 const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
   const { t } = useTranslation();
-  const [hoveredQr, setHoveredQr] = useState<
-    "tip" | "friend" | "bilibili" | null
-  >(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [latestAvailable, setLatestAvailable] = useState<{
     version: string;
     releaseUrl: string;
   } | null>(null);
+  const [wechatOpen, setWechatOpen] = useState(false);
   const addToast = useReaderStore((s) => s.addToast);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-  // AboutPage 打开时自动检测一次，绕过 24h 缓存，拿到最新版本徽章数据
+  useEffect(() => {
+    closeRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -94,27 +78,32 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
     };
   }, []);
 
-  // Esc 关闭（关闭按钮的 tooltip 已承诺此行为）
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key !== "Escape") return;
+      if (wechatOpen) {
+        setWechatOpen(false);
+      } else {
+        onClose();
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [onClose, wechatOpen]);
 
-  const handleVersionClick = async () => {
+  const handleCheckUpdate = async () => {
     if (checkingUpdate) return;
+    if (latestAvailable) {
+      void openUrl(latestAvailable.releaseUrl);
+      return;
+    }
     setCheckingUpdate(true);
     try {
       const { hasUpdate, latestVersion, releaseUrl } =
         await forceCheckUpdate();
       if (hasUpdate) {
         if (releaseUrl) {
-          setLatestAvailable({
-            version: latestVersion,
-            releaseUrl: releaseUrl,
-          });
+          setLatestAvailable({ version: latestVersion, releaseUrl });
         }
         addToast({
           type: "info",
@@ -141,15 +130,14 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
     }
   };
 
-  // 弹窗数据映射
-  const qrMap: Record<string, { src: string; label: string }> = {
-    tip: { src: QR_TIP_IMG, label: t("about.qrTipLabel") },
-    friend: { src: QR_FRIEND_IMG, label: t("about.qrFriendLabel") },
-  };
+  const versionLabel = checkingUpdate
+    ? t("about.checking")
+    : latestAvailable
+      ? t("about.updateRowNew", { version: latestAvailable.version })
+      : t("about.noUpdate", { version: packageJson.version });
 
   return (
     <>
-      {/* 背景遮罩 — 支持拖拽窗口 */}
       <div
         data-tauri-drag-region
         onContextMenu={(e) => e.preventDefault()}
@@ -158,13 +146,10 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           inset: 0,
           zIndex: 100,
           background: "var(--overlay-bg, rgba(0,0,0,0.6))",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
         }}
         onClick={onClose}
       />
 
-      {/* 卡片 */}
       <div
         onContextMenu={(e) => e.preventDefault()}
         style={{
@@ -173,539 +158,328 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           left: "50%",
           transform: "translate(-50%, -50%)",
           zIndex: 101,
-          maxWidth: "680px",
-          width: "90%",
+          width: "min(600px, calc(100vw - 48px))",
           maxHeight: "85vh",
-          background: "var(--bg-secondary, #1e1e1e)",
-          border: "1px solid var(--divider)",
-          borderRadius: "12px",
-          boxShadow: "var(--shadow-popup)",
           overflowY: "auto",
-          color: "var(--text-primary, #e0e0e0)",
+          background: "var(--bg-reader)",
+          border: "1px solid var(--divider)",
+          borderRadius: 2,
+          boxShadow: "var(--shadow-popup)",
+          color: "var(--text-primary)",
+          fontFamily: UI_FONT,
         }}
-        onMouseLeave={() => setHoveredQr(null)}
       >
-        {/* 关闭按钮 */}
         <button
+          ref={closeRef}
           onClick={onClose}
           aria-label={t("about.escToClose")}
           data-hint={t("about.escToClose")}
           style={{
             position: "absolute",
-            top: "12px",
-            right: "12px",
+            top: 10,
+            right: 12,
+            width: 24,
+            height: 24,
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             background: "transparent",
             border: "none",
             color: "var(--text-muted)",
-            fontSize: "18px",
             cursor: "pointer",
-            padding: "4px 8px",
-            lineHeight: 1,
-            borderRadius: "4px",
             zIndex: 1,
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color =
-              "var(--toast-error-border)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
-          }}
         >
-          ✕
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 2L10 10M10 2L2 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
         </button>
 
-        <div style={{ padding: "24px 24px 16px" }}>
-          {/* ===== 上部：图标 + 名称 + 版本 + 描述 + slogan ===== */}
-          <div
-            className="flex items-start gap-4"
-            style={{ marginBottom: "12px" }}
-          >
-            <AppIcon
-              size={104}
-              style={{ flexShrink: 0, borderRadius: "12px" }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                className="flex items-center gap-2"
-                style={{ marginBottom: "6px" }}
-              >
-                <h2
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    color: "var(--text-primary)",
-                    margin: 0,
-                    lineHeight: 1.3,
-                  }}
-                >
-                  ErgeMD
-                </h2>
-                <button
-                  onClick={() => {
-                    if (latestAvailable) {
-                      void openUrl(latestAvailable.releaseUrl);
-                      return;
-                    }
-                    void handleVersionClick();
-                  }}
-                  disabled={checkingUpdate}
-                  data-hint={t("about.checkUpdateHint")}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontSize: "12px",
-                    padding: "2px 8px",
-                    borderRadius: "10px",
-                    background: "transparent",
-                    border: "1px solid",
-                    borderColor: latestAvailable
-                      ? "var(--accent-cyan)"
-                      : "var(--border-subtle)",
-                    color: latestAvailable
-                      ? "var(--accent-cyan)"
-                      : "var(--text-muted)",
-                    cursor: checkingUpdate ? "wait" : "pointer",
-                    opacity: checkingUpdate ? 0.6 : 1,
-                    flexShrink: 0,
-                    transition: "opacity 0.2s, border-color 0.2s",
-                  }}
-                >
-                  <span>v{packageJson.version}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>
-                    {checkingUpdate
-                      ? t("about.checking")
-                      : latestAvailable
-                        ? t("about.updateRowNew", {
-                            version: latestAvailable.version,
-                          })
-                        : t("about.checkUpdateHint")}
-                  </span>
-                </button>
-                {latestAvailable && (
-                  <span
-                    aria-hidden="true"
-                    style={{ color: "var(--accent-cyan)", fontSize: "12px" }}
-                  >
-                    →
-                  </span>
-                )}
-              </div>
-              <p
-                style={{
-                  fontSize: "13px",
-                  lineHeight: 1.8,
-                  color: "var(--text-secondary)",
-                  margin: 0,
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {t("about.appDescription")}
-              </p>
-              <p
-                style={{
-                  fontSize: "12px",
-                  fontStyle: "italic",
-                  color: "var(--text-muted)",
-                  margin: "6px 0 0 0",
-                  opacity: 0.6,
-                }}
-              >
-                — {t("about.slogan")}
-              </p>
-            </div>
-          </div>
-
-          {/* ===== 特性标签 ===== */}
-          <div
-            className="flex flex-wrap justify-center gap-2"
-            style={{ marginBottom: "14px" }}
-          >
-            {[
-              { icon: "📖", label: t("about.feature1") },
-              { icon: "🎨", label: t("about.feature2") },
-              { icon: "⚡", label: t("about.feature3") },
-              { icon: "🔍", label: t("about.feature4") },
-              { icon: "📤", label: t("about.feature5") },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-1"
-                style={{
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  background: "var(--bg-tertiary, rgba(255,255,255,0.02))",
-                  border:
-                    "1px solid var(--border-subtle, rgba(255,255,255,0.04))",
-                }}
-              >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* ===== 分隔线 ===== */}
+        <div style={{ padding: "28px 36px 26px" }}>
+          {/* 头部：Logo + 书名 + 副标题 + 元数据 + 更新状态 */}
           <div
             style={{
-              height: "1px",
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              paddingRight: 24,
+            }}
+          >
+            <AppIcon size={72} style={{ flexShrink: 0 }} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 24,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  lineHeight: 1.2,
+                  color: "var(--text-primary)",
+                }}
+              >
+                ErgeMD
+              </h2>
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  fontSize: 14,
+                  letterSpacing: "0.01em",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {t("about.subtitle")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCheckUpdate}
+              data-hint={
+                latestAvailable
+                  ? t("about.latestVersionHint", {
+                      version: latestAvailable.version,
+                    })
+                  : t("about.checkUpdateHint")
+              }
+              style={{
+                alignSelf: "center",
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                padding: 0,
+                background: "none",
+                border: "none",
+                fontFamily: "inherit",
+                fontSize: 12,
+                lineHeight: 1.4,
+                cursor: checkingUpdate ? "wait" : "pointer",
+                color: latestAvailable
+                  ? "var(--brand-primary)"
+                  : "var(--text-muted)",
+              }}
+            >
+              {versionLabel}
+            </button>
+          </div>
+
+          {/* 元数据：与正文同一条左轴 */}
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Consolas, monospace",
+              fontSize: 12,
+              color: "var(--text-muted)",
+            }}
+          >
+            v{packageJson.version} · {t("about.license")}
+          </p>
+
+          {/* 口号 */}
+          <p
+            style={{
+              margin: "20px 0 0",
+              fontSize: 16,
+              lineHeight: 1.7,
+              letterSpacing: "0.01em",
+              color: "var(--text-primary)",
+            }}
+          >
+            {t("about.lead")}
+          </p>
+
+          {/* 功能 */}
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontSize: 14,
+              lineHeight: 1.85,
+              color: "var(--text-primary)",
+            }}
+          >
+            {t("about.intro")}
+          </p>
+
+          {/* 平台 */}
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: 14,
+              lineHeight: 1.85,
+              color: "var(--text-muted)",
+            }}
+          >
+            {t("about.platform")}
+          </p>
+
+          <div
+            style={{
+              height: 1,
               background: "var(--divider)",
-              margin: "0 0 14px 0",
+              margin: "18px 0 16px",
             }}
           />
 
-          {/* ===== 中部：作者名片 ===== */}
-          <div style={{ marginBottom: "16px" }}>
-            {/* 头像（居中） */}
-            <div
-              className="flex justify-center"
-              style={{ marginBottom: "8px" }}
-            >
-              <div
-                style={{
-                  width: "72px",
-                  height: "72px",
-                  borderRadius: "50%",
-                  border: "2px solid var(--divider)",
-                  boxShadow:
-                    "0 0 20px var(--hover-bg), 0 0 40px var(--hover-bg)",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={AVATAR_IMG}
-                  alt={t("about.authorName")}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement;
-                    img.style.display = "none";
-                    const parent = img.parentElement!;
-                    parent.style.fontSize = "32px";
-                    parent.style.display = "flex";
-                    parent.style.alignItems = "center";
-                    parent.style.justifyContent = "center";
-                    parent.style.background =
-                      "var(--bg-tertiary, rgba(255,255,255,0.03))";
-                    parent.style.color = "var(--text-muted)";
-                    parent.textContent = "😊";
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* 作者名（居中，弱于应用名一档） */}
-            <div
+          {/* 作者 */}
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <img
+              src={AVATAR_IMG}
+              alt=""
               style={{
-                textAlign: "center",
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                border: "1px solid var(--divider)",
+                objectFit: "cover",
+                flexShrink: 0,
               }}
-            >
-              {t("about.authorName")}
-            </div>
-
-            {/* 签名（居中，斜体，弱化） */}
-            <p
-              style={{
-                textAlign: "center",
-                fontSize: "12px",
-                fontStyle: "italic",
-                color: "var(--text-secondary)",
-                margin: "0 0 10px 0",
-                opacity: 0.6,
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
               }}
-            >
-              — {t("about.authorQuote")}
-            </p>
-
-            {/* 身份标签胶囊组（居中） */}
-            <div
-              className="flex justify-center flex-wrap gap-2"
-              style={{ marginBottom: "20px" }}
-            >
-              {[
-                t("about.authorTag1"),
-                t("about.authorTag2"),
-                t("about.authorTag3"),
-                t("about.authorTag4"),
-              ].map((tag) => (
-                <span
-                  key={tag}
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    padding: "4px 10px",
-                    borderRadius: "6px",
-                    background: "var(--hover-bg)",
-                    border: "1px solid var(--active-border)",
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* ===== 左右分栏 ===== */}
-            <div className="about-split-layout">
-              {/* 左侧：个人介绍卡片（青色主题） */}
+            />
+            <div style={{ minWidth: 0 }}>
               <div
                 style={{
-                  flex: "5 1 0",
-                  minWidth: 0,
-                  padding: "20px 16px 20px 24px",
-                  borderRadius: "12px",
-                  background: "var(--hover-bg)",
-                  border: "1px solid var(--active-border)",
-                  borderLeft: "3px solid var(--accent-cyan)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
                 }}
               >
-                <p
-                  style={{
-                    fontSize: "13px",
-                    lineHeight: 1.8,
-                    color: "var(--text-secondary)",
-                    margin: "0 0 18px 0",
-                    textAlign: "left",
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {t("about.authorBio")}
-                </p>
-                {/* 互动图标（嵌入左侧底部，居中） */}
-                <div
-                  className="flex items-center justify-center gap-5"
-                  style={{ paddingTop: "8px" }}
-                >
-                  <QrButton
-                    imgSrc={ICO_REWARD}
-                    hovered={hoveredQr === "tip"}
-                    onHover={(v) => setHoveredQr(v ? "tip" : null)}
-                  />
-                  <QrButton
-                    imgSrc={ICO_WECHAT}
-                    hovered={hoveredQr === "friend"}
-                    onHover={(v) => setHoveredQr(v ? "friend" : null)}
-                  />
-                </div>
+                {t("about.authorName")}
               </div>
-
-              {/* 右侧：B站卡片（粉色主题） */}
-              <div
+              <p
                 style={{
-                  flex: "5 1 0",
-                  minWidth: 0,
-                  padding: "20px 24px",
-                  borderRadius: "12px",
-                  background: "var(--hover-bg)",
-                  border: "1px solid var(--active-border)",
-                  borderLeft: "3px solid var(--accent-pink)",
-                  textAlign: "center",
+                  margin: "2px 0 0",
+                  fontSize: 12,
+                  color: "var(--text-muted)",
                 }}
               >
-                {/* B站 logo + 标题 */}
-                <div
-                  className="flex items-center justify-center gap-2"
-                  style={{ marginBottom: "8px" }}
-                >
-                  <img
-                    src={BILIBILI_LOGO}
-                    alt={t("about.bilibiliTitle")}
-                    style={{ width: "56px", height: "56px" }}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display =
-                        "none";
-                      const fallback = document.createElement("span");
-                      fallback.textContent = "📺";
-                      fallback.style.fontSize = "18px";
-                      e.currentTarget.parentNode?.insertBefore(
-                        fallback,
-                        e.currentTarget,
-                      );
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    {t("about.bilibiliTitle")}
-                  </span>
-                </div>
-
-                {/* B站按钮 */}
-                <div style={{ marginBottom: "12px" }}>
-                  <a
-                    href="https://space.bilibili.com/67221461"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      openUrl("https://space.bilibili.com/67221461");
-                    }}
-                    className="flex items-center justify-center gap-1"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      padding: "8px 18px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--accent-pink)",
-                      color: "var(--accent-pink)",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      textDecoration: "none",
-                      cursor: "pointer",
-                      transition: "background 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background =
-                        "var(--hover-bg)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background =
-                        "transparent";
-                    }}
-                  >
-                    {t("about.bilibiliButton")}
-                    <span style={{ fontSize: "14px" }}>↗</span>
-                  </a>
-                </div>
-
-                {/* 副标题（弱化） */}
-                <p
-                  style={{
-                    fontSize: "13px",
-                    lineHeight: 1.7,
-                    color: "var(--text-secondary)",
-                    margin: 0,
-                    opacity: 0.6,
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {t("about.bilibiliDesc")}
-                </p>
-              </div>
+                {t("about.role")}
+              </p>
             </div>
           </div>
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontSize: 14,
+              lineHeight: 1.8,
+              color: "var(--text-muted)",
+            }}
+          >
+            {t("about.bio")}
+          </p>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: 14,
+              lineHeight: 1.8,
+              color: "var(--text-muted)",
+            }}
+          >
+            {t("about.share")}
+          </p>
 
-          {/* ===== 居中弹窗 ===== */}
-          {/* 用 Portal 渲染到 body：卡片带 transform + overflowY，会裁切 fixed 子元素 */}
-          {hoveredQr && qrMap[hoveredQr] && (
-            <Portal>
-              <div
-                style={{
-                  position: "fixed",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  zIndex: 300,
-                  background: "var(--bg-secondary)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "12px",
-                  padding: "16px",
-                  boxShadow: "var(--shadow-popup)",
-                }}
-                onMouseLeave={() => setHoveredQr(null)}
-              >
-                <div
-                  style={{
-                    background: "var(--bg-page, #fff)",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <img
-                    src={qrMap[hoveredQr].src}
-                    alt={qrMap[hoveredQr].label}
-                    style={{
-                      maxHeight: "400px",
-                      width: "auto",
-                      objectFit: "contain",
-                    }}
-                  />
-                </div>
-                <p
-                  style={{
-                    margin: "12px 0 0 0",
-                    fontSize: "12px",
-                    color: "var(--text-muted)",
-                    textAlign: "center",
-                  }}
-                >
-                  {qrMap[hoveredQr].label}
-                </p>
-              </div>
-            </Portal>
-          )}
-
-          {/* ===== 底部 ===== */}
           <div
             style={{
-              borderTop: "1px solid var(--divider)",
-              marginTop: "16px",
-              paddingTop: "12px",
-              textAlign: "center",
-              fontSize: "12px",
-              color: "var(--text-muted)",
+              height: 1,
+              background: "var(--divider)",
+              margin: "18px 0 16px",
+            }}
+          />
+
+          {/* 连接入口 */}
+          <div
+            style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "16px",
+              gap: 18,
             }}
           >
-            <a
-              href="https://github.com/ErgeAIA/ErgeMD"
-              onClick={(e) => {
-                e.preventDefault();
-                openUrl("https://github.com/ErgeAIA/ErgeMD");
-              }}
-              className="flex items-center justify-center gap-2"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "4px 10px",
-                borderRadius: "6px",
-                border: "1px solid var(--divider)",
-                color: "var(--text-secondary)",
-                fontSize: "12px",
-                textDecoration: "none",
-                cursor: "pointer",
-                transition: "background 0.2s, border-color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                const target = e.currentTarget as HTMLElement;
-                target.style.background = "var(--hover-bg)";
-                target.style.borderColor = "var(--accent-cyan)";
-              }}
-              onMouseLeave={(e) => {
-                const target = e.currentTarget as HTMLElement;
-                target.style.background = "transparent";
-                target.style.borderColor = "var(--divider)";
-              }}
+            <button
+              type="button"
+              onClick={() => void openUrl(GITHUB_URL)}
+              style={linkStyle}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                style={{ width: "14px", height: "14px" }}
+                style={{ width: 14, height: 14 }}
+                aria-hidden="true"
               >
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
               </svg>
-              <span>{t("about.githubStar")}</span>
-            </a>
-            <span style={{ opacity: 0.4 }}>|</span>
-            <span>{t("about.license")}</span>
-            <span style={{ opacity: 0.4 }}>|</span>
-            {t("about.footer")}
+              <span>{t("about.gitHub")}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void openUrl(BILIBILI_URL)}
+              style={linkStyle}
+            >
+              <img
+                src={BILIBILI_LOGO}
+                alt=""
+                style={{ width: 14, height: 14, objectFit: "contain" }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+              <span>{t("about.bilibili")}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWechatOpen((v) => !v)}
+              aria-expanded={wechatOpen}
+              aria-controls="about-wechat-qr"
+              style={linkStyle}
+            >
+              <img
+                src={ICO_WECHAT}
+                alt=""
+                style={{ width: 14, height: 14, objectFit: "contain" }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+              <span>{t("about.wechat")}</span>
+            </button>
           </div>
+
+          {wechatOpen && (
+            <div
+              id="about-wechat-qr"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 14,
+                marginTop: 14,
+              }}
+            >
+              <img
+                src={QR_FRIEND_IMG}
+                alt={t("about.qrFriendLabel")}
+                style={{
+                  width: 132,
+                  height: 132,
+                  borderRadius: 2,
+                  border: "1px solid var(--divider)",
+                  background: "var(--bg-page)",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 12,
+                  lineHeight: 1.7,
+                  color: "var(--text-muted)",
+                }}
+              >
+                {t("about.qrFriendLabel")}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </>
