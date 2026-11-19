@@ -60,6 +60,15 @@ typography:
     fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.2
+  micro:
+    fontSize: "11px"
+    lineHeight: 1.3
+  compact:
+    fontSize: "13px"
+    lineHeight: 1.5
+  ui-title:
+    fontSize: "16px"
+    fontWeight: 600
   app-name:
     fontFamily: "system-ui, -apple-system, sans-serif"
     fontSize: "14px"
@@ -203,14 +212,19 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Subtitle / H4** (600, 1.15em): 与正文拉开一档，仍靠色相区分层级。
 - **H5 / H6** (600, 1.05em / 0.95em, H6 加 0.02em 字距): 到这两级只剩色相与半个字号差，H6 略小于正文以收束尾部层级。
 - **Body** (400, 16px 默认，1.8 行高，字距 0): 长文正文，段间距 16px，页宽 800px 默认（600–1400 可调）。字号、行高、字距、段距、页宽五项全部开放给用户。
-- **Label** (400, 12px): 标签栏文字、状态栏字数与百分比、Toast 正文。
-- **App Name** (700, 14px, 0.05em 字距): 标题栏左侧 "ErgeMD"，外壳里唯一带字距的文字，悬停加 8px 品牌色 text-shadow。
+- **Label** (400, 12px): 标签栏文字、状态栏字数与百分比、面板分组小标题（大写分组可加 ≤0.04em 字距）。
+- **Compact** (400, 13px): 面板行、右键菜单、Toast 与更新卡正文——外壳的默认密度档。
+- **Micro** (11px): 仅限等宽或数字型微元数据（代码语言角标、图片序号、搜索结果计数）；中文正文类文字不得低于 12px。
+- **Dialog Title** (600, 16px): 模态标题（快捷键总览、关于页区块标题）。
+- **App Name** (700, 14px, 0.05em 字距): 标题栏左侧 "ErgeMD"，悬停加 8px 品牌色 text-shadow。
 
 ### Named Rules
 
 **The 1.8 Rule.** 正文行高默认 1.8，下限 1.0 只在用户显式选择时出现；任何新增长文排版控件都必须以 1.8 为默认值。
 
 **The Mono-Only-Inside Rule.** 等宽字体只用于代码、快捷键提示与性能参数表。正文、标题、按钮文字一律不上等宽。
+
+**The Tracking Rule.** 正文与标题字距为 0；`ErgeMD` 用 0.05em；大写分组标签可用 ≤0.04em。字号阶梯固定为 11 / 12 / 13 / 14 / 16，禁止出现 15px 或 0.6875rem 这类游离值。
 
 ## Layout
 

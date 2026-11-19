@@ -211,7 +211,7 @@ const QuickEdit: React.FC<QuickEditProps> = memo(
             gap: "16px",
             padding: "4px 8px",
             background: "var(--bg-code, #16162A)",
-            fontSize: "0.6875rem",
+            fontSize: "12px",
             color: "var(--text-muted)",
             borderRadius: "0 0 4px 4px",
           }}
@@ -225,7 +225,7 @@ const QuickEdit: React.FC<QuickEditProps> = memo(
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                fontSize: "0.6875rem",
+                fontSize: "12px",
                 padding: "2px 4px",
               }}
             >
@@ -238,7 +238,7 @@ const QuickEdit: React.FC<QuickEditProps> = memo(
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                fontSize: "0.6875rem",
+                fontSize: "12px",
                 padding: "2px 4px",
               }}
             >

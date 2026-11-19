@@ -17,15 +17,12 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：feat/sidebar-folder（侧边栏整改，未合并；main 停在 v0.6.1 `240958c`；另有 `fix/missing-recent-file` 已验收未合并）
-- **阶段**：侧边栏「打开文件夹」深度整改完成、待用户 UI 验收；无进行中阶段
+- **当前分支**：main（`feat/shortcuts-dialog` 与 `fix/type-scale` 已合入）
+- **阶段**：字号阶梯与快捷键弹窗已合入 main；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
-- **当前分支**：feat/shortcuts-dialog（快捷键总览弹窗，未合并）
-- **阶段**：性能档位自动化已合入 main；快捷键弹窗完成、待实机验收
-- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
-- **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
-- 2026-11-19 快捷键总览弹窗（分支 `feat/shortcuts-dialog`）：新增 `src/config/shortcuts.ts` 作为单一事实源（4 组 24 项）与 `ShortcutsDialog`（Portal 模态：Esc/Ctrl+K/点遮罩/关闭按钮收起，打开时焦点锁定并做 Tab 循环；两列分组、kbd 胶囊走 `--bg-code`/`--divider`）；标题栏右侧新增键盘图标（`data-hint` 显示「快捷键 · Ctrl+K」），`Ctrl+K` 全局切换；欢迎页快捷键改为复用同一数据源的 5 项子集；顺带清理 welcome 下 16 个不再使用的 i18n key。tsc / eslint / vitest 376 / build 全绿；无头 Edge 样张已核；**待实机验收**
+- 2026-11-19 快捷键总览弹窗（分支 `feat/shortcuts-dialog`）：新增 `src/config/shortcuts.ts` 作为单一事实源（4 组 24 项）与 `ShortcutsDialog`（Portal 模态：Esc/Ctrl+K/点遮罩/关闭按钮收起，打开时焦点锁定并做 Tab 循环；两列分组、kbd 胶囊走 `--bg-code`/`--divider`）；标题栏右侧新增键盘图标（`data-hint` 显示「快捷键 · Ctrl+K」），`Ctrl+K` 全局切换；欢迎页快捷键改为复用同一数据源的 5 项子集；顺带清理 welcome 下 16 个不再使用的 i18n key。弹窗字号按新阶梯定为 16/14/12。tsc / eslint / vitest 376 / build 全绿；无头 Edge 样张已核；**待实机验收**
+- 2026-11-19 外壳字号阶梯收口（分支 `fix/type-scale`，DEC-049）：全量盘点发现外壳实有七档（10–16/18/24），规范只定义 Label 12 / App Name 14；13px 以 30 处成为事实默认但无角色。按用户选择落地五档阶梯（Micro 11 / Label 12 / Compact 13 / Default 14 / Dialog Title 16），字距规则改为「正文标题 0、App Name 0.05em、大写分组 ≤0.04em」，Toast/更新卡正文归 Compact 13；把 11px 中文真文本（侧栏搜索计数与相对目录、QuickEdit 工具条、About 注释、ImagePreview 重置/保存）升到 12，UpdateChecker 关闭「×」15→16，ErrorBoundary rem 字号归一为 24/14px；11px 仅保留等宽/数字微元数据。盘点复跑确认 11px 真文本与 15px/0.6875rem 清零；tsc / eslint / vitest 376 / build 全绿
 - 2026-11-19 性能档位自动化（分支 `feat/auto-config`，DEC-048；起因：critique 14/40，用户判断档位属过度设计）：① 默认 `configLevel: "auto"`，旧持久值 `medium` 迁移为自动、显式 low/high 保留；② 新增 `resolveAutoLevel`（弱设备/强设备/超大文档规则）与 `useAutoConfig`（换文档重算初值；滚动期间 4s 内 ≥3 次 ≥60ms 长任务则只降一档，带滞回）；③ `composeReaderConfig` 固定 toc/interaction/virtualSizes 为中档，仅 performance 随档位变化，换档不再改变目录行高与动画时长；④ 删除 `ConfigLevelSelector`（预览卡/参数表/自定义下拉），「高级」改为一行原生下拉 + 「当前：{{name}}（自动）」，说明走 `data-hint`；⑤ 清理 `ConfigLevelInfoMap` 与 `configLevels/configLevelUI` i18n。新增 autoConfig 单测 6 条；vitest 376 / tsc / eslint / build 全绿；**实机与掉帧降级待验收**
 - 2026-11-19 文件树行距与面板/目录动效（分支 `fix/panel-motion`）：① 树行高从约 22px 提到 32px（无头 Edge 实测 `height=32 lineHeight=20 fontSize=14 padding=6/6`，内联内距避开 Tailwind 新类生成问题）；② `LeftPanel` / `RightPanel` 退场改「先渐隐再滑走」——进场 transform 200ms + opacity 180ms，退场 transform 360ms + opacity 320ms，`visibility 0s linear 360ms` 延迟隐藏（旧实现关闭时立即 `visibility:hidden`，滑出动画实际不可见）；关闭瞬间 `pointer-events:none`；③ 右侧浮动目录（FloatingTOC）用户反馈仍「闪进闪出」：根因是低性能档 `animationDuration` 仅 80ms，且目录文字/图钉条件挂载；改为过渡时长下限（展开 200ms / 收起 320ms）+ 文字与图钉常驻节点、透明度与可见性过渡，目录 padding 同步过渡。tsc / eslint / vitest 369 / build 全绿；**待实机验收**
 - 2026-11-19 主题墨色舒适度收口（分支 `fix/ink-comfort`，DEC-047）：实测 12 套暗色正文 L\*89.2–94.1 / APCA 82.4–94.4（全部高于 Catppuccin/Nord 等参考的 79–81），10 套共用 `#E0E0E0`、5 套 h1 用 `#FAFAFA`；晨光正文 16.2:1。改源色表后重生成：暗色正文统一 L\*84.9–85.1（中性 `#D4D4D4`、夜灯 `#D9D3CE`、森林 `#C9D9C9`），h1 封顶 L\*90；晨光正文 `#292826`、Solarized Light `#2A3A44`；图表/思维导图文字配对改用 `ink.heading`，仅少数 mindmap 分支为维持 4.5:1 微调。新增 `apcaLc` 与 advisory 测试 `theme-comfort.test.ts`（暗色正文≤88、h1≤95、亮色正文≤92，只告警不阻断）。`theme:generate:check` 幂等 / vitest 369 / tsc / eslint / build 全绿；无头 Edge 对比样张已核，**实机观感待用户验收**

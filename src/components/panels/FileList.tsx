@@ -685,7 +685,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
       {/* 内容 */}
       {searchResults !== null ? (
         <div className="flex-1 min-h-0 overflow-y-auto py-1" style={{ scrollbarWidth: "thin" }}>
-          <div className="px-3 py-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+          <div className="px-3 py-1 text-xs" style={{ color: "var(--text-muted)" }}>
             {searching
               ? t("files.searching")
               : t("files.searchResults", { count: searchResults.length })}
@@ -717,7 +717,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
                 >
                   <span className="truncate flex-1">{node.name}</span>
                   <span
-                    className="truncate text-[11px] max-w-[45%]"
+                    className="truncate text-xs max-w-[45%]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {relativeDirLabel(parentDir(node.path), workspacePath)}

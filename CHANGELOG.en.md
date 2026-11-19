@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **One shell type scale**: the spec now defines 11 / 12 / 13 / 14 / 16; sidebar result counts, the quick-edit bar, About captions, and image preview buttons move from 11px to 12px, and stray 15px / rem font sizes are gone
 - **Natural file name sorting**: "Chapter 2" now comes before "Chapter 10", and folders always come before files
 - **Keyboard navigation in the file tree**: move with the arrows, expand right, collapse or jump to the parent left, and jump by typing the first letters
 - **Scrollbars fade out when idle**: nearly invisible at rest, light up while scrolling, and fade back slowly
