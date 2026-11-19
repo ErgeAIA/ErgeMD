@@ -105,6 +105,69 @@
         pointer-events: none;
       }
 
+      /* ---------- E/F：宋体纸页（原内容 + A 的结构） ---------- */
+      .paper {
+        --p-ink: #2b2724;
+        --p-muted: #6b6560;
+        --p-rule: rgba(43, 39, 36, 0.16);
+        --p-accent: #b84a14;
+        width: 600px;
+        padding: 28px 36px 26px;
+        border-radius: 2px;
+        background: #f6f0e4;
+        border: 1px solid rgba(43, 39, 36, 0.15);
+        color: var(--p-ink);
+        font-family: "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC",
+          "SimSun", "STSong", serif;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      }
+      .paper.dark {
+        --p-ink: var(--text-primary);
+        --p-muted: var(--text-muted);
+        --p-rule: var(--divider);
+        --p-accent: var(--brand-primary);
+        background: var(--bg-reader);
+        border-color: var(--divider);
+      }
+      .paper .p-head { display: flex; align-items: center; gap: 14px; }
+      .paper .p-head svg.tile { width: 46px; height: 46px; flex-shrink: 0; }
+      .paper h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
+      .paper .p-meta {
+        margin: 4px 0 0;
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 11px;
+        color: var(--p-muted);
+      }
+      .paper .p-state { margin-left: auto; font-size: 12px; color: var(--p-muted); }
+      .paper .p-claim { margin: 18px 0 0; font-size: 14.5px; line-height: 1.95; }
+      .paper .p-features {
+        margin: 10px 0 0;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--p-muted);
+      }
+      .paper .p-rule { height: 1px; background: var(--p-rule); margin: 18px 0 16px; }
+      .paper .p-author { display: flex; gap: 12px; align-items: flex-start; }
+      .paper .p-author img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--p-rule); flex-shrink: 0; }
+      .paper .p-author b { font-size: 14px; font-weight: 600; }
+      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.85; color: var(--p-muted); }
+      .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); }
+      .paper .p-links { display: flex; align-items: center; gap: 18px; }
+      .paper .p-links a, .paper .p-links button {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: none; border: none; padding: 0;
+        color: var(--p-accent);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-thickness: 1px;
+      }
+      .paper .p-links img, .paper .p-links svg { width: 14px; height: 14px; object-fit: contain; }
+      .paper .p-qr { display: flex; gap: 14px; align-items: center; margin-top: 14px; }
+      .paper .p-qr img { width: 132px; height: 132px; border-radius: 2px; border: 1px solid var(--p-rule); }
+
       /* ---------- A：版权页 ---------- */
       .a { width: 560px; padding: 24px 28px 22px; }
       .a .rule { height: 2px; width: 56px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink)); margin-bottom: 16px; }
@@ -212,6 +275,39 @@
         <a class="linkrow" href="https://space.bilibili.com/67221461" target="_blank" rel="noreferrer"><img src="/images/bilibili.png" alt="" /><span>B 站主页</span></a>
         <button class="linkrow" data-action="wechat" aria-expanded="${state.qr}"><img src="/images/Wechat-ico.png" alt="" /><span>微信</span></button>`;
 
+      const paperLinks = (s) => `
+        <a href="https://github.com/ErgeAIA/ErgeMD" target="_blank" rel="noreferrer">${GITHUB_ICON}<span>GitHub</span></a>
+        <a href="https://space.bilibili.com/67221461" target="_blank" rel="noreferrer"><img src="/images/bilibili.png" alt="" /><span>B 站</span></a>
+        <button data-action="wechat" aria-expanded="${s.qr}"><img src="/images/Wechat-ico.png" alt="" /><span>微信</span></button>`;
+
+      function paper(s, dark, tileId) {
+        return `
+          <div class="card paper ${dark ? "dark" : ""}">
+            <div class="p-head">
+              <svg class="tile" viewBox="0 0 64 64" aria-hidden="true">
+                <rect x="1.5" y="1.5" width="61" height="61" rx="12" fill="none" stroke="var(--p-accent)" stroke-width="2" />
+                <path d="M22 18h22v5H28v6h13v5H28v6h16v5H22z" fill="var(--p-accent)" />
+              </svg>
+              <div>
+                <h1>ErgeMD</h1>
+                <p class="p-meta">v${VERSION} · ${LICENSE}</p>
+              </div>
+              <span class="p-state">已是最新</span>
+            </div>
+            <p class="p-claim">${CLAIM}<br />${SLOGAN}</p>
+            <p class="p-features">Mermaid · 多主题 · 阅读进度 · 全文搜索 · 导出</p>
+            <div class="p-rule"></div>
+            <div class="p-author">
+              <img src="/images/avatar.png" alt="" />
+              <div><b>${AUTHOR}</b><p>${BIO}</p></div>
+            </div>
+            <p class="p-quote">「${QUOTE}」</p>
+            <div class="p-rule"></div>
+            <div class="p-links">${paperLinks(s)}</div>
+            ${qrBlock(s, "p-qr")}
+          </div>`;
+      }
+
       const V = {
         A: {
           name: "版权页（单列）",
@@ -287,8 +383,10 @@
               <p class="quote">“${QUOTE}” —— ${AUTHOR}</p>
             </div>`,
         },
+        E: { name: "纸页·亮（宋体）", render: (s) => paper(s, false, "tileE") },
+        F: { name: "纸页·暗（宋体）", render: (s) => paper(s, true, "tileF") },
       };
-      const ORDER = ["A", "B", "C", "D"];
+      const ORDER = ["A", "B", "C", "D", "E", "F"];
 
       const params = new URLSearchParams(location.search);
       const state = {
