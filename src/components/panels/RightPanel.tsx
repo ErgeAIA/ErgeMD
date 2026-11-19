@@ -12,6 +12,12 @@ const MAX_WIDTH = 600;
 const DEFAULT_WIDTH = 320;
 const RESIZE_EDGE_WIDTH = 8;
 
+/** 面板动效：进场快、退场慢并渐隐；与标题栏/状态栏同属「离开比回来慢」的节奏 */
+const PANEL_TRANSITION_OPEN =
+  "transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease-out, visibility 0s linear 0s";
+const PANEL_TRANSITION_CLOSE =
+  "transform 360ms cubic-bezier(0.4, 0, 0.2, 1), opacity 320ms ease-out, visibility 0s linear 360ms";
+
 /**
  * 右侧阅读选项面板：
  * - 通过按钮切换显示/隐藏（非边缘触发）
@@ -103,7 +109,7 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
         role="region"
         aria-label={t("settings.readingOptions")}
         aria-hidden={!isOpen}
-        className="fixed right-0 z-40 overflow-hidden transition-transform duration-200"
+        className="fixed right-0 z-40 overflow-hidden"
         style={{
           top: "40px",
           height: "calc(100vh - 80px)",
@@ -112,8 +118,11 @@ const RightPanel: React.FC<RightPanelProps> = memo(({ isOpen, onToggle }) => {
           maxWidth: `${MAX_WIDTH}px`,
           background: "var(--bg-sidebar)",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
+          opacity: isOpen ? 1 : 0,
           visibility: isOpen ? "visible" : "hidden",
-          willChange: "transform",
+          pointerEvents: isOpen ? "auto" : "none",
+          transition: isOpen ? PANEL_TRANSITION_OPEN : PANEL_TRANSITION_CLOSE,
+          willChange: "transform, opacity",
           display: "flex",
           flexDirection: "column",
         }}
