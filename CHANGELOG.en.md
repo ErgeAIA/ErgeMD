@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **More left padding in the sidebar**: folder names and the filter field no longer hug the panel edge
 - **Easier on the eyes over long sessions**: body ink across the 12 dark themes now sits around L\*85 (APCA ≈75–80), and H1 caps at L\*90 — no more near-pure white headings
 - **Softer body ink in Morning Light**: the near-black body ink moves to a warm L\*16, and the Solarized light theme is nudged into the same band
+- **Roomier file tree rows**: about 32px per row, so Chinese file names no longer feel cramped
+- **Side panels fade out on close**: they now fade while sliding away (~360ms) instead of vanishing instantly; opening stays quick
 
 ### Fixed
 
