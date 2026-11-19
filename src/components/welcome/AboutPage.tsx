@@ -13,8 +13,8 @@ const ICO_WECHAT = "/images/Wechat-ico.png";
 
 const GITHUB_URL = "https://github.com/ErgeAIA/ErgeMD";
 const BILIBILI_URL = "https://space.bilibili.com/67221461";
-const SERIF =
-  '"Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", "STSong", serif';
+const UI_FONT =
+  'system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif';
 
 interface AboutPageProps {
   onClose: () => void;
@@ -29,7 +29,7 @@ const linkStyle: React.CSSProperties = {
   border: "none",
   color: "var(--brand-primary)",
   font: "inherit",
-  fontSize: 13,
+  fontSize: 14,
   cursor: "pointer",
   textDecoration: "underline",
   textUnderlineOffset: 4,
@@ -166,7 +166,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           borderRadius: 2,
           boxShadow: "var(--shadow-popup)",
           color: "var(--text-primary)",
-          fontFamily: SERIF,
+          fontFamily: UI_FONT,
         }}
       >
         <button
@@ -267,7 +267,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               margin: "10px 0 0",
               fontFamily:
                 "ui-monospace, SFMono-Regular, Consolas, monospace",
-              fontSize: 11,
+              fontSize: 12,
               color: "var(--text-muted)",
             }}
           >
@@ -291,7 +291,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           <p
             style={{
               margin: "10px 0 0",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: 1.85,
               color: "var(--text-primary)",
             }}
@@ -303,7 +303,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           <p
             style={{
               margin: "6px 0 0",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: 1.85,
               color: "var(--text-muted)",
             }}
@@ -360,7 +360,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           <p
             style={{
               margin: "10px 0 0",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: 1.8,
               color: "var(--text-muted)",
             }}
@@ -370,7 +370,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           <p
             style={{
               margin: "4px 0 0",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: 1.8,
               color: "var(--text-muted)",
             }}
