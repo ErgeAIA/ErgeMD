@@ -337,58 +337,71 @@ const UpdateChecker: React.FC = memo(() => {
           )}
 
           {groups.length > 0 && (
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-              {groups.map((group) => {
-                const shown = showAllNotes
-                  ? group.items
-                  : group.items.slice(0, NOTES_PER_GROUP);
-                const hidden = group.items.length - shown.length;
-                return (
-                  <div key={group.category}>
-                    <div
-                      className="text-[12px]"
-                      style={{ color: "var(--text-secondary)", marginBottom: 6 }}
-                    >
-                      {group.category}
-                    </div>
-                    <ul
-                      style={{
-                        borderLeft: "2px solid var(--border-subtle)",
-                        paddingLeft: 12,
-                        margin: 0,
-                        listStyle: "none",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6,
-                      }}
-                    >
-                      {shown.map((item, idx) => (
-                        <li
-                          key={idx}
-                          className="text-[13px]"
-                          style={{ color: "var(--text-primary)", lineHeight: 1.75 }}
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                    {hidden > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  maxHeight: "min(46vh, 340px)",
+                  overflowY: "auto",
+                  overscrollBehavior: "contain",
+                  scrollbarWidth: "thin",
+                  paddingRight: 6,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                {groups.map((group) => {
+                  const shown = showAllNotes
+                    ? group.items
+                    : group.items.slice(0, NOTES_PER_GROUP);
+                  const hidden = group.items.length - shown.length;
+                  return (
+                    <div key={group.category}>
                       <div
                         className="text-[12px]"
-                        style={{ color: "var(--text-muted)", marginTop: 6 }}
+                        style={{ color: "var(--text-secondary)", marginBottom: 6 }}
                       >
-                        {t("update.moreItems", { count: hidden })}
+                        {group.category}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                      <ul
+                        style={{
+                          borderLeft: "2px solid var(--border-subtle)",
+                          paddingLeft: 12,
+                          margin: 0,
+                          listStyle: "none",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 6,
+                        }}
+                      >
+                        {shown.map((item, idx) => (
+                          <li
+                            key={idx}
+                            className="text-[13px]"
+                            style={{ color: "var(--text-primary)", lineHeight: 1.75 }}
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                      {hidden > 0 && (
+                        <div
+                          className="text-[12px]"
+                          style={{ color: "var(--text-muted)", marginTop: 6 }}
+                        >
+                          {t("update.moreItems", { count: hidden })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
               {totalItems > visibleItems && (
                 <button
                   type="button"
                   onClick={() => setShowAllNotes((v) => !v)}
                   className="self-start cursor-pointer bg-transparent border-none p-0 text-[13px]"
-                  style={{ color: "var(--accent-cyan)" }}
+                  style={{ color: "var(--accent-cyan)", marginTop: 12 }}
                 >
                   {showAllNotes
                     ? t("update.showLessItems")
