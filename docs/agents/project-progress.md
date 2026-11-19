@@ -21,8 +21,8 @@ description: >
 - **阶段**：侧边栏「打开文件夹」深度整改完成、待用户 UI 验收；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
-- **当前分支**：fix/ui-polish-batch（三项 UI 细节，未合并）
-- **阶段**：侧边栏整改与失效文件处理已合入 main；UI 细节批次（原生 tooltip / 首列间距 / 滚动条回显）完成、待实机验收
+- **当前分支**：main（`fix/missing-recent-file`、`feat/sidebar-folder`、`fix/ui-polish-batch` 均已合入）
+- **阶段**：UI 细节批次已合入 main；待用户实机验收（发版克制，暂不发版）
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
 - 2026-11-19 UI 细节批次（分支 `fix/ui-polish-batch`）：① 原生 `title` 全部替换为 `data-hint` + 全局 `HoverHint`（主题底 + 浮层阴影、无系统边框；悬停 320ms、键盘聚焦即显，滚动/点击/失焦/Esc 即隐），覆盖标题栏、代码块复制、目录钉住、搜索上下条、关于页、图表缩放等 13 处；② 侧边栏首列缩进 8→12px、头部与筛选框左右 12→16px（内距最终改内联样式——长驻 dev 会话里 Tailwind 新生成的 `px-4/pt-2.5` 可能不生效，首版因此仍贴边），目录名不再贴边；③ 滚动条闲置回显（移植 Avalon `scrollFx`）：静止 `--sb-alpha` 0.32，滚动 120ms 点亮、450ms 后 650ms 渐隐，CSS 用 `color-mix` 消费该变量，`prefers-reduced-motion` 直接切态，新增 `scrollFx.test.ts`。浏览器实测伪元素继承成立（`getComputedStyle(el,"::-webkit-scrollbar-thumb")` 的 alpha 随变量变化）。tsc 0 / eslint 0 error / vitest 367 / build 通过；**未实机验收**
