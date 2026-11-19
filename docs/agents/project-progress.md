@@ -17,10 +17,11 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（`feat/about-f` 已合入）
-- **阶段**：本轮改动全部收口，等待是否发版的决定
-- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
+- **当前分支**：main（v0.7.0 已发布）
+- **阶段**：v0.7.0 发布完成（GitHub Release 为唯一发布源）；无进行中阶段
+- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.7.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-20 发布 v0.7.0 并验证：tag `v0.7.0`（commit `c3284d6`）三平台构建全绿（CI run 44559526921：purge / lint+test / 三平台 build / cleanup-caches / publish-updater 全部 success；排队约 8 分钟后开跑）。GitHub Release 9 个产物齐全（portable.zip / setup.exe + zip / dmg + zip / AppImage + zip / deb + zip）；`updates.json` 三平台均指向 0.7.0（windows-x86_64 / darwin-aarch64 / linux-x86_64）；updates-dist 镜像仓 `ergemd-v0.7.0` 含 9 个文件（3 个更新包 + 各自 .sig + portable / dmg / deb）。已装客户端下次启动检查即可收到更新
 - 2026-11-19 收尾：`feat/about-f` 以 `--no-ff` 合入 main；关于页字体由宋体改为系统无衬线、正文统一 14px（标题 24 / 副标题 14 / 正文 14 / 元数据 12），并修正 CHANGELOG 中「宋体」表述；旧的 `fix/about-colophon`（被否定的首版改版）未合并、已删除；`prototype/about-variants` 保留为原型记录。全量门禁 vitest 376 / tsc / eslint / build 通过。**发版建议：v0.7.0（小版本），理由见交接/汇报**
 - 2026-11-19 关于页 F 版落地（分支 `feat/about-f`，DEC-050）：从六版原型中选定 F（暗纸宋体），正式 `AboutPage.tsx` 重写：72px AppIcon + 24px 书名 + 13px 副标题「极简 Markdown 阅读器」+ 11px 等宽元数据 + 右上检查更新；口号 16px 先行，功能/平台两段 13.5/12.5；作者区头像 30px + 姓名 14/600 + 身份行 + 简介/三无两段；GitHub/B站/微信居中（赭色下划线 + 图标），微信二维码点击展开、Esc 先收码再关页（aria-expanded/controls）；移除 emoji 特性 chip、发光头像、左竖线卡与页脚管道符。i18n 按用户定稿文案替换 about 键（中英同步），EasterEgg 所需 `qrTipLabel`/`bilibiliTitle` 保留。原型文件（A–E + 切换器）已从 `prototype/about-variants` 分支删除。tsc / eslint / vitest / build 全绿；**待实机验收**
 - 2026-11-19 快捷键总览弹窗（分支 `feat/shortcuts-dialog`）：新增 `src/config/shortcuts.ts` 作为单一事实源（4 组 24 项）与 `ShortcutsDialog`（Portal 模态：Esc/Ctrl+K/点遮罩/关闭按钮收起，打开时焦点锁定并做 Tab 循环；两列分组、kbd 胶囊走 `--bg-code`/`--divider`）；标题栏右侧新增键盘图标（`data-hint` 显示「快捷键 · Ctrl+K」），`Ctrl+K` 全局切换；欢迎页快捷键改为复用同一数据源的 5 项子集；顺带清理 welcome 下 16 个不再使用的 i18n key。弹窗字号按新阶梯定为 16/14/12。tsc / eslint / vitest 376 / build 全绿；无头 Edge 样张已核；**待实机验收**
