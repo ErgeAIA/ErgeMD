@@ -392,3 +392,11 @@ description: >
 - **决策**：① 默认 `configLevel: "auto"`；旧持久值 `medium`（历史默认，几乎没人主动选）迁移为自动，显式的 low/high 保留为手动锁定。② 自动初值：`resolveAutoLevel(lines, cores, memoryGb)`——弱设备（≤4 核或 ≤4GB）→ 省内存；强设备（≥12 核且 ≥8GB）→ 流畅优先；≥3 万行且非强设备 → 省内存；其余均衡。未提供设备信息时取均衡。③ 运行时只降不升：滚动期间 4s 内出现 ≥3 次 ≥60ms 长任务则下调一档，带 600ms 滚动判定窗与 4s 滞回窗；降级在当前文档内保持，换文档重新评估。④ `composeReaderConfig(level)` 固定 `toc / interaction / virtualSizes` 为中档，只替换 `performance`——换档不再改变目录行高、虚拟块高度与动画时长（此前 high 的「更细腻动画」实为 80ms 更快，文案与事实相反）。⑤ UI：删除 `ConfigLevelSelector`（预览卡/参数表/自定义下拉），「高级」只留一行原生下拉「自动（推荐）/ 省内存 / 均衡 / 流畅优先」+ 一行「当前：{{name}}（自动）」；悬停说明走全局 `data-hint`。
 - **验证**：新增 `autoConfig.test.ts`（行数统计、弱/强设备与大文档规则、降级夹紧、组合配置只换 performance）；vitest 376 全绿；tsc / eslint / build 通过。**实机观感与掉帧降级待用户验收**。
 - **已知取舍**：无遥测，自动规则只能保守；WebKit 无 `longtask` 时只有自动初值、无运行时降级；手动锁定仍保留 low/high，但三档差异现在只体现在性能参数上。
+
+## DEC-049: 外壳字号定为 11/12/13/14/16 五档，并收紧字距规则
+
+- **日期**：2026-11-19
+- **背景**：全项目字号盘点发现设计规范只定义了阅读画布阶梯与 Label 12 / App Name 14，外壳实际形成 10/11/12/13/14/15/16 七档；13px 是最大单一文本桶（30 处，含 `text-[13px]`），却无对应角色，detector 反复报 `design-system-font-size`。另有 11px 中文真文本（搜索计数、快速编辑条、关于页注释、图片预览按钮）低于 Label 12，以及 Toast 13px 与规范 Label 12 冲突。用户选定「五档阶梯 + 只修真文本」。
+- **决策**：① 新阶梯：Micro 11（仅等宽/数字微元数据，中文正文类禁止）、Label 12、Compact 13（面板行/菜单/Toast/更新卡正文）、Default 14（按钮/弹窗正文/App Name）、Dialog Title 16；禁止 15px 与 rem 字号游离值。② 字距规则：正文与标题 0，`ErgeMD` 0.05em，大写分组标签 ≤0.04em（原文「App Name 唯一带字距」与实际不符，按现状修订）。③ Toast/更新卡正文归 Compact 13（此前规范写 Label 12，与用户「字太小」的反馈相反）。④ 迁移：侧栏搜索计数/相对目录、QuickEdit 工具条、About 注释、ImagePreview「重置/保存」11→12；UpdateChecker 关闭「×」15→16；ErrorBoundary 1.5rem/0.875rem → 24px/14px。语言角标等 11px 等宽微标签保留。
+- **验证**：重跑字号盘点（11px 真文本清空、15px/0.6875rem 消失）；tsc / eslint / vitest 376 / build 全绿。**观感待 UI 验收**。
+- **已知取舍**：13px 不做二次收缩（密集面板若升 14 会更挤）；大写分组标签保留 ≤0.04em 字距，与「例外唯一」原则改为白名单表述。
