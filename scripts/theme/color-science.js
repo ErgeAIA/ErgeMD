@@ -125,8 +125,7 @@ function inGamut({ l, c, h }) {
  * @param {number} target 目标对比度
  * @returns {{hex: string, ratio: number, met: boolean}} met=false 表示达到明度边界仍不达标，调用方须自行处置
  */
-export function tuneForContrast(colorHex, bgHex, target = 4.5) {
-  const bg = parseHex(bgHex);
+export function tuneForContrast(colorHex, bgHex, target = 4.5) {  const bg = parseHex(bgHex);
   const bgL = relativeLuminance(bg);
   const dir = bgL > 0.4 ? -1 : 1;
   const base = rgbToOklch(parseHex(colorHex));
@@ -151,4 +150,32 @@ export function tuneForContrast(colorHex, bgHex, target = 4.5) {
   }
   const ratio = contrastRatio(rgb, bg);
   return { hex: toHex(rgb), ratio, met: ratio >= target };
+}
+
+/**
+ * APCA 0.1.9 近似（自实现，用于「舒适上限」判断，不是官方认证实现）。
+ * 返回带符号的 Lc：浅字深底为负、深字浅底为正；绝对值越大对比越强。
+ * WCAG 只有下限，APCA 的极性差异更接近暗底高亮的眩光感受。
+ */
+export function apcaLc(textHex, bgHex) {
+  const yOf = (hex) => {
+    let y = relativeLuminance(parseHex(hex));
+    const blkThrs = 0.022;
+    if (y <= blkThrs) y += Math.pow(blkThrs - y, 1.414);
+    return y;
+  };
+  const Ytxt = yOf(textHex);
+  const Ybg = yOf(bgHex);
+  if (Math.abs(Ybg - Ytxt) < 0.0005) return 0;
+
+  if (Ybg > Ytxt) {
+    // 深字浅底
+    const sapc = (Math.pow(Ybg, 0.56) - Math.pow(Ytxt, 0.57)) * 1.14;
+    const out = sapc < 0.1 ? 0 : sapc - 0.027;
+    return out * 100;
+  }
+  // 浅字深底
+  const sapc = (Math.pow(Ybg, 0.65) - Math.pow(Ytxt, 0.62)) * 1.14;
+  const out = sapc > -0.1 ? 0 : sapc + 0.014;
+  return out * 100;
 }

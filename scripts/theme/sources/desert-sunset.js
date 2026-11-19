@@ -21,8 +21,8 @@ export default {
     tertiary: "#262630",
   },
   ink: {
-    heading: "#F0E8E0",
-    primary: "#E0E0E0",
+    heading: "#E9E1D9",
+    primary: "#D4D4D4",
     secondary: "#A6A6A6",
     muted: "#808080",
   },
@@ -41,7 +41,7 @@ export default {
     logo: "#4DD0E1",
   },
   // 标题色相种子（生成时按画布调校至 ≥4.5:1；h6 现行 3.02:1 属本次迁移要修的项）
-  headingHues: ["#F0E8E0", "#FFB347", "#E07A5F", "#F2CC8F", "#81C784", "#787870"],
+  headingHues: ["#E9E1D9", "#FFB347", "#E07A5F", "#F2CC8F", "#81C784", "#787870"],
   // 图表类别色相（= 现行 chart-stroke-0..5）
   chartHues: ["#FFB347", "#E07A5F", "#F2CC8F", "#4DD0E1", "#81C784", "#CE93D8"],
   // 数据序列色（= 现行 chart-series-0..5，与本主题 stroke 序列不同）

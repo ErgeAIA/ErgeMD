@@ -21,8 +21,8 @@ export default {
     tertiary: "#262630",
   },
   ink: {
-    heading: "#FAFAFA",
-    primary: "#E0E0E0",
+    heading: "#E2E2E2",
+    primary: "#D4D4D4",
     secondary: "#A6A6A6",
     muted: "#808080",
   },
@@ -42,7 +42,7 @@ export default {
     logo: "#B0B0B0",
   },
   // 标题灰度层次种子（生成时按画布调校至 ≥4.5:1；h6 现行不达标，属本次迁移要修的项）
-  headingHues: ["#FAFAFA", "#D0D0D0", "#B0B0B0", "#909090", "#808080", "#707070"],
+  headingHues: ["#E2E2E2", "#D0D0D0", "#B0B0B0", "#909090", "#808080", "#707070"],
   // 图表类别灰度（= 现行 chart-stroke-0..5）
   chartHues: ["#B0B0B0", "#A0A0A0", "#909090", "#C0C0C0", "#808080", "#D0D0D0"],
   // 数据序列灰度（= 现行 chart-series-0..5，与本主题 stroke 序列不同）

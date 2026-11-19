@@ -6,8 +6,8 @@ colors:
   canvas-reader: "#2E2E38"
   canvas-sidebar: "#222230"
   canvas-code: "#262630"
-  ink-heading: "#FAFAFA"
-  ink-primary: "#E0E0E0"
+  ink-heading: "#E2E2E2"
+  ink-primary: "#D4D4D4"
   ink-secondary: "#A6A6A6"
   ink-muted: "#989898"
   brand-primary: "#00FFFF"
@@ -19,7 +19,7 @@ colors:
   accent-yellow: "#FFFF00"
   accent-orange: "#FF8000"
   accent-red: "#FF0040"
-  heading-1: "#EBEBEB"
+  heading-1: "#E2E2E2"
   heading-2: "#00FFFF"
   heading-3: "#FF3DFE"
   heading-4: "#FF8000"
@@ -171,8 +171,8 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **阅读画布 / Canvas Reader** (#2E2E38): 正文所在平面，比页面亮一档——这就是「画框」的框内。
 - **侧栏画布 / Canvas Sidebar** (#222230): 标题栏、左右面板、右键菜单、搜索栏，比页面暗一档。
 - **代码画布 / Canvas Code** (#262630): 代码块与设置项容器。
-- **标题白 / Ink Heading** (#FAFAFA): H1 与最高层级文字。
-- **正文灰 / Ink Primary** (#E0E0E0): 长文正文，对 `canvas-reader` 实测 10.2:1。
+- **标题墨 / Ink Heading** (#E2E2E2): H1 与最高层级文字。不再使用 `#FAFAFA` 一类近纯白——层级由字号与字重承担，明度只做小幅递进。
+- **正文灰 / Ink Primary** (#D4D4D4): 长文正文，对 `canvas-reader` 实测 9.1:1、L\*84.9。暗色正文墨色统一落在 L\*84–87（APCA≈75–80），低于成熟暗色主题的舒适上限；对比度只保证下限，上限见 Do 规则。
 - **次要灰 / Ink Secondary** (#A6A6A6): 元信息、非激活标签、快捷键提示。
 - **弱化灰 / Ink Muted** (#989898): 状态栏、占位提示、图标默认色。
 - **分割线 / Divider** (#3C3C45): 与画布固定明度差推导，不手写、不随主题漂移；表格线复用同一值。
@@ -316,6 +316,7 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Do** 让停靠面板在点击正文 / 空白 / 搜索栏时自动收起（非模态），只有标题栏与面板开关不触发收起——用户设完就该能直接离开，不必回头找开关。
 - **Do** 用 `data-hint` + 全局 `HoverHint` 承载悬停说明；原生 `title` 会画出系统边框、不跟主题，一律不用。
 - **Do** 让滚动条在闲置时变淡：静止低透明、滚动点亮、停止后渐隐（见「滚动条回显」）。
+- **Do** 给墨色设「舒适上限」而不只设下限：暗色正文 L\*84–87、一级标题 ≤ L\*90（APCA 正文 ≈75–80、标题 ≤ 90）；亮色正文 L\*16–24。层级靠字号与字重，不靠逼近纯白/纯黑。
 
 ### Don't:
 - **Don't** 在正文画布上使用外投影、`text-shadow` 或 `filter: drop-shadow`。发光属于外壳；`kbd` 的 1px inset 下边线是唯一允许的正文内阴影（结构线，不是光）。

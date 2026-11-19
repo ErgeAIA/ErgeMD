@@ -31,3 +31,5 @@ export function tuneForContrast(
   bgHex: string,
   target?: number,
 ): { hex: string; ratio: number; met: boolean };
+/** APCA 0.1.9 近似：浅字深底为负、深字浅底为正 */
+export function apcaLc(textHex: string, bgHex: string): number;
