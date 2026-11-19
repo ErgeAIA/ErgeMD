@@ -17,10 +17,11 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（v0.7.0 已发布）
-- **阶段**：v0.7.0 发布完成（GitHub Release 为唯一发布源）；无进行中阶段
+- **当前分支**：fix/update-notes-scroll（更新卡日志滚动修复，未合并）
+- **阶段**：v0.7.0 已发布；更新卡「全部展开」不可滚动的修复待验收
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.7.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-20 更新卡日志滚动（分支 `fix/update-notes-scroll`）：用户反馈「查看全部」展开后卡片超出窗口、无法滚动。条目区改为独立滚动容器（`max-height: min(46vh, 340px)`、`overflow-y:auto`、`overscroll-behavior:contain`、thin 滚动条），「收起明细 / 查看全部」按钮固定在列表下方；折叠态与安装进度、错误提示布局不变。tsc / eslint / build 全绿；无头 Edge 探针确认列表在 340px 处截断并进入滚动；**待实机验收**
 - 2026-11-20 发布 v0.7.0 并验证：tag `v0.7.0`（commit `c3284d6`）三平台构建全绿（CI run 44559526921：purge / lint+test / 三平台 build / cleanup-caches / publish-updater 全部 success；排队约 8 分钟后开跑）。GitHub Release 9 个产物齐全（portable.zip / setup.exe + zip / dmg + zip / AppImage + zip / deb + zip）；`updates.json` 三平台均指向 0.7.0（windows-x86_64 / darwin-aarch64 / linux-x86_64）；updates-dist 镜像仓 `ergemd-v0.7.0` 含 9 个文件（3 个更新包 + 各自 .sig + portable / dmg / deb）。已装客户端下次启动检查即可收到更新
 - 2026-11-19 收尾：`feat/about-f` 以 `--no-ff` 合入 main；关于页字体由宋体改为系统无衬线、正文统一 14px（标题 24 / 副标题 14 / 正文 14 / 元数据 12），并修正 CHANGELOG 中「宋体」表述；旧的 `fix/about-colophon`（被否定的首版改版）未合并、已删除；`prototype/about-variants` 保留为原型记录。全量门禁 vitest 376 / tsc / eslint / build 通过。**发版建议：v0.7.0（小版本），理由见交接/汇报**
 - 2026-11-19 关于页 F 版落地（分支 `feat/about-f`，DEC-050）：从六版原型中选定 F（暗纸宋体），正式 `AboutPage.tsx` 重写：72px AppIcon + 24px 书名 + 13px 副标题「极简 Markdown 阅读器」+ 11px 等宽元数据 + 右上检查更新；口号 16px 先行，功能/平台两段 13.5/12.5；作者区头像 30px + 姓名 14/600 + 身份行 + 简介/三无两段；GitHub/B站/微信居中（赭色下划线 + 图标），微信二维码点击展开、Esc 先收码再关页（aria-expanded/controls）；移除 emoji 特性 chip、发光头像、左竖线卡与页脚管道符。i18n 按用户定稿文案替换 about 键（中英同步），EasterEgg 所需 `qrTipLabel`/`bilibiliTitle` 保留。原型文件（A–E + 切换器）已从 `prototype/about-variants` 分支删除。tsc / eslint / vitest / build 全绿；**待实机验收**

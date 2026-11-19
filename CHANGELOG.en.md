@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The full changelog now scrolls inside the update card**: the list caps at 340px (or 46% of the viewport) and scrolls instead of being cut by the window edge; "show less" stays pinned under the list
 - **Deleted files in the recent list**: opening one now removes it from the list with a "file no longer exists" notice instead of a misleading read error
 - **An unreadable subfolder no longer shows as empty**: it shows an error row with a retry, and the rest of the folder keeps working
 - **Notes added, renamed, or deleted outside the app show up promptly**: return to the window or reopen the sidebar to see the latest list — no restart needed
