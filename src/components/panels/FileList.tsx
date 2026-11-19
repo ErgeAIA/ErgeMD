@@ -61,6 +61,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<FileNode[] | null>(null);
   const [searching, setSearching] = useState(false);
+  const [filterFocused, setFilterFocused] = useState(false);
 
   const expandedSet = useMemo(() => new Set(expandedPaths), [expandedPaths]);
   const treeRef = useRef<HTMLUListElement>(null);
@@ -593,33 +594,81 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
           </button>
         </div>
         <div className="px-3 pb-2">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                setQuery("");
-                setSearchResults(null);
-                e.stopPropagation();
-              } else if (e.key === "Enter" && searchResults && searchResults[0]) {
-                const first = searchResults[0];
-                onFileSelect(first.path, first.name);
-              }
-            }}
-            placeholder={t("files.filterPlaceholder")}
-            aria-label={t("files.filterPlaceholder")}
-            className="w-full"
-            style={{
-              background: "var(--bg-primary)",
-              border: "1px solid var(--border-subtle)",
-              borderRadius: 4,
-              color: "var(--text-primary)",
-              fontSize: 12,
-              padding: "4px 8px",
-              outline: "none",
-            }}
-          />
+          <div className="relative flex items-center">
+            <svg
+              aria-hidden="true"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className="absolute pointer-events-none"
+              style={{ left: 8, color: "var(--text-muted)" }}
+            >
+              <circle cx="5" cy="5" r="3.4" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M7.6 7.6L10.4 10.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setFilterFocused(true)}
+              onBlur={() => setFilterFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setQuery("");
+                  setSearchResults(null);
+                  e.stopPropagation();
+                } else if (e.key === "Enter" && searchResults && searchResults[0]) {
+                  const first = searchResults[0];
+                  onFileSelect(first.path, first.name);
+                }
+              }}
+              placeholder={t("files.filterPlaceholder")}
+              aria-label={t("files.filterPlaceholder")}
+              className="sidebar-filter-input w-full"
+              style={{
+                height: 28,
+                paddingLeft: 26,
+                paddingRight: query ? 26 : 8,
+                background: "var(--bg-page)",
+                border: `1px solid ${filterFocused ? "var(--active-border)" : "var(--divider)"}`,
+                borderRadius: 5,
+                boxShadow: filterFocused
+                  ? "0 0 0 3px rgba(var(--accent-cyan-rgb), 0.12)"
+                  : "none",
+                color: "var(--text-primary)",
+                caretColor: "var(--accent-cyan)",
+                fontSize: 12,
+                outline: "none",
+                transition: "border-color 120ms ease-out, box-shadow 120ms ease-out",
+              }}
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label={t("files.clearFilter")}
+                onClick={() => {
+                  setQuery("");
+                  setSearchResults(null);
+                }}
+                className="absolute flex items-center justify-center cursor-pointer"
+                style={{
+                  right: 4,
+                  width: 18,
+                  height: 18,
+                  padding: 0,
+                  border: "none",
+                  borderRadius: 9,
+                  background: "transparent",
+                  color: "var(--text-muted)",
+                }}
+              >
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <path d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

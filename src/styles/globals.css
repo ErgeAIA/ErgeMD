@@ -473,6 +473,12 @@ input[type="range"]:focus-visible {
   background: var(--hover-bg-subtle);
 }
 
+/* 侧边栏文件名筛选框：占位符用弱化墨色，避免各主题默认 placeholder 过淡 */
+.sidebar-filter-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
 /* FloatingTOC 条目（非激活态） */
 .hover-toc-item {
   transition: color 100ms ease;
