@@ -256,6 +256,7 @@
     "prevMatchHint": "上一个 (Shift+Enter)",
     "nextMatch": "下一个匹配",
     "nextMatchHint": "下一个 (Enter)",
+    "fileMissingRemoved": "文件已不存在，已从最近列表移除：{{name}}",
     "fileNotFound": "文件不存在",
     "permissionDenied": "权限不足",
     "encodingFallback": "已按 {{encoding}} 解码，请确认内容是否正常",

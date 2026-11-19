@@ -256,6 +256,7 @@
     "prevMatchHint": "Previous (Shift+Enter)",
     "nextMatch": "Next match",
     "nextMatchHint": "Next (Enter)",
+    "fileMissingRemoved": "File no longer exists — removed from recent files: {{name}}",
     "fileNotFound": "File not found",
     "permissionDenied": "Permission denied",
     "encodingFallback": "Decoded as {{encoding}} — please check that the text looks right",
