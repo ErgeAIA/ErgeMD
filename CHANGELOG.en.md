@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A shortcuts overview dialog**: a keyboard icon in the title bar, or `Ctrl+K` anywhere, shows every shortcut; the welcome page and the dialog share one source of truth
 - **The sidebar folder tree loads one level at a time**: opening a folder reads only its first level and reads deeper levels on expand, so folders with tens of thousands of files no longer load in one go
 - **Filter the sidebar by file name**, with Enter opening the first result
 - **"Reveal current file" in the sidebar**: opening the panel expands the folders and scrolls to the file you are reading
