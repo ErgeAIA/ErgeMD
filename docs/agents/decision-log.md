@@ -400,3 +400,11 @@ description: >
 - **决策**：① 新阶梯：Micro 11（仅等宽/数字微元数据，中文正文类禁止）、Label 12、Compact 13（面板行/菜单/Toast/更新卡正文）、Default 14（按钮/弹窗正文/App Name）、Dialog Title 16；禁止 15px 与 rem 字号游离值。② 字距规则：正文与标题 0，`ErgeMD` 0.05em，大写分组标签 ≤0.04em（原文「App Name 唯一带字距」与实际不符，按现状修订）。③ Toast/更新卡正文归 Compact 13（此前规范写 Label 12，与用户「字太小」的反馈相反）。④ 迁移：侧栏搜索计数/相对目录、QuickEdit 工具条、About 注释、ImagePreview「重置/保存」11→12；UpdateChecker 关闭「×」15→16；ErrorBoundary 1.5rem/0.875rem → 24px/14px。语言角标等 11px 等宽微标签保留。
 - **验证**：重跑字号盘点（11px 真文本清空、15px/0.6875rem 消失）；tsc / eslint / vitest 376 / build 全绿。**观感待 UI 验收**。
 - **已知取舍**：13px 不做二次收缩（密集面板若升 14 会更挤）；大写分组标签保留 ≤0.04em 字距，与「例外唯一」原则改为白名单表述。
+
+## DEC-050: 关于页定为 F 版（暗纸宋体），文案采用用户定稿
+
+- **日期**：2026-11-19
+- **背景**：critique 判定旧关于页为模板化 AI 味（18/40）；先做「版权页」改写被用户否定（"只是文档级排版"），随后用 `/prototype` 出了 A–F 六版结构原型，用户选定 F（暗纸宋体 + 72px Logo + 口号先行 + 居中入口），并给出定稿文案。
+- **决策**：① 正式 `AboutPage.tsx` 按 F 实现：暗纸（`--bg-reader`）、宋体栈（Songti SC / Source Han Serif SC / SimSun 回退）、2px 圆角、72px AppIcon、24px 书名、13px 副标题、11px 等宽元数据、右上检查更新；口号 16px 先行，功能与平台两段；作者区头像 30px + 姓名 + 身份行 + 简介/三无两段；GitHub/B站/微信居中，微信二维码点击展开、Esc 先收码再关页。② 文案以用户逐字稿为准（中英同步），不自行改写主张；删除 emoji 特性 chip、发光头像、3px 左竖线卡、页脚管道符与 ⭐。③ 原型文件（A–E + 切换器）从 prototype 分支删除，仅保留在历史中；不进入 main。
+- **验证**：tsc / eslint / vitest 376 / build 全绿；F 版在无头 Edge 760px 视口内不裁切、二维码展开不溢出。**实机观感待用户验收**。
+- **已知取舍**：关于页采用宋体，与阅读区默认无衬线不同——这是"纸页"这一单面的刻意材质，不扩散到其他界面；EasterEgg 仍保留两个含 emoji 的 about 键。
