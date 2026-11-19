@@ -9,6 +9,7 @@ import {
   pickTextColor,
   tuneForContrast,
   mixWith,
+  apcaLc,
 } from "../../../scripts/theme/color-science.js";
 
 describe("color-science", () => {
@@ -79,5 +80,13 @@ describe("color-science", () => {
 
   it("mixWith 按比例插值", () => {
     expect(toHex(mixWith(parseHex("#000000"), parseHex("#ffffff"), 0.5))).toBe("#808080");
+  });
+
+  it("apcaLc：黑底白字为负、白底黑字为正，量级接近官方示例", () => {
+    expect(apcaLc("#ffffff", "#000000")).toBeLessThan(0);
+    expect(apcaLc("#000000", "#ffffff")).toBeGreaterThan(0);
+    // 官方黑白极值约 ±108，自实现允许 ±5 偏差
+    expect(apcaLc("#ffffff", "#000000")).toBeLessThan(-100);
+    expect(apcaLc("#ffffff", "#000000")).toBeGreaterThan(-115);
   });
 });
