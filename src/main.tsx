@@ -8,6 +8,9 @@ import "./styles/context-menu.css";
 import "./styles/globals.css";
 import "./styles/markdown.css";
 import "katex/dist/katex.min.css";
+import { installScrollbarFx } from "./utils/scrollFx";
+
+installScrollbarFx();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

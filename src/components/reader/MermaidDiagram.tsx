@@ -3374,7 +3374,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
               }
             }}
             onContextMenu={handleContextMenu}
-            title={t("chart.clickToZoom")}
+            data-hint={t("chart.clickToZoom")}
           />
         );
       }
@@ -3409,7 +3409,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = memo(
             }
           }}
           onContextMenu={handleContextMenu}
-          title={t("chart.clickToZoom")}
+          data-hint={t("chart.clickToZoom")}
         />
         {showPreview && (
           <SVGPreview

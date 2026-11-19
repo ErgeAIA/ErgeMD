@@ -348,7 +348,12 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  /* 静止时低透明（--sb-alpha 由 scrollFx 逐帧改写），滚动时点亮 */
+  background: color-mix(
+    in srgb,
+    var(--scrollbar-thumb-hover) calc(var(--sb-alpha, 0.32) * 100%),
+    transparent
+  );
   border-radius: 3px;
 }
 
@@ -359,7 +364,12 @@ body,
 /* Firefox 滚动条 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-color: color-mix(
+      in srgb,
+      var(--scrollbar-thumb-hover) 32%,
+      transparent
+    )
+    var(--scrollbar-track);
 }
 
 /* ===== 选中文本样式 ===== */

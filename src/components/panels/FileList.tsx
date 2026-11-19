@@ -513,7 +513,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
         tabIndex={-1}
         className="flex items-center gap-2 px-2 py-1 text-xs select-none"
         style={{
-          paddingLeft: `${row.depth * 12 + 8}px`,
+          paddingLeft: `${row.depth * 12 + 12}px`,
           color: row.variant === "error" ? "var(--danger)" : "var(--text-muted)",
         }}
       >
@@ -538,7 +538,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
     <div className="h-full flex flex-col min-h-0">
       {/* 头部：工作区名 + 定位/刷新 + 筛选 */}
       <div style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="flex items-center gap-1 px-3 pt-2 pb-1">
+        <div className="flex items-center gap-1 px-4 pt-2.5 pb-1">
           <span
             className="flex-1 truncate text-xs font-medium tracking-wide uppercase"
             style={{ color: "var(--text-muted)" }}
@@ -548,6 +548,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
           <button
             type="button"
             aria-label={t("files.revealActive")}
+            data-hint={t("files.revealActive")}
             disabled={!currentFilePath}
             onClick={() => {
               if (currentFilePath) void revealPath(currentFilePath);
@@ -572,6 +573,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
           <button
             type="button"
             aria-label={t("files.refresh")}
+            data-hint={t("files.refresh")}
             onClick={refreshWorkspace}
             className="flex items-center justify-center cursor-pointer"
             style={{
@@ -593,7 +595,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
             </svg>
           </button>
         </div>
-        <div className="px-3 pb-2">
+        <div className="px-4 pb-2">
           <div className="relative flex items-center">
             <svg
               aria-hidden="true"
@@ -647,6 +649,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
               <button
                 type="button"
                 aria-label={t("files.clearFilter")}
+                data-hint={t("files.clearFilter")}
                 onClick={() => {
                   setQuery("");
                   setSearchResults(null);
@@ -697,6 +700,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
                     color: "var(--text-primary)",
                     background: "transparent",
                     border: "none",
+                    paddingLeft: 16,
                   }}
                   onClick={() => {
                     onFileSelect(node.path, node.name);
@@ -766,7 +770,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
                     data-tree-path={node.path}
                     className={ROW_BASE_CLASS}
                     style={{
-                      paddingLeft: `${depth * 12 + 8}px`,
+                      paddingLeft: `${depth * 12 + 12}px`,
                       color: isActive
                         ? "var(--accent-cyan)"
                         : isDir

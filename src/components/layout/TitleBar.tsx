@@ -100,7 +100,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
                   "transparent";
               }}
               aria-label={t("titleBar.fileList")}
-              title={t("titleBar.fileList")}
+              data-hint={t("titleBar.fileList")}
             >
               <svg
                 aria-hidden="true"
@@ -210,7 +210,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
               (e.currentTarget as HTMLElement).style.background = "transparent";
             }}
             aria-label={isPinned ? t("titleBar.unpin") : t("titleBar.pin")}
-            title={isPinned ? t("titleBar.unpin") : t("titleBar.pin")}
+            data-hint={isPinned ? t("titleBar.unpin") : t("titleBar.pin")}
           >
             <svg
               aria-hidden="true"
@@ -257,7 +257,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
                   "transparent";
               }}
               aria-label={t("settings.readingOptions")}
-              title={t("settings.readingOptions")}
+              data-hint={t("settings.readingOptions")}
             >
               <svg
                 aria-hidden="true"

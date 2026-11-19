@@ -349,7 +349,7 @@ const PlantUMLDiagram: React.FC<PlantUMLDiagramProps> = memo(
                   setShowPreview(true);
                 }
               }}
-              title={t("chart.clickToZoom")}
+              data-hint={t("chart.clickToZoom")}
             />
           )}
         </div>

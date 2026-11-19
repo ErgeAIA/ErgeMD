@@ -225,7 +225,7 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
             transition: "color 150ms ease-out",
           }}
           aria-label={copied ? i18n.t("reader.copied") : i18n.t("reader.copyCode")}
-          title={copied ? i18n.t("reader.copied") : i18n.t("reader.copyCode")}
+          data-hint={copied ? i18n.t("reader.copied") : i18n.t("reader.copyCode")}
         >
           {copied ? (
             <svg
