@@ -2,23 +2,30 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   ConfigLevel,
+  ConfigMode,
+  composeReaderConfig,
   DefaultReaderConfig,
-  PresetConfigs,
   ReaderConfig,
 } from "../config/readerConfig";
+import { lowerLevel } from "../utils/autoConfig";
 import type { ReadingSettings, ThemeMode } from "../types";
 
 // ===== settingsStore 状态接口 =====
 interface SettingsState {
   readingSettings: ReadingSettings;
-  configLevel: ConfigLevel;
+  /** 自动（默认）或手动锁定档位 */
+  configLevel: ConfigMode;
+  /** 自动模式下当前生效的档位（会话内可被运行时降级，不持久化） */
+  autoEffectiveLevel: ConfigLevel;
   checkUpdateEnabled: boolean;
   lastCheckUpdateTime: number | null;
   skippedVersion: string | null;
 
   updateReadingSettings: (partial: Partial<ReadingSettings>) => void;
   setTheme: (theme: ThemeMode) => void;
-  setConfigLevel: (level: ConfigLevel) => void;
+  setConfigLevel: (mode: ConfigMode) => void;
+  setAutoEffectiveLevel: (level: ConfigLevel) => void;
+  downgradeAutoLevel: () => void;
   getActiveConfig: () => ReaderConfig;
   setCheckUpdateEnabled: (enabled: boolean) => void;
   setLastCheckUpdateTime: (time: number) => void;
@@ -43,7 +50,8 @@ export const DEFAULT_READING_SETTINGS: ReadingSettings = {
 };
 
 // ===== 默认配置级别 =====
-const defaultConfigLevel: ConfigLevel = "medium";
+const defaultConfigLevel: ConfigMode = "auto";
+const defaultAutoEffectiveLevel: ConfigLevel = "medium";
 const defaultCheckUpdateEnabled = true;
 const defaultLastCheckUpdateTime: number | null = null;
 
@@ -52,6 +60,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       readingSettings: DEFAULT_READING_SETTINGS,
       configLevel: defaultConfigLevel,
+      autoEffectiveLevel: defaultAutoEffectiveLevel,
       checkUpdateEnabled: defaultCheckUpdateEnabled,
       lastCheckUpdateTime: defaultLastCheckUpdateTime,
       skippedVersion: null,
@@ -68,15 +77,32 @@ export const useSettingsStore = create<SettingsState>()(
         get().updateReadingSettings({ theme });
       },
 
-      // 设置配置级别
-      setConfigLevel: (level: ConfigLevel) => {
-        set({ configLevel: level });
+      // 设置配置级别：auto = 自动（默认），其余为手动锁定
+      setConfigLevel: (mode: ConfigMode) => {
+        set({ configLevel: mode });
       },
 
-      // 获取当前活动配置
+      // 自动模式：文档打开时写入初始档位；手动模式下忽略
+      setAutoEffectiveLevel: (level: ConfigLevel) => {
+        if (get().configLevel !== "auto") return;
+        set({ autoEffectiveLevel: level });
+      },
+
+      // 运行时只降不升：连续掉帧时下调一档，本次会话内保持
+      downgradeAutoLevel: () => {
+        const state = get();
+        if (state.configLevel !== "auto") return;
+        set({ autoEffectiveLevel: lowerLevel(state.autoEffectiveLevel) });
+      },
+
+      // 获取当前活动配置：视觉参数固定中档，仅 performance 随档位变化
       getActiveConfig: (): ReaderConfig => {
-        const level = get().configLevel;
-        return PresetConfigs[level] || DefaultReaderConfig;
+        const state = get();
+        const level =
+          state.configLevel === "auto"
+            ? state.autoEffectiveLevel
+            : state.configLevel;
+        return composeReaderConfig(level) || DefaultReaderConfig;
       },
 
       setCheckUpdateEnabled: (enabled: boolean) => {
@@ -107,7 +133,7 @@ export const useSettingsStore = create<SettingsState>()(
         const persisted = persistedState as
           | {
               readingSettings?: ReadingSettings;
-              configLevel?: ConfigLevel;
+              configLevel?: ConfigMode;
               checkUpdateEnabled?: boolean;
               lastCheckUpdateTime?: number | null;
               skippedVersion?: string | null;
@@ -119,8 +145,12 @@ export const useSettingsStore = create<SettingsState>()(
             ...DEFAULT_READING_SETTINGS,
             ...(persisted?.readingSettings || {}),
           },
-          configLevel: persisted?.configLevel ?? defaultConfigLevel,
-          checkUpdateEnabled:
+          // 旧持久值 "medium" 是历史默认（几乎没人主动选过），迁移为自动；
+          // 显式选过低/高档的用户保留其选择
+          configLevel:
+            persisted?.configLevel == null || persisted.configLevel === "medium"
+              ? "auto"
+              : persisted.configLevel,          checkUpdateEnabled:
             persisted?.checkUpdateEnabled ?? defaultCheckUpdateEnabled,
           lastCheckUpdateTime:
             persisted?.lastCheckUpdateTime ?? defaultLastCheckUpdateTime,
