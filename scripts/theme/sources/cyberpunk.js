@@ -21,8 +21,8 @@ export default {
   },
   // 墨色阶（原继承 theme-dark-base）
   ink: {
-    heading: "#FAFAFA",
-    primary: "#E0E0E0",
+    heading: "#E2E2E2",
+    primary: "#D4D4D4",
     secondary: "#A6A6A6",
     muted: "#808080",
   },
@@ -42,7 +42,7 @@ export default {
     logo: "#00FFFF",
   },
   // 标题色相种子（生成时按画布调校至 ≥4.5:1；h6 现行 2.78:1 属本次迁移要修的项）
-  headingHues: ["#EBEBEB", "#00FFFF", "#FF00FF", "#FF8000", "#00FF00", "#6B7280"],
+  headingHues: ["#E2E2E2", "#00FFFF", "#FF00FF", "#FF8000", "#00FF00", "#6B7280"],
   // 图表类别色相（= 现行 chart-stroke-0..5；cyberpunk 的鲜明特色保留在描边/分支线上）
   chartHues: ["#00FFFF", "#FF00FF", "#00FF00", "#FF8000", "#FFFF00", "#FF6496"],
   // 数据序列色（= 现行 chart-series-0..5）

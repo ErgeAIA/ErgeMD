@@ -20,7 +20,7 @@ export default {
   },
   ink: {
     heading: "#073642",
-    primary: "#263640",
+    primary: "#2A3A44",
     secondary: "#586e75",
     muted: "#839496",
   },

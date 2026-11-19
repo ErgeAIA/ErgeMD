@@ -20,8 +20,8 @@ export default {
     tertiary: "#2C2620", // bg-surface-2
   },
   ink: {
-    heading: "#F3EDE7", // text
-    primary: "#F3EDE7", // text
+    heading: "#E7E1DC", // text
+    primary: "#D9D3CE", // text
     secondary: "#C9C2B8", // text-muted
     muted: "#858079", // text-dim
   },
@@ -42,7 +42,7 @@ export default {
   },
   // 六级标题：强调色阶 h2 accent → h3 accent-secondary → h4 accent-hover；h1/h5/h6 中性墨
   // （生成时按画布调校至 ≥4.5:1，色相不变）
-  headingHues: ["#F3EDE7", "#F2570F", "#FF7A3D", "#C2460B", "#C9C2B8", "#858079"],
+  headingHues: ["#E7E1DC", "#F2570F", "#FF7A3D", "#C2460B", "#C9C2B8", "#858079"],
   // 图表类别：accent + 状态色 -on-dark
   chartHues: ["#F2570F", "#519175", "#7480CB", "#9F803B", "#8A76D2", "#CF645C"],
   // 思维导图层级色板（root/L2、L3、L4、L5、L6）：品牌色 + 状态色，色相按

@@ -20,8 +20,8 @@ export default {
     tertiary: "#262630",
   },
   ink: {
-    heading: "#EBEBEB",
-    primary: "#E0E0E0",
+    heading: "#E2E2E2",
+    primary: "#D4D4D4",
     secondary: "#A6A6A6",
     muted: "#808080",
   },

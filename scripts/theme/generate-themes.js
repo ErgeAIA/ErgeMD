@@ -156,7 +156,8 @@ function buildTokens(s) {
   strokes.forEach((v, i) => set(`chart-stroke-${i}`, v));
   series.forEach((v, i) => set(`chart-series-${i}`, v));
   // text-on-fill：每底色绑定对比度最高的墨色（深底浅字 / 浅底深字）
-  const inks = [s.ink.primary, s.canvas.reader];
+  // 用 heading 墨而不是正文墨：图内小字不是长读正文，保持更亮的配对可少改填充色
+  const inks = [s.ink.heading, s.canvas.reader];
   fills.forEach((fill, i) => {
     const { color, ratio } = cs.pickTextColor(fill, inks);
     if (ratio < 4.5) {
@@ -172,7 +173,7 @@ function buildTokens(s) {
   // 特异性更高，可稳定覆盖），让 mindmap 反映品牌色 + 状态色而非低彩度填充带。
   // 文字色按底色自动配对（与 chart-text-on-fill 同口径）
   if (Array.isArray(s.mindmapHues) && s.mindmapHues.length >= 5) {
-    const mmInks = [s.ink.primary, s.canvas.reader];
+    const mmInks = [s.ink.heading, s.canvas.reader];
     // 底色调校：配对文字若不足 4.5:1，沿 OKLCH 明度轴推进底色（色相不变、彩度
     // 取该明度下 sRGB 最大值）。对亮画布主题，底色会被推向更亮——既达标又更鲜明
     // （晨光的 fill 档状态色 #2E8A5F 配黑字仅 4.23，调亮后才过线）；已达标的不动
