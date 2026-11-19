@@ -607,12 +607,26 @@ function App() {
             fileName: fileName,
           }).catch((err) => console.error("Failed to save recent file:", err));
         } catch (err) {
-          const msg = String(err);
           console.error("Failed to read file:", err);
+          const fileName = selectedPath.split(/[/\\]/).pop() || "Untitled";
+          // 先确认文件是否还在：不存在就是「失效的快捷方式」，按移除处理而不是报读取失败
+          const exists = await invoke<boolean>("file_exists", {
+            path: selectedPath,
+          }).catch(() => true);
+          if (!exists) {
+            invoke("delete_recent_file", { filePath: selectedPath }).catch(
+              () => {},
+            );
+            window.dispatchEvent(new CustomEvent("ergemd:recent-files-changed"));
+            useReaderStore.getState().addToast({
+              type: "warning",
+              message: i18n.t("reader.fileMissingRemoved", { name: fileName }),
+            });
+            continue;
+          }
+          const msg = String(err);
           let toastMsg = i18n.t("reader.readFailed");
-          if (msg.includes("not found") || msg.includes("File not found")) {
-            toastMsg = i18n.t("reader.fileNotFound");
-          } else if (msg.includes("permission") || msg.includes("Permission")) {
+          if (msg.includes("permission") || msg.includes("Permission")) {
             toastMsg = i18n.t("reader.permissionDenied");
           } else if (msg.includes("encoding")) {
             toastMsg = i18n.t("reader.encodingLossy");

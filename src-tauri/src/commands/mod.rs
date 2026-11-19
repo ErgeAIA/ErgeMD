@@ -76,6 +76,14 @@ pub async fn read_file(path: String) -> Result<ReadFileResult, String> {
 }
 
 #[tauri::command]
+pub async fn file_exists(path: String) -> bool {
+    if validate_path(&path).is_err() {
+        return false;
+    }
+    fs::metadata(&path).map(|meta| meta.is_file()).unwrap_or(false)
+}
+
+#[tauri::command]
 pub async fn get_file_mtime(path: String) -> Result<u64, String> {
     validate_path(&path)?;
     let metadata = fs::metadata(&path).map_err(|e| format!("Failed to stat file: {}", e))?;

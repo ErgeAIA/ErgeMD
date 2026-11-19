@@ -216,6 +216,7 @@ pub fn run() {
             clear_all_reading_progress,
             get_pending_file,
             commands::read_file,
+            commands::file_exists,
             commands::get_file_mtime,
             commands::write_file,
             commands::write_binary_file,

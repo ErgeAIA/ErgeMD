@@ -63,15 +63,27 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
       null,
     );
 
-    useEffect(() => {
-      if (!dbReady) return;
+    const refreshRecent = useCallback(() => {
       invoke<RecentFileItem[]>("get_recent_files", { limit: 10 })
         .then((files) => {
           setRecentFiles(files);
           setRecentLoaded(true);
         })
         .catch(() => setRecentLoaded(true));
-    }, [dbReady]);
+    }, []);
+
+    useEffect(() => {
+      if (!dbReady) return;
+      refreshRecent();
+    }, [dbReady, refreshRecent]);
+
+    // 失效文件被移除后刷新列表，避免还显示已经不存在的条目
+    useEffect(() => {
+      const handleChanged = () => refreshRecent();
+      window.addEventListener("ergemd:recent-files-changed", handleChanged);
+      return () =>
+        window.removeEventListener("ergemd:recent-files-changed", handleChanged);
+    }, [refreshRecent]);
 
     const handleRecentClick = useCallback(
       (filePath: string) => {
