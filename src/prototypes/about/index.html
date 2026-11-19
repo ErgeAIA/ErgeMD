@@ -130,8 +130,9 @@
         border-color: var(--divider);
       }
       .paper .p-head { display: flex; align-items: center; gap: 14px; }
-      .paper .p-head svg.tile { width: 64px; height: 64px; flex-shrink: 0; }
-      .paper h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
+      .paper .p-head svg.tile { width: 72px; height: 72px; flex-shrink: 0; }
+      .paper .p-head { gap: 16px; }
+      .paper h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.02em; }
       .paper .p-meta {
         margin: 4px 0 0;
         font-family: ui-monospace, Consolas, monospace;
@@ -282,7 +283,7 @@
         <button data-action="wechat" aria-expanded="${s.qr}"><img src="/images/Wechat-ico.png" alt="" /><span>微信</span></button>`;
 
       const APP_LOGO = `
-        <svg class="tile" viewBox="0 0 1024 1024" aria-hidden="true" style="width:64px;height:64px">
+        <svg class="tile" viewBox="0 0 1024 1024" aria-hidden="true" style="width:72px;height:72px">
           <defs>
             <linearGradient id="pBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="var(--accent-cyan, #00E5FF)" />
