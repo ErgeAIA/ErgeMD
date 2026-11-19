@@ -141,8 +141,11 @@
         color: var(--p-muted);
       }
       .paper .p-state { margin-left: auto; font-size: 12px; color: var(--p-muted); }
-      .paper .p-claim { margin: 18px 0 0; font-size: 13.5px; line-height: 1.9; }
-      .paper .p-slogan { margin: 6px 0 0; font-size: 13.5px; line-height: 1.9; color: var(--p-muted); }
+      .paper .p-lead { margin: 20px 0 0; font-size: 16px; line-height: 1.75; color: var(--p-ink); letter-spacing: 0.01em; }
+      .paper .p-claim { margin: 12px 0 0; font-size: 13.5px; line-height: 1.85; }
+      .paper .p-subclaim { margin: 8px 0 0; font-size: 12.5px; line-height: 1.8; color: var(--p-muted); }
+      .paper .p-role { margin: 3px 0 0; font-size: 12px; color: var(--p-muted); }
+      .paper .nw { white-space: nowrap; }
       .paper .p-features {
         margin: 12px 0 0;
         font-size: 12px;
@@ -154,7 +157,7 @@
       .paper .p-author { display: flex; gap: 12px; align-items: flex-start; }
       .paper .p-author img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--p-rule); flex-shrink: 0; }
       .paper .p-author b { font-size: 14px; font-weight: 600; }
-      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-muted); }
+      .paper .p-author p { margin: 6px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-muted); }
       .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); text-align: right; }
       .paper .p-links { display: flex; align-items: center; justify-content: center; gap: 18px; }
       .paper .p-links a, .paper .p-links button {
@@ -256,12 +259,16 @@
     </div>
 
     <script>
-      const CLAIM =
-        "基于 Tauri 2 构建，专注沉浸、高性能的阅读：打开就是排好版的样子，多主题、目录导航、全文搜索与阅读进度都在。";
-      const SLOGAN = "让每一次阅读，都回归内容本身。";
-      const AUTHOR = "宝藏二哥 AIA";
-      const BIO =
-        "一个爱分享的技术大叔：折腾 AI 绘画、AI 编程和 AI 办公，也在全网搜罗好用的 PC 软件与提效神器；分享只守三条——无门槛、无套路、无保留。";
+      const LEAD = "让每一次阅读，都回归内容本身";
+      const PARA1 =
+        '支持 Mermaid 图表渲染、多主题切换、目录导航、全文搜索、阅读进度保存与<span class="nw">多格式导出</span>。打开即读，无需配置，你的笔记和文档都能直接用';
+      const PARA2 =
+        "基于 Tauri 2 构建，安装包小、启动快，支持 Windows / macOS / Linux";
+      const AUTHOR = "宝藏二哥AIA";
+      const ROLE = "全栈开发工程师 · B 站 UP 主";
+      const BIO1 =
+        "在做 AI 编程、ComfyUI 和 AI 工具方向的内容，独立开发过若干自研项目。这里的软件都是我自己在用、自己维护的。";
+      const BIO2 = "坚持三无分享：无门槛、无套路、无保留。";
       const QUOTE = "AI 不应该有门槛，助力百万普通人用上 AI";
       const VERSION = "0.6.1";
       const LICENSE = "AGPL-3.0 · 免费 · 开源";
@@ -317,15 +324,19 @@
               </div>
               <span class="p-state">已是最新</span>
             </div>
-            <p class="p-claim">${CLAIM}</p>
-            <p class="p-slogan">— ${SLOGAN}</p>
-            <p class="p-features">Mermaid 图表 · 多格式导出</p>
+            <p class="p-lead">${LEAD}</p>
+            <p class="p-claim">${PARA1}</p>
+            <p class="p-subclaim">${PARA2}</p>
             <div class="p-rule"></div>
             <div class="p-author">
               <img src="/images/avatar.png" alt="" />
-              <div><b>${AUTHOR}</b><p>${BIO}</p></div>
+              <div>
+                <b>${AUTHOR}</b>
+                <p class="p-role">${ROLE}</p>
+                <p>${BIO1}</p>
+                <p>${BIO2}</p>
+              </div>
             </div>
-            <p class="p-quote">—— ${QUOTE}</p>
             <div class="p-rule"></div>
             <div class="p-links">${paperLinks(s)}</div>
             ${qrBlock(s, "p-qr")}
