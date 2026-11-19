@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-19
+
 ### Added
 
 - **A shortcuts overview dialog**: a keyboard icon in the title bar, or `Ctrl+K` anywhere, shows every shortcut; the welcome page and the dialog share one source of truth
