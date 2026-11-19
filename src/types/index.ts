@@ -12,7 +12,14 @@ export interface FileNode {
   name: string;
   path: string;
   is_dir: boolean;
+  /** 懒加载模式下后端只返回空数组，子项由展开时按目录拉取 */
   children: FileNode[];
+}
+
+/** scan_directory 的返回：单层目录条目，超过上限时 truncated 为 true */
+export interface DirListing {
+  entries: FileNode[];
+  truncated: boolean;
 }
 
 // ===== TOC 条目类型 =====

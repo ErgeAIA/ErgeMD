@@ -4,8 +4,8 @@ import i18n from "@/i18n";
 export interface FileListContextMenuProps {
   filePath: string;
   fileName: string;
+  isDir: boolean;
   onOpen: () => void;
-  onOpenInNewTab: () => void;
   onOpenInNewWindow: () => void;
   onCopyFilePath: () => void;
   onRevealInExplorer: () => void;
@@ -13,32 +13,32 @@ export interface FileListContextMenuProps {
 
 /**
  * 文件列表右键菜单项（PDR 6.5.6）。
- * - 打开
- * - 在新标签页打开
- * - 在新窗口中打开
- * - 复制文件路径
- * - 在资源管理器中显示
+ * 文件：打开 / 在新窗口打开 / 复制路径 / 在资源管理器中显示。
+ * 目录：复制路径 / 在资源管理器中显示（目录无「打开」语义）。
+ * 不提供「在新标签页打开」——当前「打开」本身就会复用或新建标签页。
  */
 export function getFileListContextMenuItems(
   props: FileListContextMenuProps,
 ): ContextMenuEntry[] {
-  return [
-    {
-      id: "open",
-      label: i18n.t("menu.open"),
-      action: props.onOpen,
-    },
-    {
-      id: "openInNewTab",
-      label: i18n.t("menu.openInNewTab"),
-      action: props.onOpenInNewTab,
-    },
-    {
-      id: "openInNewWindow",
-      label: i18n.t("menu.openInNewWindow"),
-      action: props.onOpenInNewWindow,
-    },
-    { id: "sep1", separator: true },
+  const items: ContextMenuEntry[] = [];
+
+  if (!props.isDir) {
+    items.push(
+      {
+        id: "open",
+        label: i18n.t("menu.open"),
+        action: props.onOpen,
+      },
+      {
+        id: "openInNewWindow",
+        label: i18n.t("menu.openInNewWindow"),
+        action: props.onOpenInNewWindow,
+      },
+      { id: "sep1", separator: true },
+    );
+  }
+
+  items.push(
     {
       id: "copyFilePath",
       label: i18n.t("menu.copyFilePath"),
@@ -49,5 +49,7 @@ export function getFileListContextMenuItems(
       label: i18n.t("menu.revealInExplorer"),
       action: props.onRevealInExplorer,
     },
-  ];
+  );
+
+  return items;
 }

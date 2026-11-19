@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { FileNode, TabInfo, TocItem, TOCMeta } from "../types";
+import type { TabInfo, TocItem, TOCMeta } from "../types";
 import { flushReadingProgress } from "../utils/readingProgress";
 
 // ===== 扩展 TocItem，添加 isActive 运行时字段 =====
@@ -17,7 +17,8 @@ interface FileState {
   // 工作区
   workspacePath: string | null;
   workspaceName: string | null;
-  fileTree: FileNode[] | null;
+  // 文件树里展开的目录（懒加载；持久化以便重启后恢复展开状态）
+  expandedPaths: string[];
 
   // 当前阅读内容（从 activeTabId 派生）
   currentContent: string;
@@ -38,8 +39,8 @@ interface FileState {
   setWorkspace: (
     folderPath: string,
     folderName: string,
-    tree: FileNode[],
   ) => void;
+  setExpandedPaths: (paths: string[]) => void;
   setTOCItems: (items: TocItemWithActive[]) => void;
   setTOCMeta: (meta: TOCMeta) => void;
 }
@@ -52,7 +53,7 @@ export const useFileStore = create<FileState>()(
       activeTabId: null,
       workspacePath: null,
       workspaceName: null,
-      fileTree: null,
+      expandedPaths: [],
       currentContent: "",
       currentFilePath: null,
       tocItems: [],
@@ -231,12 +232,20 @@ export const useFileStore = create<FileState>()(
       },
 
       // 设置工作区
-      setWorkspace: (folderPath, folderName, tree) => {
+      setWorkspace: (folderPath, folderName) => {
+        const state = get();
+        // 换工作区时清空展开状态，避免把上一个工作区的目录带过来
+        const expandedPaths =
+          state.workspacePath === folderPath ? state.expandedPaths : [];
         set({
           workspacePath: folderPath,
           workspaceName: folderName,
-          fileTree: tree,
+          expandedPaths,
         });
+      },
+
+      setExpandedPaths: (paths) => {
+        set({ expandedPaths: paths });
       },
 
       // 设置 TOC 条目（含高亮状态）
@@ -251,7 +260,7 @@ export const useFileStore = create<FileState>()(
     }),
     {
       name: "ergemd-file-store-v1",
-      version: 2,
+      version: 3,
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as Record<string, unknown>;
         if (version < 2 && Array.isArray(state.tabs)) {
@@ -259,6 +268,9 @@ export const useFileStore = create<FileState>()(
             ...t,
             content: t.content ?? "",
           }));
+        }
+        if (version < 3 && !Array.isArray(state.expandedPaths)) {
+          state.expandedPaths = [];
         }
         return state as unknown as FileState;
       },
@@ -292,6 +304,7 @@ export const useFileStore = create<FileState>()(
           activeTabId: state.activeTabId,
           workspacePath: state.workspacePath,
           workspaceName: state.workspaceName,
+          expandedPaths: state.expandedPaths,
         }) as unknown as FileState,
     },
   ),

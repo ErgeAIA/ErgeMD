@@ -167,7 +167,6 @@
     "copySelection": "Copy Selection",
     "editCodeBlock": "Edit Code Block",
     "open": "Open",
-    "openInNewTab": "Open in New Tab",
     "copyFilePath": "Copy File Path",
     "revealInExplorer": "Reveal in Explorer",
     "openLink": "Open Link",
@@ -208,7 +207,22 @@
   },
   "files": {
     "projectFiles": "Project Files",
-    "openFiles": "Open Files"
+    "openFiles": "Open Files",
+    "workspaceFallback": "Workspace",
+    "loading": "Loading folder…",
+    "loadFailed": "Couldn't read this folder",
+    "retry": "Retry",
+    "refresh": "Refresh file list",
+    "revealActive": "Reveal current file",
+    "filterPlaceholder": "Filter by file name… (Enter opens the first)",
+    "searchResults": "{{count}} result(s)",
+    "searchResultsLabel": "File name search results",
+    "searching": "Searching…",
+    "noResults": "No matching files",
+    "emptyWorkspace": "No Markdown files in this folder",
+    "emptyFolder": "Empty folder",
+    "truncated": "Too many entries — showing the first 1000",
+    "tooDeep": "Folder nesting too deep — stopped expanding"
   },
   "tab": {
     "pin": "Pin Tab",

@@ -1,7 +1,6 @@
 use base64::{engine::general_purpose, Engine as _};
 use encoding_rs;
 use serde::Serialize;
-use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -138,101 +137,218 @@ pub async fn write_binary_file(path: String, base64_data: String) -> Result<(), 
     Ok(())
 }
 
-/// 工作区扫描的最大目录深度，防止异常深层嵌套拖垮 UI
-const MAX_SCAN_DEPTH: usize = 32;
+/// 单次目录列出的硬上限：与 AGENTS.md「单次 IPC ≤1000 条」对齐。
+const MAX_DIR_ENTRIES: usize = 1000;
+/// 文件名搜索的目录深度上限，防止异常嵌套。
+const MAX_SEARCH_DEPTH: usize = 32;
+const IGNORED_DIRS: &[&str] = &["node_modules", "target"];
 
-#[tauri::command]
-pub async fn scan_workspace(folder_path: String) -> Result<Vec<FileNode>, String> {
-    validate_path(&folder_path)?;
-    let root = PathBuf::from(&folder_path);
-    if !root.exists() {
-        return Err("Folder does not exist".to_string());
-    }
-
-    let mut visited = HashSet::new();
-    let mut tree = build_file_tree(&root, 0, &mut visited)?;
-    sort_file_tree(&mut tree);
-    Ok(vec![tree])
+#[derive(Debug, Serialize)]
+pub struct DirListing {
+    pub entries: Vec<FileNode>,
+    /// 条目数超过上限时为 true，剩余条目未列出
+    pub truncated: bool,
 }
 
-fn build_file_tree(
-    dir: &PathBuf,
-    depth: usize,
-    visited: &mut HashSet<PathBuf>,
-) -> Result<FileNode, String> {
-    let name = dir
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .to_string();
+fn is_markdown(path: &std::path::Path) -> bool {
+    path.extension().is_some_and(|ext| {
+        ext.eq_ignore_ascii_case("md")
+            || ext.eq_ignore_ascii_case("markdown")
+            || ext.eq_ignore_ascii_case("mdx")
+    })
+}
 
-    let mut children = Vec::new();
+/// 自然排序：忽略大小写，数字段按数值比较（第2章 < 第10章）。
+fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    let a = a.to_lowercase();
+    let b = b.to_lowercase();
+    let (ab, bb) = (a.as_bytes(), b.as_bytes());
+    let (mut i, mut j) = (0usize, 0usize);
 
-    // 符号链接循环 / 超深嵌套防护：命中时该分支作为叶子节点返回，不整体失败
-    let can_recurse = depth < MAX_SCAN_DEPTH
-        && dir
-            .canonicalize()
-            .ok()
-            .is_some_and(|c| visited.insert(c));
-
-    if dir.is_dir() && can_recurse {
-        let entries = fs::read_dir(dir).map_err(|e| format!("Failed to read dir: {}", e))?;
-
-        let mut dirs: Vec<FileNode> = Vec::new();
-        let mut files: Vec<FileNode> = Vec::new();
-
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let file_name = path
-                .file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .to_string();
-
-            // Skip hidden files and node_modules
-            if file_name.starts_with('.') || file_name == "node_modules" || file_name == "target" {
-                continue;
+    while i < ab.len() && j < bb.len() {
+        if ab[i].is_ascii_digit() && bb[j].is_ascii_digit() {
+            let si = i;
+            while i < ab.len() && ab[i].is_ascii_digit() {
+                i += 1;
             }
+            let sj = j;
+            while j < bb.len() && bb[j].is_ascii_digit() {
+                j += 1;
+            }
+            let na = &ab[si..i];
+            let nb = &bb[sj..j];
+            let za = na.iter().take_while(|&&c| c == b'0').count();
+            let zb = nb.iter().take_while(|&&c| c == b'0').count();
+            let ord = (na.len() - za)
+                .cmp(&(nb.len() - zb))
+                .then_with(|| na[za..].cmp(&nb[zb..]));
+            if ord != Ordering::Equal {
+                return ord;
+            }
+            continue;
+        }
+        if ab[i] != bb[j] {
+            return ab[i].cmp(&bb[j]);
+        }
+        i += 1;
+        j += 1;
+    }
+    (ab.len() - i).cmp(&(bb.len() - j))
+}
 
-            if path.is_dir() {
-                dirs.push(build_file_tree(&path, depth + 1, visited)?);
-            } else if path.extension().is_some_and(|ext| {
-                ext.eq_ignore_ascii_case("md")
-                    || ext.eq_ignore_ascii_case("markdown")
-                    || ext.eq_ignore_ascii_case("mdx")
-            }) {
+fn sort_entries(nodes: &mut [FileNode]) {
+    nodes.sort_by(|a, b| natural_cmp(&a.name, &b.name));
+}
+
+/// 列出单个目录的直接子项（目录在前、文件在后，各自自然排序）。
+/// 懒加载的最小单元：只读一层，单次返回 ≤ MAX_DIR_ENTRIES 条。
+#[tauri::command]
+pub async fn scan_directory(
+    dir_path: String,
+    limit: Option<usize>,
+) -> Result<DirListing, String> {
+    validate_path(&dir_path)?;
+    let dir = PathBuf::from(&dir_path);
+    let meta = fs::metadata(&dir).map_err(|e| format!("Failed to read dir: {}", e))?;
+    if !meta.is_dir() {
+        return Err("Not a directory".to_string());
+    }
+
+    let limit = limit.unwrap_or(MAX_DIR_ENTRIES).clamp(1, MAX_DIR_ENTRIES);
+    let entries = fs::read_dir(&dir).map_err(|e| format!("Failed to read dir: {}", e))?;
+
+    let mut dirs: Vec<FileNode> = Vec::new();
+    let mut files: Vec<FileNode> = Vec::new();
+    let mut truncated = false;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+
+        if name.starts_with('.') || IGNORED_DIRS.contains(&name.as_str()) {
+            continue;
+        }
+
+        if dirs.len() + files.len() >= limit {
+            truncated = true;
+            break;
+        }
+
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+
+        // 链接只跟随文件；目录链接一律不展开，避免环
+        if file_type.is_symlink() {
+            if is_markdown(&path) && path.is_file() {
                 files.push(FileNode {
-                    name: file_name,
+                    name,
                     path: path.to_string_lossy().to_string(),
                     is_dir: false,
                     children: Vec::new(),
                 });
             }
+            continue;
         }
 
-        children.extend(dirs);
-        children.extend(files);
+        if file_type.is_dir() {
+            dirs.push(FileNode {
+                name,
+                path: path.to_string_lossy().to_string(),
+                is_dir: true,
+                children: Vec::new(),
+            });
+        } else if is_markdown(&path) {
+            files.push(FileNode {
+                name,
+                path: path.to_string_lossy().to_string(),
+                is_dir: false,
+                children: Vec::new(),
+            });
+        }
     }
 
-    Ok(FileNode {
-        name,
-        path: dir.to_string_lossy().to_string(),
-        is_dir: true,
-        children,
+    sort_entries(&mut dirs);
+    sort_entries(&mut files);
+    dirs.extend(files);
+
+    Ok(DirListing {
+        entries: dirs,
+        truncated,
     })
 }
 
-fn sort_file_tree(node: &mut FileNode) {
-    // Directories first, then files, both alphabetically
-    node.children.sort_by(|a, b| match (a.is_dir, b.is_dir) {
-        (true, false) => std::cmp::Ordering::Less,
-        (false, true) => std::cmp::Ordering::Greater,
-        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-    });
-
-    for child in &mut node.children {
-        sort_file_tree(child);
+/// 按文件名在工作区里搜索（不含全文），返回扁平结果，供侧边栏筛选使用。
+#[tauri::command]
+pub async fn search_workspace_files(
+    root: String,
+    query: String,
+    limit: Option<usize>,
+) -> Result<Vec<FileNode>, String> {
+    validate_path(&root)?;
+    let root_path = PathBuf::from(&root);
+    if !root_path.is_dir() {
+        return Err("Folder does not exist".to_string());
     }
+
+    let needle = query.trim().to_lowercase();
+    if needle.is_empty() {
+        return Ok(Vec::new());
+    }
+    let limit = limit.unwrap_or(200).clamp(1, 500);
+
+    let mut out: Vec<FileNode> = Vec::new();
+    let mut stack: Vec<(PathBuf, usize)> = vec![(root_path, 0)];
+
+    while let Some((dir, depth)) = stack.pop() {
+        if depth > MAX_SEARCH_DEPTH {
+            continue;
+        }
+        let Ok(entries) = fs::read_dir(&dir) else {
+            continue; // 单个子目录不可读时跳过，不中断搜索
+        };
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let name = path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string();
+            if name.starts_with('.') || IGNORED_DIRS.contains(&name.as_str()) {
+                continue;
+            }
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if file_type.is_dir() {
+                if !file_type.is_symlink() {
+                    stack.push((path, depth + 1));
+                }
+            } else if is_markdown(&path) && name.to_lowercase().contains(&needle) {
+                out.push(FileNode {
+                    name,
+                    path: path.to_string_lossy().to_string(),
+                    is_dir: false,
+                    children: Vec::new(),
+                });
+                if out.len() >= limit {
+                    break;
+                }
+            }
+        }
+        if out.len() >= limit {
+            break;
+        }
+    }
+
+    out.sort_by(|a, b| natural_cmp(&a.name, &b.name));
+    Ok(out)
 }
 
 pub fn count_words(content: &str) -> usize {
