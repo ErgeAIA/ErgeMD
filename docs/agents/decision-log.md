@@ -384,3 +384,11 @@ description: >
 - **决策**：① 暗色正文统一到 L\*84–87（OKLCH 保色相/彩度求值）：中性组 `#D4D4D4`、夜灯 `#D9D3CE`、森林 `#C9D9C9`；`ink.heading` 与 `headingHues[0]` 封顶 L\*90（中性 `#E2E2E2`、夜灯 `#E7E1DC`）。② 晨光正文 `#171614 → #292826`（L\*16.1）、h1 `#1B1A18`；Solarized Light 正文 `#263640 → #2A3A44`（APCA 92.9→91.5）。③ 图表/思维导图的文字配对改用 `ink.heading` 而非 `ink.primary`——图内小字不是长读正文，保持较亮配对可少改填充色；仅少数 mindmap 分支色阶为维持 4.5:1 微调（色相不变，L\* 相差 ≤6）。④ `color-science.js` 新增 `apcaLc`（0.1.9 近似，±5），新增 advisory 测试 `theme-comfort.test.ts`：暗色正文 ≤88、h1 ≤95、亮色正文 ≤92，越界只 `console.warn` 不阻断。
 - **验证**：14 套重生成后正文 L\*84.9–85.1（APCA 75.4–79.0）、暗色 h1 ≤87.2；`theme:generate:check` 幂等；vitest 369 全绿；无头 Edge 同屏对比（夜灯改前/改后/单色/Catppuccin/晨光）确认夜灯已接近参考主题的柔和度。**实机观感待用户验收**。
 - **已知取舍**：暗色标题与正文的明度差缩小（约 5 L\*），层级更多依赖字号/字重；晨光 h1 APCA 94.9 贴近上限、Solarized Light 92.9→91.5 仍在边界；图表标签仍用较亮墨（design intent）。
+
+## DEC-048: 性能档位改「自动为默认 + 一行手动覆盖」，视觉参数不再随档位变化
+
+- **日期**：2026-11-19
+- **背景**：Impeccable critique 给阅读选项面板 14/40；「高级 / 性能级别」被判定为过度设计——同一档位四重呈现、悬停预览会改变列表高度、双层 disclosure、12px 密排与不达标序号圆。实测三档只改变 `virtualThreshold / chunkedThreshold / initialParseLines / chunkSize / maxCacheSize / overscan`，真正需要它的只有「超大文档 + 低配设备」，而这两者运行时都能判断。
+- **决策**：① 默认 `configLevel: "auto"`；旧持久值 `medium`（历史默认，几乎没人主动选）迁移为自动，显式的 low/high 保留为手动锁定。② 自动初值：`resolveAutoLevel(lines, cores, memoryGb)`——弱设备（≤4 核或 ≤4GB）→ 省内存；强设备（≥12 核且 ≥8GB）→ 流畅优先；≥3 万行且非强设备 → 省内存；其余均衡。未提供设备信息时取均衡。③ 运行时只降不升：滚动期间 4s 内出现 ≥3 次 ≥60ms 长任务则下调一档，带 600ms 滚动判定窗与 4s 滞回窗；降级在当前文档内保持，换文档重新评估。④ `composeReaderConfig(level)` 固定 `toc / interaction / virtualSizes` 为中档，只替换 `performance`——换档不再改变目录行高、虚拟块高度与动画时长（此前 high 的「更细腻动画」实为 80ms 更快，文案与事实相反）。⑤ UI：删除 `ConfigLevelSelector`（预览卡/参数表/自定义下拉），「高级」只留一行原生下拉「自动（推荐）/ 省内存 / 均衡 / 流畅优先」+ 一行「当前：{{name}}（自动）」；悬停说明走全局 `data-hint`。
+- **验证**：新增 `autoConfig.test.ts`（行数统计、弱/强设备与大文档规则、降级夹紧、组合配置只换 performance）；vitest 376 全绿；tsc / eslint / build 通过。**实机观感与掉帧降级待用户验收**。
+- **已知取舍**：无遥测，自动规则只能保守；WebKit 无 `longtask` 时只有自动初值、无运行时降级；手动锁定仍保留 low/high，但三档差异现在只体现在性能参数上。

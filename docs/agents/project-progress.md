@@ -21,10 +21,11 @@ description: >
 - **阶段**：侧边栏「打开文件夹」深度整改完成、待用户 UI 验收；无进行中阶段
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
-- **当前分支**：fix/panel-motion（文件树行距与面板退出动效，未合并）
-- **阶段**：主题墨色已合入 main；行距/动效批次完成、待实机验收
+- **当前分支**：feat/auto-config（性能档位自动 + 高级面板简化，未合并）
+- **阶段**：行距/动效已合入 main；性能档位自动化完成、待实机验收
 - **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.5.0；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-19 性能档位自动化（分支 `feat/auto-config`，DEC-048；起因：critique 14/40，用户判断档位属过度设计）：① 默认 `configLevel: "auto"`，旧持久值 `medium` 迁移为自动、显式 low/high 保留；② 新增 `resolveAutoLevel`（弱设备/强设备/超大文档规则）与 `useAutoConfig`（换文档重算初值；滚动期间 4s 内 ≥3 次 ≥60ms 长任务则只降一档，带滞回）；③ `composeReaderConfig` 固定 toc/interaction/virtualSizes 为中档，仅 performance 随档位变化，换档不再改变目录行高与动画时长；④ 删除 `ConfigLevelSelector`（预览卡/参数表/自定义下拉），「高级」改为一行原生下拉 + 「当前：{{name}}（自动）」，说明走 `data-hint`；⑤ 清理 `ConfigLevelInfoMap` 与 `configLevels/configLevelUI` i18n。新增 autoConfig 单测 6 条；vitest 376 / tsc / eslint / build 全绿；**实机与掉帧降级待验收**
 - 2026-11-19 文件树行距与面板/目录动效（分支 `fix/panel-motion`）：① 树行高从约 22px 提到 32px（无头 Edge 实测 `height=32 lineHeight=20 fontSize=14 padding=6/6`，内联内距避开 Tailwind 新类生成问题）；② `LeftPanel` / `RightPanel` 退场改「先渐隐再滑走」——进场 transform 200ms + opacity 180ms，退场 transform 360ms + opacity 320ms，`visibility 0s linear 360ms` 延迟隐藏（旧实现关闭时立即 `visibility:hidden`，滑出动画实际不可见）；关闭瞬间 `pointer-events:none`；③ 右侧浮动目录（FloatingTOC）用户反馈仍「闪进闪出」：根因是低性能档 `animationDuration` 仅 80ms，且目录文字/图钉条件挂载；改为过渡时长下限（展开 200ms / 收起 320ms）+ 文字与图钉常驻节点、透明度与可见性过渡，目录 padding 同步过渡。tsc / eslint / vitest 369 / build 全绿；**待实机验收**
 - 2026-11-19 主题墨色舒适度收口（分支 `fix/ink-comfort`，DEC-047）：实测 12 套暗色正文 L\*89.2–94.1 / APCA 82.4–94.4（全部高于 Catppuccin/Nord 等参考的 79–81），10 套共用 `#E0E0E0`、5 套 h1 用 `#FAFAFA`；晨光正文 16.2:1。改源色表后重生成：暗色正文统一 L\*84.9–85.1（中性 `#D4D4D4`、夜灯 `#D9D3CE`、森林 `#C9D9C9`），h1 封顶 L\*90；晨光正文 `#292826`、Solarized Light `#2A3A44`；图表/思维导图文字配对改用 `ink.heading`，仅少数 mindmap 分支为维持 4.5:1 微调。新增 `apcaLc` 与 advisory 测试 `theme-comfort.test.ts`（暗色正文≤88、h1≤95、亮色正文≤92，只告警不阻断）。`theme:generate:check` 幂等 / vitest 369 / tsc / eslint / build 全绿；无头 Edge 对比样张已核，**实机观感待用户验收**
 - 2026-11-19 UI 细节批次（分支 `fix/ui-polish-batch`）：① 原生 `title` 全部替换为 `data-hint` + 全局 `HoverHint`（主题底 + 浮层阴影、无系统边框；悬停 320ms、键盘聚焦即显，滚动/点击/失焦/Esc 即隐），覆盖标题栏、代码块复制、目录钉住、搜索上下条、关于页、图表缩放等 13 处；② 侧边栏首列缩进 8→12px、头部与筛选框左右 12→16px（内距最终改内联样式——长驻 dev 会话里 Tailwind 新生成的 `px-4/pt-2.5` 可能不生效，首版因此仍贴边），目录名不再贴边；③ 滚动条闲置回显（移植 Avalon `scrollFx`）：静止 `--sb-alpha` 0.32，滚动 120ms 点亮、450ms 后 650ms 渐隐，CSS 用 `color-mix` 消费该变量，`prefers-reduced-motion` 直接切态，新增 `scrollFx.test.ts`。浏览器实测伪元素继承成立（`getComputedStyle(el,"::-webkit-scrollbar-thumb")` 的 alpha 随变量变化）。tsc 0 / eslint 0 error / vitest 367 / build 通过；**未实机验收**

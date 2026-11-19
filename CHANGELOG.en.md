@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Roomier file tree rows**: about 32px per row, so Chinese file names no longer feel cramped
 - **Side panels fade out on close**: they now fade while sliding away (~360ms) instead of vanishing instantly; opening stays quick
 - **The floating TOC no longer flashes on hover**: expand/collapse now has a duration floor (200ms open, 320ms close), and its labels and pin badge fade in and out instead of mounting instantly
+- **Performance level is now automatic by default**: chosen from document size and device capability, dropping one step if scrolling stutters
+- **The Advanced card is now a single select**: Auto (recommended) / Memory saver / Balanced / Fluency first, with the current automatic choice shown; the preview card and parameter table are gone
 
 ### Fixed
 
