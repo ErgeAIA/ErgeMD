@@ -25,26 +25,10 @@
     "exportHtml": "Export HTML",
     "exportWord": "Export Word",
     "toggleSidebar": "Toggle Sidebar",
-    "pinToc": "Pin TOC",
-    "goHome": "Go to Welcome Page",
-    "search": "Search",
-    "toggleTheme": "Toggle Theme",
-    "resetFont": "Reset Font Size",
-    "fullscreen": "Toggle Fullscreen",
-    "closeTab": "Close Tab",
-    "switchTab": "Switch Tab",
     "timeJustNow": "Just now",
     "timeMinutes": "m ago",
     "timeHours": "h ago",
-    "timeDays": "d ago",
-    "newWindow": "New Window",
-    "saveHint": "Save (Read-only)",
-    "pinTab": "Pin/Unpin Tab",
-    "settings": "Settings",
-    "adjustFont": "Adjust Font Size",
-    "esc": "Close Search/Popup",
-    "copyFilePath": "Copy File Path",
-    "revealInExplorer": "Reveal in Explorer"
+    "timeDays": "d ago"
   },
   "titleBar": {
     "fileList": "File List",
@@ -53,7 +37,8 @@
     "restore": "Restore",
     "close": "Close",
     "pin": "Always on Top",
-    "unpin": "Unpin from Top"
+    "unpin": "Unpin from Top",
+    "shortcuts": "Keyboard Shortcuts"
   },
   "statusBar": {
     "wordCount": "{{count}} words",
@@ -298,5 +283,42 @@
     "skipped": "Skipped v{{version}}",
     "undoSkip": "Undo",
     "installing": "Updating"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "hint": "Esc to close",
+    "close": "Close",
+    "groups": {
+      "file": "File",
+      "view": "View & panels",
+      "reading": "Reading & search",
+      "export": "Export & files"
+    },
+    "items": {
+      "openFile": "Open file",
+      "openFolder": "Open folder",
+      "newWindow": "New window",
+      "closeTab": "Close current tab",
+      "goHome": "Back to welcome",
+      "nextTab": "Next tab",
+      "prevTab": "Previous tab",
+      "sidebar": "Toggle sidebar",
+      "readingOptions": "Open reading options",
+      "pinToc": "Pin / unpin the outline",
+      "fullscreen": "Toggle fullscreen",
+      "shortcuts": "Show shortcuts",
+      "search": "Search in document",
+      "fontUp": "Larger text",
+      "fontDown": "Smaller text",
+      "resetFont": "Reset text size",
+      "zoom": "Zoom interface text",
+      "lineHeight": "Adjust line spacing",
+      "exportPdf": "Export PDF (styled)",
+      "exportPdfGrayscale": "Export PDF (grayscale)",
+      "exportHtml": "Export HTML",
+      "exportWord": "Export Word",
+      "copyPath": "Copy file path",
+      "reveal": "Reveal in File Explorer"
+    }
   }
 }

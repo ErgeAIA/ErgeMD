@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ToastContainer from "./components/common/Toast";
 import HoverHint from "./components/common/HoverHint";
+import ShortcutsDialog from "./components/common/ShortcutsDialog";
 import UpdateChecker from "./components/common/UpdateChecker";
 import ContextMenu from "./components/context-menu/ContextMenu";
 import { getReaderContextMenuItems } from "./components/context-menu/ReaderContextMenu";
@@ -101,6 +102,7 @@ function App() {
   // 面板切换状态
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const toggleRightPanel = useCallback(
     () => setRightPanelOpen((v) => !v),
     [],
@@ -811,6 +813,7 @@ function App() {
       exportPdfGrayscale().catch(() => {});
     },
     onToggleSidebar: () => setLeftPanelOpen((v) => !v),
+    onShowShortcuts: () => setShortcutsOpen((v) => !v),
   });
 
   // 常驻 Tab 集合：最近活动的 N 个 + 全部固定 Tab（固定是用户显式保留意图）；
@@ -901,6 +904,7 @@ function App() {
           transition={titleBarTransition}
           onToggleLeftPanel={() => setLeftPanelOpen((v) => !v)}
           onToggleRightPanel={toggleRightPanel}
+          onShowShortcuts={() => setShortcutsOpen(true)}
           showLeftPanelButton={hasWorkspace}
         />
       </div>
@@ -1001,6 +1005,12 @@ function App() {
 
       {/* 主题化悬停提示（替代原生 title） */}
       <HoverHint />
+
+      {/* 快捷键总览：标题栏键盘图标 / Ctrl+K */}
+      <ShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
 
       {/* 快速编辑 */}
       {editState.isEditing && editState.editingElement && (

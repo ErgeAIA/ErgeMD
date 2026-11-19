@@ -17,6 +17,8 @@ interface ShortcutHandlers {
   onToggleSidebar?: () => void;
   onToggleReadingPanel?: () => void;
   onToggleFullscreen?: () => void;
+  /** 显示/隐藏快捷键总览（Ctrl+K） */
+  onShowShortcuts?: () => void;
 }
 
 /**
@@ -29,6 +31,7 @@ interface ShortcutHandlers {
  * - Ctrl+Tab / Ctrl+Shift+Tab: 切换标签
  * - Ctrl+F: 搜索（切换）
  * - Ctrl+Shift+T: 切换主题
+ * - Ctrl+K: 快捷键总览
  * - Ctrl+,: 打开设置面板
  * - Esc: 关闭搜索/弹窗
  * - Ctrl+↑/↓: 调整字体大小
@@ -104,6 +107,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       onExportPdfGrayscale: ofrg,
       onToggleSidebar: ots,
       onToggleFullscreen: otf,
+      onShowShortcuts: osk,
     } = handlersRef.current;
 
     const { activeTabId, tabs } = useFileStore.getState();
@@ -206,6 +210,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       const nextIdx = (currentIdx + 1) % themeOrder.length;
       const nextTheme = themeOrder[nextIdx];
       st(nextTheme);
+      return;
+    }
+
+    // Ctrl+K: 快捷键总览
+    if (ctrl && !e.shiftKey && !e.altKey && (e.key === "k" || e.key === "K")) {
+      e.preventDefault();
+      osk?.();
       return;
     }
 
