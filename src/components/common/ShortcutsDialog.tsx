@@ -111,7 +111,7 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = memo(
                 id="shortcuts-dialog-title"
                 style={{
                   margin: 0,
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: 600,
                   color: "var(--text-primary)",
                 }}
@@ -179,7 +179,7 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = memo(
                     <h3
                       style={{
                         margin: "0 0 8px",
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: 600,
                         letterSpacing: "0.04em",
                         textTransform: "uppercase",
@@ -197,7 +197,7 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = memo(
                         >
                           <span
                             style={{
-                              fontSize: 13,
+                              fontSize: 14,
                               color: "var(--text-secondary)",
                             }}
                           >
@@ -208,7 +208,7 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = memo(
                               flexShrink: 0,
                               fontFamily:
                                 'ui-monospace, SFMono-Regular, Consolas, monospace',
-                              fontSize: 11,
+                              fontSize: 12,
                               lineHeight: 1.4,
                               padding: "2px 6px",
                               borderRadius: 4,
