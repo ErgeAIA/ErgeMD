@@ -198,9 +198,16 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
 
         <div style={{ padding: "28px 36px 26px" }}>
           {/* 头部：Logo + 书名 + 副标题 + 元数据 + 更新状态 */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              paddingRight: 24,
+            }}
+          >
             <AppIcon size={72} style={{ flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <h2
                 style={{
                   margin: 0,
@@ -215,24 +222,13 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               </h2>
               <p
                 style={{
-                  margin: "3px 0 0",
-                  fontSize: 13,
-                  letterSpacing: "0.02em",
+                  margin: "4px 0 0",
+                  fontSize: 14,
+                  letterSpacing: "0.01em",
                   color: "var(--text-muted)",
                 }}
               >
                 {t("about.subtitle")}
-              </p>
-              <p
-                style={{
-                  margin: "5px 0 0",
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Consolas, monospace",
-                  fontSize: 11,
-                  color: "var(--text-muted)",
-                }}
-              >
-                v{packageJson.version} · {t("about.license")}
               </p>
             </div>
             <button
@@ -246,8 +242,9 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                   : t("about.checkUpdateHint")
               }
               style={{
-                marginLeft: "auto",
-                alignSelf: "flex-start",
+                alignSelf: "center",
+                flexShrink: 0,
+                whiteSpace: "nowrap",
                 padding: 0,
                 background: "none",
                 border: "none",
@@ -264,12 +261,25 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
             </button>
           </div>
 
+          {/* 元数据：与正文同一条左轴 */}
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Consolas, monospace",
+              fontSize: 11,
+              color: "var(--text-muted)",
+            }}
+          >
+            v{packageJson.version} · {t("about.license")}
+          </p>
+
           {/* 口号 */}
           <p
             style={{
               margin: "20px 0 0",
               fontSize: 16,
-              lineHeight: 1.75,
+              lineHeight: 1.7,
               letterSpacing: "0.01em",
               color: "var(--text-primary)",
             }}
@@ -280,8 +290,8 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           {/* 功能 */}
           <p
             style={{
-              margin: "12px 0 0",
-              fontSize: 13.5,
+              margin: "10px 0 0",
+              fontSize: 13,
               lineHeight: 1.85,
               color: "var(--text-primary)",
             }}
@@ -292,9 +302,9 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           {/* 平台 */}
           <p
             style={{
-              margin: "8px 0 0",
-              fontSize: 12.5,
-              lineHeight: 1.8,
+              margin: "6px 0 0",
+              fontSize: 13,
+              lineHeight: 1.85,
               color: "var(--text-muted)",
             }}
           >
@@ -310,7 +320,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
           />
 
           {/* 作者 */}
-          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <img
               src={AVATAR_IMG}
               alt=""
@@ -338,35 +348,35 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
               </div>
               <p
                 style={{
-                  margin: "3px 0 0",
+                  margin: "2px 0 0",
                   fontSize: 12,
                   color: "var(--text-muted)",
                 }}
               >
                 {t("about.role")}
               </p>
-              <p
-                style={{
-                  margin: "6px 0 0",
-                  fontSize: 13,
-                  lineHeight: 1.8,
-                  color: "var(--text-muted)",
-                }}
-              >
-                {t("about.bio")}
-              </p>
-              <p
-                style={{
-                  margin: "6px 0 0",
-                  fontSize: 13,
-                  lineHeight: 1.8,
-                  color: "var(--text-muted)",
-                }}
-              >
-                {t("about.share")}
-              </p>
             </div>
           </div>
+          <p
+            style={{
+              margin: "10px 0 0",
+              fontSize: 13,
+              lineHeight: 1.8,
+              color: "var(--text-muted)",
+            }}
+          >
+            {t("about.bio")}
+          </p>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: 13,
+              lineHeight: 1.8,
+              color: "var(--text-muted)",
+            }}
+          >
+            {t("about.share")}
+          </p>
 
           <div
             style={{
