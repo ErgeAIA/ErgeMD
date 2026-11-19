@@ -130,7 +130,7 @@
         border-color: var(--divider);
       }
       .paper .p-head { display: flex; align-items: center; gap: 14px; }
-      .paper .p-head svg.tile { width: 46px; height: 46px; flex-shrink: 0; }
+      .paper .p-head svg.tile { width: 48px; height: 48px; flex-shrink: 0; }
       .paper h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
       .paper .p-meta {
         margin: 4px 0 0;
@@ -141,17 +141,18 @@
       .paper .p-state { margin-left: auto; font-size: 12px; color: var(--p-muted); }
       .paper .p-claim { margin: 18px 0 0; font-size: 14.5px; line-height: 1.95; }
       .paper .p-features {
-        margin: 10px 0 0;
+        margin: 12px 0 0;
         font-size: 12px;
         letter-spacing: 0.02em;
         color: var(--p-muted);
+        text-align: center;
       }
       .paper .p-rule { height: 1px; background: var(--p-rule); margin: 18px 0 16px; }
       .paper .p-author { display: flex; gap: 12px; align-items: flex-start; }
       .paper .p-author img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--p-rule); flex-shrink: 0; }
       .paper .p-author b { font-size: 14px; font-weight: 600; }
       .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.85; color: var(--p-muted); }
-      .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); }
+      .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); text-align: right; }
       .paper .p-links { display: flex; align-items: center; gap: 18px; }
       .paper .p-links a, .paper .p-links button {
         display: inline-flex; align-items: center; gap: 6px;
@@ -280,14 +281,32 @@
         <a href="https://space.bilibili.com/67221461" target="_blank" rel="noreferrer"><img src="/images/bilibili.png" alt="" /><span>B 站</span></a>
         <button data-action="wechat" aria-expanded="${s.qr}"><img src="/images/Wechat-ico.png" alt="" /><span>微信</span></button>`;
 
+      const APP_LOGO = `
+        <svg class="tile" viewBox="0 0 1024 1024" aria-hidden="true" style="width:48px;height:48px">
+          <defs>
+            <linearGradient id="pBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--accent-cyan, #00E5FF)" />
+              <stop offset="100%" stop-color="var(--accent-pink, #FF007F)" />
+            </linearGradient>
+            <linearGradient id="pNeonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--accent-pink, #FF007F)" />
+              <stop offset="100%" stop-color="var(--accent-pink, #FF5E99)" />
+            </linearGradient>
+          </defs>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="none" stroke="url(#pBoxGrad)" stroke-width="20" opacity="0.55" />
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="var(--bg-page, #0A0B10)" fill-opacity="0.9" stroke="url(#pBoxGrad)" stroke-width="14" />
+          <g fill="none" stroke="url(#pNeonGrad)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 510 260 L 330 260 L 330 620 L 510 620" />
+            <path d="M 480 440 L 740 440 M 650 300 L 740 440 L 650 580" />
+          </g>
+          <text x="512" y="790" font-family="sans-serif" font-size="80" font-weight="600" fill="var(--accent-cyan, #00F0FF)" text-anchor="middle" letter-spacing="4">ErgeMD</text>
+        </svg>`;
+
       function paper(s, dark, tileId) {
         return `
           <div class="card paper ${dark ? "dark" : ""}">
             <div class="p-head">
-              <svg class="tile" viewBox="0 0 64 64" aria-hidden="true">
-                <rect x="1.5" y="1.5" width="61" height="61" rx="12" fill="none" stroke="var(--p-accent)" stroke-width="2" />
-                <path d="M22 18h22v5H28v6h13v5H28v6h16v5H22z" fill="var(--p-accent)" />
-              </svg>
+              ${APP_LOGO}
               <div>
                 <h1>ErgeMD</h1>
                 <p class="p-meta">v${VERSION} · ${LICENSE}</p>
@@ -295,13 +314,13 @@
               <span class="p-state">已是最新</span>
             </div>
             <p class="p-claim">${CLAIM}<br />${SLOGAN}</p>
-            <p class="p-features">Mermaid · 多主题 · 阅读进度 · 全文搜索 · 导出</p>
+            <p class="p-features">Mermaid · 多主题 · 阅读进度 · 全文搜索 · 多格式导出</p>
             <div class="p-rule"></div>
             <div class="p-author">
               <img src="/images/avatar.png" alt="" />
               <div><b>${AUTHOR}</b><p>${BIO}</p></div>
             </div>
-            <p class="p-quote">「${QUOTE}」</p>
+            <p class="p-quote">—— ${QUOTE}</p>
             <div class="p-rule"></div>
             <div class="p-links">${paperLinks(s)}</div>
             ${qrBlock(s, "p-qr")}
