@@ -25,26 +25,10 @@
     "exportHtml": "导出 HTML",
     "exportWord": "导出 Word",
     "toggleSidebar": "切换侧边栏",
-    "pinToc": "固定目录",
-    "goHome": "回到欢迎页",
-    "search": "搜索",
-    "toggleTheme": "切换主题",
-    "resetFont": "重置字体",
-    "fullscreen": "全屏切换",
-    "closeTab": "关闭标签页",
-    "switchTab": "切换标签页",
     "timeJustNow": "刚刚",
     "timeMinutes": "分钟前",
     "timeHours": "小时前",
-    "timeDays": "天前",
-    "newWindow": "新建窗口",
-    "saveHint": "保存提示(只读)",
-    "pinTab": "固定/取消固定标签",
-    "settings": "设置面板",
-    "adjustFont": "调整字体大小",
-    "esc": "关闭搜索/弹窗",
-    "copyFilePath": "复制文件路径",
-    "revealInExplorer": "在资源管理器中显示"
+    "timeDays": "天前"
   },
   "titleBar": {
     "fileList": "文件列表",
@@ -53,7 +37,8 @@
     "restore": "还原窗口",
     "close": "关闭",
     "pin": "窗口置顶",
-    "unpin": "取消置顶"
+    "unpin": "取消置顶",
+    "shortcuts": "快捷键"
   },
   "statusBar": {
     "wordCount": "{{count}} 字",
@@ -298,5 +283,42 @@
     "skipped": "已跳过 v{{version}}",
     "undoSkip": "撤销",
     "installing": "正在更新"
+  },
+  "shortcuts": {
+    "title": "快捷键",
+    "hint": "Esc 关闭",
+    "close": "关闭",
+    "groups": {
+      "file": "文件",
+      "view": "视图与面板",
+      "reading": "阅读与搜索",
+      "export": "导出与文件"
+    },
+    "items": {
+      "openFile": "打开文件",
+      "openFolder": "打开文件夹",
+      "newWindow": "新建窗口",
+      "closeTab": "关闭当前标签",
+      "goHome": "回到欢迎页",
+      "nextTab": "下一个标签",
+      "prevTab": "上一个标签",
+      "sidebar": "切换侧边栏",
+      "readingOptions": "打开阅读选项",
+      "pinToc": "固定 / 取消固定目录",
+      "fullscreen": "全屏切换",
+      "shortcuts": "打开快捷键",
+      "search": "文内搜索",
+      "fontUp": "增大字号",
+      "fontDown": "减小字号",
+      "resetFont": "重置字号",
+      "zoom": "缩放界面字体",
+      "lineHeight": "调整行间距",
+      "exportPdf": "导出 PDF（带样式）",
+      "exportPdfGrayscale": "导出 PDF（黑白）",
+      "exportHtml": "导出 HTML",
+      "exportWord": "导出 Word",
+      "copyPath": "复制文件路径",
+      "reveal": "在资源管理器中显示"
+    }
   }
 }

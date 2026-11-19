@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { WELCOME_SHORTCUT_GROUPS } from "@/config/shortcuts";
 import AppIcon from "./AppIcon";
 
 interface RecentFileItem {
@@ -15,26 +16,6 @@ interface WelcomePageProps {
   onShowAbout?: () => void;
   dbReady?: boolean;
 }
-
-/** 快捷键分组 */
-/** 零文档状态下真正可按的快捷键：其余项在空状态按了不会有反应，不在首屏教 */
-const SHORTCUT_GROUPS = [
-  {
-    label: "file" as const,
-    items: [
-      { key: "openFile", keys: "Ctrl+O" },
-      { key: "openFolder", keys: "Ctrl+Alt+O" },
-      { key: "newWindow", keys: "Ctrl+N" },
-    ],
-  },
-  {
-    label: "view" as const,
-    items: [
-      { key: "settings", keys: "Ctrl+," },
-      { key: "fullscreen", keys: "F11" },
-    ],
-  },
-] as const;
 
 /**
  * 欢迎页 — 上中下三段布局。
@@ -596,11 +577,11 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
               </h3>
 
               <div className="flex flex-col gap-3">
-                {SHORTCUT_GROUPS.map((group) => (
-                  <div key={group.label} className="flex flex-col gap-px">
+                {WELCOME_SHORTCUT_GROUPS.map((group) => (
+                  <div key={group.id} className="flex flex-col gap-px">
                     {group.items.map((item) => (
                       <div
-                        key={item.key}
+                        key={item.id}
                         className="flex items-center justify-between"
                         style={{ padding: "3px 0" }}
                       >
@@ -610,7 +591,7 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
                             color: "var(--text-muted)",
                           }}
                         >
-                          {t(`welcome.${item.key}`)}
+                          {t(`shortcuts.items.${item.labelKey}`)}
                         </span>
                         <kbd
                           style={{

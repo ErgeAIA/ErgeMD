@@ -12,6 +12,7 @@ interface TitleBarProps {
   transition: string;
   onToggleLeftPanel?: () => void;
   onToggleRightPanel?: () => void;
+  onShowShortcuts?: () => void;
   showLeftPanelButton?: boolean;
 }
 
@@ -21,6 +22,7 @@ const TitleBar: React.FC<TitleBarProps> = memo(
     transition,
     onToggleLeftPanel,
     onToggleRightPanel,
+    onShowShortcuts,
     showLeftPanelButton,
   }) => {
     const { startDrag } = useTitleBar();
@@ -179,6 +181,55 @@ const TitleBar: React.FC<TitleBarProps> = memo(
             marginLeft: "auto",
           }}
         >
+          {/* 快捷键 */}
+          {onShowShortcuts && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowShortcuts();
+              }}
+              className="flex items-center justify-center cursor-pointer"
+              style={{
+                width: "32px",
+                height: "100%",
+                color: "var(--text-muted, #50505A)",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--text-secondary)";
+                (e.currentTarget as HTMLElement).style.background =
+                  "var(--hover-bg-light)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--text-muted, #50505A)";
+                (e.currentTarget as HTMLElement).style.background =
+                  "transparent";
+              }}
+              aria-label={t("titleBar.shortcuts")}
+              data-hint={`${t("titleBar.shortcuts")} · Ctrl+K`}
+            >
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              >
+                <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+                <path d="M4 6.2h.6M6.4 6.2h.6M8.8 6.2h.6M11.2 6.2h.6" />
+                <path d="M4 8.4h.6M11.2 8.4h.6" />
+                <path d="M5.2 10.4h5.6" />
+              </svg>
+            </button>
+          )}
+
           {/* 置顶按钮 */}
           <button
             onClick={(e) => {
