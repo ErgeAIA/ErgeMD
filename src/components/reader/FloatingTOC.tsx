@@ -58,6 +58,13 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
     // 展开态：hover 或已固定任一为真（固定后移开鼠标不收起）
     const expanded = isHovering || pinned;
 
+    // 与左右停靠面板同一套节奏：进场快、退场慢。
+    // 低性能档的 animationDuration 会低到 80ms，几乎看不出过渡，这里设下限。
+    const expandMs = Math.max(animationDuration, 200);
+    const collapseMs = Math.max(animationDuration, 320);
+    const motionMs = expanded ? expandMs : collapseMs;
+    const motionEase = "cubic-bezier(0.4, 0, 0.2, 1)";
+
     // 固定态按 Esc 取消固定
     useEffect(() => {
       if (!pinned) return;
@@ -284,13 +291,16 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
               pointerEvents: "auto",
               background: expanded ? "var(--toc-hover-bg)" : "transparent",
               boxShadow: expanded ? "var(--toc-hover-shadow)" : "none",
-              transition: `width ${animationDuration}ms ease-out, background ${animationDuration}ms ease-out, box-shadow ${animationDuration}ms ease-out`,
+              transition: `width ${motionMs}ms ${motionEase}, background ${motionMs}ms ease-out, box-shadow ${motionMs}ms ease-out`,
             }}
           >
             <div
               ref={tocListRef}
               className="absolute inset-0 overflow-y-auto scrollbar-hide"
-              style={{ paddingTop: expanded ? 26 : 0 }}
+              style={{
+                paddingTop: expanded ? 26 : 0,
+                transition: `padding-top ${motionMs}ms ease-out`,
+              }}
             >
               {tocItems.map((item, index) => {
                 const lineWidth = getLineWidth(item.level);
@@ -356,41 +366,45 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                       }}
                     />
 
-                    {expanded && (
-                      <span
-                        className="ml-3 whitespace-nowrap overflow-hidden text-ellipsis text-sm"
-                        style={{
-                          maxWidth: 170,
-                          color: isActive
-                            ? "var(--toc-text-active)"
-                            : "var(--toc-text-inactive)",
-                          opacity: textOpacity,
-                          transition: "opacity 120ms ease-out",
-                        }}
-                      >
-                        {item.text}
-                      </span>
-                    )}
+                    <span
+                      className="ml-3 whitespace-nowrap overflow-hidden text-ellipsis text-sm"
+                      style={{
+                        maxWidth: 170,
+                        color: isActive
+                          ? "var(--toc-text-active)"
+                          : "var(--toc-text-inactive)",
+                        opacity: textOpacity,
+                        visibility: expanded ? "visible" : "hidden",
+                        transition: `opacity ${motionMs}ms ease-out, visibility 0s linear ${expanded ? 0 : motionMs}ms`,
+                      }}
+                    >
+                      {item.text}
+                    </span>
                   </div>
                 );
               })}
             </div>
             {/* 固定徽章：钉在面板右上角（relative 面板浮层），不随列表滚动，
                 目录翻页也始终留在视野内；仅 expanded 时显示 */}
-            {expanded && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePin();
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                aria-pressed={pinned}
-                aria-label={pinned ? t("toc.unpin") : t("toc.pin")}
-                data-hint={pinned ? t("toc.unpin") : t("toc.pin")}
-                className="absolute right-1.5 top-1.5 z-20 flex h-[22px] w-[22px] items-center justify-center rounded-full outline-none transition-colors hover:bg-black/10 dark:hover:bg-white/10"
-                style={{ color: pinned ? "var(--brand-primary)" : "var(--text-muted)" }}
-              >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePin();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-pressed={pinned}
+              aria-label={pinned ? t("toc.unpin") : t("toc.pin")}
+              data-hint={pinned ? t("toc.unpin") : t("toc.pin")}
+              className="absolute right-1.5 top-1.5 z-20 flex h-[22px] w-[22px] items-center justify-center rounded-full outline-none transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+              style={{
+                color: pinned ? "var(--brand-primary)" : "var(--text-muted)",
+                opacity: expanded ? 1 : 0,
+                visibility: expanded ? "visible" : "hidden",
+                pointerEvents: expanded ? "auto" : "none",
+                transition: `color 150ms ease-out, opacity ${motionMs}ms ease-out, visibility 0s linear ${expanded ? 0 : motionMs}ms`,
+              }}
+            >
                 <svg
                   width="14"
                   height="14"
@@ -405,7 +419,6 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                   <path d="M9 10.76V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6.76l2 3.24H7l2-3.24z" />
                 </svg>
               </button>
-            )}
           </div>
         </nav>
 
