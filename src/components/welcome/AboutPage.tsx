@@ -188,7 +188,8 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
         {/* 关闭按钮 */}
         <button
           onClick={onClose}
-          title={t("about.escToClose")}
+          aria-label={t("about.escToClose")}
+          data-hint={t("about.escToClose")}
           style={{
             position: "absolute",
             top: "12px",
@@ -249,7 +250,7 @@ const AboutPage: React.FC<AboutPageProps> = memo(({ onClose }) => {
                     void handleVersionClick();
                   }}
                   disabled={checkingUpdate}
-                  title={t("about.checkUpdateHint")}
+                  data-hint={t("about.checkUpdateHint")}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

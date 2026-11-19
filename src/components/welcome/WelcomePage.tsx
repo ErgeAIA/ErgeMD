@@ -820,7 +820,8 @@ const WelcomePage: React.FC<WelcomePageProps> = memo(
           {onShowAbout && (
             <button
               onClick={onShowAbout}
-              title={t("about.menuLabel")}
+              aria-label={t("about.menuLabel")}
+              data-hint={t("about.menuLabel")}
               style={{
                 background: "transparent",
                 border: "none",

@@ -480,7 +480,7 @@ const SearchBar: React.FC = memo(() => {
             color: "var(--text-secondary)",
           }}
           aria-label={t("reader.prevMatch")}
-          title={t("reader.prevMatchHint")}
+          data-hint={t("reader.prevMatchHint")}
         >
           <svg
             aria-hidden="true"
@@ -505,7 +505,7 @@ const SearchBar: React.FC = memo(() => {
             color: "var(--text-secondary)",
           }}
           aria-label={t("reader.nextMatch")}
-          title={t("reader.nextMatchHint")}
+          data-hint={t("reader.nextMatchHint")}
         >
           <svg
             aria-hidden="true"

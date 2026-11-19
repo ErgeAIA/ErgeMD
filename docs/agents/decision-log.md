@@ -368,3 +368,11 @@ description: >
 - **决策**：① 后端改单层 `scan_directory`（≤1000/次，`truncated` 标记）+ 文件名搜索 `search_workspace_files`（≤200），删除全量递归；排序改自然序（数字段按数值、目录在前）。② 前端按展开懒加载，展开状态与面板宽度持久化；删除死状态 `fileTree`（根层由 FileList 自行读取，App 只做「目录仍可读」校验）。③ 新鲜度：窗口回焦 / 可见性恢复 / 面板打开 / 手动刷新 → 250 ms 防抖 → 重扫根层 + 已展开目录；**不引入 watcher**，理由是新增依赖需先评估许可证与体积、Windows 网络盘与原子保存（rename）会放大实现复杂度，而金路径「外部新增后切回来打开」已被回焦刷新覆盖。④ LeftPanel 改非模态 `region`（点外收起、无遮罩/焦点陷阱），与 RightPanel 统一。⑤ 右键接通 `reveal_in_explorer`，删除与「打开」语义重复的「在新标签页打开」。
 - **验证**：5k vault 根层 0.88 ms / 7.0 KiB（改前 113–124 ms / 783 KiB），文件名搜索 6.6 ms；`tests/sidebar_scan.rs` 5 条回归（自然排序、截断、搜索、空查询、Windows 权限目录展开报错而父层可用）；vitest 366 / cargo test 全绿；`pnpm build` 通过。实机观感与交互待用户 UI 验收。
 - **已知取舍**：不做 watcher → 窗口保持前台时外部改动不自动出现（点刷新或重新聚焦即可）；目录符号链接不展开（防环），文件链接可用；不做全部展开/折叠、时间排序、创建/重命名/删除/移动（阅读器定位，非文件管理器）。
+
+## DEC-046: 悬停说明统一走 `data-hint` 浮层；滚动条闲置渐隐按 Avalon 同源实现
+
+- **日期**：2026-11-19
+- **背景**：用户指出原生 `title` 提示带系统边框、不跟主题（截图：标题栏「阅读选项」被原生框包住）；同时提出跨项目偏好——滚动条不滚动时应变淡、减小存在感（Avalon 已如此），并要求记住。
+- **决策**：① 项目内禁用原生 `title`：13 处改为 `data-hint`，由全局 `HoverHint`（挂 App、Portal 到 body）渲染主题浮层（`--bg-secondary` + `--shadow-floating-card`、无边框）；悬停 320ms、聚焦即显，滚动/点击/失焦/Esc 即隐；图标按钮同时保留 `aria-label`。② 滚动条回显移植 Avalon `src/shell/scrollFx.ts`：捕获阶段监听 scroll，逐帧给滚动元素写 `--sb-alpha` / 内联 `scrollbar-color`，CSS 用 `color-mix(var(--scrollbar-thumb-hover) calc(var(--sb-alpha)*100%))` 消费；闲置 0.32、滚动 120ms 点亮、停手 450ms 后 650ms 渐隐；`prefers-reduced-motion` 直接切态；`jsdom` 缺 `cancelAnimationFrame` 时用 setTimeout 兜底，卸载时清除定时器与帧。
+- **验证**：浏览器探针读 `getComputedStyle(el, "::-webkit-scrollbar-thumb").backgroundColor`，确认自定义属性确实传到伪元素（0.32 ↔ 100% 两态）；`scrollFx.test.ts` 守「滚动点亮 / 闲置回落」；tsc / eslint / vitest 367 / build 全绿。无头截图看不到滚动条，不作为判据。
+- **已知取舍**：只做透明度回显，不做宽度过渡（改宽度会引发重排/滚动条闪烁）；滚动条本体悬停仍走 `--scrollbar-thumb-hover` 实色。

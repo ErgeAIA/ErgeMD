@@ -5,6 +5,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ToastContainer from "./components/common/Toast";
+import HoverHint from "./components/common/HoverHint";
 import UpdateChecker from "./components/common/UpdateChecker";
 import ContextMenu from "./components/context-menu/ContextMenu";
 import { getReaderContextMenuItems } from "./components/context-menu/ReaderContextMenu";
@@ -993,6 +994,9 @@ function App() {
 
       {/* 图片预览 */}
       <ImagePreview />
+
+      {/* 主题化悬停提示（替代原生 title） */}
+      <HoverHint />
 
       {/* 快速编辑 */}
       {editState.isEditing && editState.editingElement && (

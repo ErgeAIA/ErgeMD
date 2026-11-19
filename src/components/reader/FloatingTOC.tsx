@@ -386,7 +386,8 @@ const FloatingTOC: React.FC<FloatingTOCProps> = memo(
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 aria-pressed={pinned}
-                title={pinned ? t("toc.unpin") : t("toc.pin")}
+                aria-label={pinned ? t("toc.unpin") : t("toc.pin")}
+                data-hint={pinned ? t("toc.unpin") : t("toc.pin")}
                 className="absolute right-1.5 top-1.5 z-20 flex h-[22px] w-[22px] items-center justify-center rounded-full outline-none transition-colors hover:bg-black/10 dark:hover:bg-white/10"
                 style={{ color: pinned ? "var(--brand-primary)" : "var(--text-muted)" }}
               >
