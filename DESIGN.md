@@ -286,12 +286,16 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 
 ### Inputs / Fields
 - **Style:** 搜索栏是 8px 圆角的浮层输入，`canvas-sidebar` 底 + 1px `divider` 边，无内阴影
+- **Sidebar filter:** 画布底（`--bg-page`）+ 1px `--divider` 边、5px 圆角、左侧放大镜、有内容时右侧清除；聚焦时边框转 `--active-border` 并带 3px 青色光晕。占位符统一 `--text-muted`，不用比面板更亮的灰底块——字段必须一眼看得出能输入
 - **Range:** 轨道 4px 高、2px 圆角、未填充段用 `canvas-code`，填充段用 `accent-cyan`；拇指 14px 圆形、2px `canvas-sidebar` 描边、`accent-cyan` 填充 + 4px 发光
 - **Select:** 原生下拉，只改外观（去箭头、聚焦时边框转 `active-border`）。原生弹层样式由系统决定，不自绘
 
 ### Navigation
 - **TabBar:** 与标题栏同行，条目最大宽 180px、12px 字号、左右 12px 内距、图标与文字间距 8px。激活态 = 2px `accent-cyan` 下边框 + 同色文字 + 5% 同色淡底；拖拽中左缘 2px 同色指示插入位
 - **FloatingTOC:** 收起态只显示长度递减的指示线（H1 22px、H2 16px、H3 11px、更深 7px，逐级右缩进 2/14/26/38px），展开态滑出 200px 面板。当前章节指示线加粗到 3px 高、品牌色 + 8px 发光，文字也转品牌色；未激活项按距离衰减透明度，最近邻之外逐渐淡出——目录本身也不抢戏
+
+### Signature Component: 滚动条回显
+所有滚动条静止时低透明（`--sb-alpha` 0.32），滚动时 120ms 点亮、停止 450ms 后 650ms 渐隐；悬停拇指直接取 `--scrollbar-thumb-hover`。机制在 `src/utils/scrollFx.ts`（捕获 scroll、逐帧改 `--sb-alpha` / `scrollbar-color`），不改变滚动行为，`prefers-reduced-motion` 下直接切态。滚动条是存在的工具，不是常驻的装饰。
 
 ### Signature Component: 沉浸式自动渐隐外壳
 标题栏（含标签栏）与状态栏各有一套渐隐，但都遵循同一条不对称节奏：淡入 300ms，淡出 3000ms（`useAutoHide`），因为「离开」应该比「回来」慢得多。标题栏在滚动容器就绪后即淡出，鼠标进入顶部 36px 热区渐显；状态栏不走淡入淡出，而是三段透明度——静止 0.2、滚动 0.6、悬停 0.8，700ms 过渡。`prefers-reduced-motion` 下全部压到 0.01ms。
@@ -310,6 +314,8 @@ ErgeMD 是一台给长文用的显影机：正文居中成一幅画，四周的�
 - **Do** 让浮层投影、让正文扁平；阴影是「浮在上面的信号」，不是「更重要的信号」。
 - **Do** 让新增 UI 文案同时补 `zh-CN.json` 与 `en-US.json` 两个键。
 - **Do** 让停靠面板在点击正文 / 空白 / 搜索栏时自动收起（非模态），只有标题栏与面板开关不触发收起——用户设完就该能直接离开，不必回头找开关。
+- **Do** 用 `data-hint` + 全局 `HoverHint` 承载悬停说明；原生 `title` 会画出系统边框、不跟主题，一律不用。
+- **Do** 让滚动条在闲置时变淡：静止低透明、滚动点亮、停止后渐隐（见「滚动条回显」）。
 
 ### Don't:
 - **Don't** 在正文画布上使用外投影、`text-shadow` 或 `filter: drop-shadow`。发光属于外壳；`kbd` 的 1px inset 下边线是唯一允许的正文内阴影（结构线，不是光）。

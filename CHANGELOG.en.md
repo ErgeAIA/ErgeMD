@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Natural file name sorting**: "Chapter 2" now comes before "Chapter 10", and folders always come before files
 - **Keyboard navigation in the file tree**: move with the arrows, expand right, collapse or jump to the parent left, and jump by typing the first letters
+- **Scrollbars fade out when idle**: nearly invisible at rest, light up while scrolling, and fade back slowly
+- **Hover hints use a themed layer** instead of the browser's own bordered tooltip, and follow the active theme
+- **More left padding in the sidebar**: folder names and the filter field no longer hug the panel edge
 
 ### Fixed
 
