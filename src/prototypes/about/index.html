@@ -140,7 +140,7 @@
         color: var(--p-muted);
       }
       .paper .p-state { margin-left: auto; font-size: 12px; color: var(--p-muted); }
-      .paper .p-claim { margin: 18px 0 0; font-size: 14.5px; line-height: 1.95; }
+      .paper .p-claim { margin: 16px 0 0; font-size: 14px; line-height: 1.9; white-space: pre-line; }
       .paper .p-features {
         margin: 12px 0 0;
         font-size: 12px;
@@ -152,7 +152,7 @@
       .paper .p-author { display: flex; gap: 12px; align-items: flex-start; }
       .paper .p-author img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--p-rule); flex-shrink: 0; }
       .paper .p-author b { font-size: 14px; font-weight: 600; }
-      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.85; color: var(--p-muted); }
+      .paper .p-author p { margin: 5px 0 0; font-size: 13px; line-height: 1.85; color: var(--p-muted); white-space: pre-line; }
       .paper .p-quote { margin: 14px 0 0; font-size: 13px; line-height: 1.8; color: var(--p-ink); text-align: right; }
       .paper .p-links { display: flex; align-items: center; justify-content: center; gap: 18px; }
       .paper .p-links a, .paper .p-links button {
@@ -255,11 +255,11 @@
 
     <script>
       const CLAIM =
-        "同一篇 Markdown，在这里是排好的稿子：Obsidian 的 Callout、嵌入和高亮都认，14 套主题连代码和图表一起换色，几万字滚起来也不卡。";
+        "ErgeMD — 极简 Markdown 阅读器\n基于 Tauri 2 构建，专注于提供沉浸式、高性能的阅读体验\n支持多主题切换、目录导航、搜索、阅读进度保存等功能";
       const SLOGAN = "让每一次阅读，都回归内容本身。";
       const AUTHOR = "宝藏二哥 AIA";
       const BIO =
-        "一个爱分享的技术大叔，平时折腾 AI 绘画、AI 编程和效率工具；分享只守三条：无门槛、无套路、无保留。";
+        "一个热衷于分享好东西的技术大叔\n深耕 AI 绘画、AI 编程、AI 办公\n全网搜罗好用的 PC 软件与提效神器\n坚持「无门槛、无套路、无保留」三无分享";
       const QUOTE = "AI 不应该有门槛，助力百万普通人用上 AI";
       const VERSION = "0.6.1";
       const LICENSE = "AGPL-3.0 · 免费 · 开源";
@@ -314,8 +314,9 @@
               </div>
               <span class="p-state">已是最新</span>
             </div>
-            <p class="p-claim">${CLAIM}<br />${SLOGAN}</p>
-            <p class="p-features">Obsidian 语法 · Mermaid · KaTeX · 多标签 · 多格式导出</p>
+            <p class="p-claim">${CLAIM}
+— ${SLOGAN}</p>
+            <p class="p-features">Mermaid 图表 · 多主题切换 · 阅读进度保存 · 全文搜索 · 多格式导出</p>
             <div class="p-rule"></div>
             <div class="p-author">
               <img src="/images/avatar.png" alt="" />
