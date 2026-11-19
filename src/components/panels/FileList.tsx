@@ -538,7 +538,10 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
     <div className="h-full flex flex-col min-h-0">
       {/* 头部：工作区名 + 定位/刷新 + 筛选 */}
       <div style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="flex items-center gap-1 px-4 pt-2.5 pb-1">
+        <div
+          className="flex items-center gap-1"
+          style={{ padding: "10px 16px 4px 16px" }}
+        >
           <span
             className="flex-1 truncate text-xs font-medium tracking-wide uppercase"
             style={{ color: "var(--text-muted)" }}
@@ -595,7 +598,7 @@ const FileList: React.FC<FileListProps> = memo(({ onFileSelect, isOpen }) => {
             </svg>
           </button>
         </div>
-        <div className="px-4 pb-2">
+        <div style={{ padding: "0 16px 8px 16px" }}>
           <div className="relative flex items-center">
             <svg
               aria-hidden="true"
