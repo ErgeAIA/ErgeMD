@@ -376,3 +376,11 @@ description: >
 - **决策**：① 项目内禁用原生 `title`：13 处改为 `data-hint`，由全局 `HoverHint`（挂 App、Portal 到 body）渲染主题浮层（`--bg-secondary` + `--shadow-floating-card`、无边框）；悬停 320ms、聚焦即显，滚动/点击/失焦/Esc 即隐；图标按钮同时保留 `aria-label`。② 滚动条回显移植 Avalon `src/shell/scrollFx.ts`：捕获阶段监听 scroll，逐帧给滚动元素写 `--sb-alpha` / 内联 `scrollbar-color`，CSS 用 `color-mix(var(--scrollbar-thumb-hover) calc(var(--sb-alpha)*100%))` 消费；闲置 0.32、滚动 120ms 点亮、停手 450ms 后 650ms 渐隐；`prefers-reduced-motion` 直接切态；`jsdom` 缺 `cancelAnimationFrame` 时用 setTimeout 兜底，卸载时清除定时器与帧。
 - **验证**：浏览器探针读 `getComputedStyle(el, "::-webkit-scrollbar-thumb").backgroundColor`，确认自定义属性确实传到伪元素（0.32 ↔ 100% 两态）；`scrollFx.test.ts` 守「滚动点亮 / 闲置回落」；tsc / eslint / vitest 367 / build 全绿。无头截图看不到滚动条，不作为判据。
 - **已知取舍**：只做透明度回显，不做宽度过渡（改宽度会引发重排/滚动条闪烁）；滚动条本体悬停仍走 `--scrollbar-thumb-hover` 实色。
+
+## DEC-047: 墨色设舒适上限（暗色 L\*84–87），并把 APCA 上限作为 advisory 检查
+
+- **日期**：2026-11-19
+- **背景**：用户反馈夜灯正文「白得刺眼」，并怀疑暗色主题共用一种白。实测（14 套 `--bg-reader`）：12 套暗色正文 L\*89.2–94.1、APCA 82.4–94.4，全部高于 Catppuccin/Nord/GitHub Dark/VS Code 的 79–81；其中 10 套正文同为 `#E0E0E0`、5 套 h1 为 `#FAFAFA`（L\*98.3）。WCAG 全部 ≥11:1，问题是对比度只有下限、没有上限。晨光正文 16.2:1 亦偏硬。
+- **决策**：① 暗色正文统一到 L\*84–87（OKLCH 保色相/彩度求值）：中性组 `#D4D4D4`、夜灯 `#D9D3CE`、森林 `#C9D9C9`；`ink.heading` 与 `headingHues[0]` 封顶 L\*90（中性 `#E2E2E2`、夜灯 `#E7E1DC`）。② 晨光正文 `#171614 → #292826`（L\*16.1）、h1 `#1B1A18`；Solarized Light 正文 `#263640 → #2A3A44`（APCA 92.9→91.5）。③ 图表/思维导图的文字配对改用 `ink.heading` 而非 `ink.primary`——图内小字不是长读正文，保持较亮配对可少改填充色；仅少数 mindmap 分支色阶为维持 4.5:1 微调（色相不变，L\* 相差 ≤6）。④ `color-science.js` 新增 `apcaLc`（0.1.9 近似，±5），新增 advisory 测试 `theme-comfort.test.ts`：暗色正文 ≤88、h1 ≤95、亮色正文 ≤92，越界只 `console.warn` 不阻断。
+- **验证**：14 套重生成后正文 L\*84.9–85.1（APCA 75.4–79.0）、暗色 h1 ≤87.2；`theme:generate:check` 幂等；vitest 369 全绿；无头 Edge 同屏对比（夜灯改前/改后/单色/Catppuccin/晨光）确认夜灯已接近参考主题的柔和度。**实机观感待用户验收**。
+- **已知取舍**：暗色标题与正文的明度差缩小（约 5 L\*），层级更多依赖字号/字重；晨光 h1 APCA 94.9 贴近上限、Solarized Light 92.9→91.5 仍在边界；图表标签仍用较亮墨（design intent）。
