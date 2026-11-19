@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deleted files in the recent list**: opening one now removes it from the list with a "file no longer exists" notice instead of a misleading read error
+
 ## [0.6.1] - 2026-11-18
 
 ### Changed
