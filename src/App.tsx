@@ -28,6 +28,7 @@ import { useContextMenu } from "./hooks/useContextMenu";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useQuickEdit } from "./hooks/useQuickEdit";
 import { useReadingProgress } from "./hooks/useReadingProgress";
+import { useAutoConfig } from "./hooks/useAutoConfig";
 import { useTheme } from "./hooks/useTheme";
 import { useFileStore } from "./stores/fileStore";
 import { useReaderStore } from "./stores/readerStore";
@@ -59,6 +60,9 @@ function App() {
 
   // 主题切换 — 自动同步 data-theme 属性到 <html>
   useTheme();
+
+  // 自动性能档：按文档与设备选初始档，滚动掉帧时只降不升
+  useAutoConfig();
 
   // 阅读器配置（虚拟滚动阈值等，与 ReadingArea 同一来源）
   const readerConfig = useActiveConfig();

@@ -104,48 +104,14 @@
     "skippedVersion": "Skipped version",
     "clearSkipped": "Clear",
     "advanced": "Advanced",
-    "configLevel": "Performance Level",
-    "configLevelUI": {
-      "preview": "Preview: ",
-      "current": "Current: ",
-      "params": "Parameter differences: ",
-      "virtualThreshold": "Virtualize at",
-      "cacheSize": "Cache size"
-    },
-    "configLevels": {
-      "low": {
-        "name": "Low",
-        "description": "Performance-first",
-        "scenario": "For low-spec machines, very large files, or constrained environments",
-        "effects": [
-          "Virtual scrolling kicks in earlier, saving memory",
-          "Larger parse chunks, lighter CPU load",
-          "Smaller cache footprint",
-          "Smooth basic reading"
-        ]
-      },
-      "medium": {
-        "name": "Medium",
-        "description": "Balanced",
-        "scenario": "For typical machines and everyday reading",
-        "effects": [
-          "The best balance of speed and comfort",
-          "Moderate virtualization threshold",
-          "Reasonable cache and chunking",
-          "Smooth animations"
-        ]
-      },
-      "high": {
-        "name": "High",
-        "description": "Comfort-first",
-        "scenario": "For high-performance machines when reading comfort matters most",
-        "effects": [
-          "Less virtualization, smoother rendering",
-          "Larger cache, faster response",
-          "More pre-rendering, smoother scrolling",
-          "Finer animations"
-        ]
-      }
+    "autoConfig": {
+      "label": "Performance",
+      "auto": "Auto (recommended)",
+      "low": "Memory saver",
+      "medium": "Balanced",
+      "high": "Fluency first",
+      "effective": "Current: {{name}} (auto)",
+      "hint": "Chosen from document size and device capability; drops one step if scrolling stutters."
     }
   },
   "menu": {

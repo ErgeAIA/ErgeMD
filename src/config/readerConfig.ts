@@ -91,58 +91,8 @@ export interface ReaderConfig {
  */
 export type ConfigLevel = "low" | "medium" | "high";
 
-/**
- * 配置级别描述
- */
-export interface ConfigLevelInfo {
-  id: ConfigLevel;
-  name: string;
-  description: string;
-  scenario: string;
-  effects: string[];
-}
-
-/**
- * 配置级别信息
- */
-export const ConfigLevelInfoMap: Record<ConfigLevel, ConfigLevelInfo> = {
-  low: {
-    id: "low",
-    name: "低档",
-    description: "性能优先模式",
-    scenario: "适用于低配置设备、大文件处理或资源受限环境",
-    effects: [
-      "更早启用虚拟滚动，减少内存占用",
-      "更大的分块解析，降低CPU负担",
-      "较小的缓存容量，节省内存",
-      "流畅的基本阅读体验",
-    ],
-  },
-  medium: {
-    id: "medium",
-    name: "中档",
-    description: "平衡模式",
-    scenario: "适用于主流配置设备和日常阅读场景",
-    effects: [
-      "平衡性能与体验的最佳选择",
-      "适中的虚拟滚动阈值",
-      "合理的缓存和分块策略",
-      "流畅的动画效果",
-    ],
-  },
-  high: {
-    id: "high",
-    name: "高档",
-    description: "体验优先模式",
-    scenario: "适用于高性能设备，追求极致阅读体验",
-    effects: [
-      "更少使用虚拟滚动，渲染更流畅",
-      "更大的缓存，更快的响应",
-      "更多的预渲染，滚动更平滑",
-      "更细腻的动画效果",
-    ],
-  },
-};
+/** 用户可选：自动（默认）或手动锁定某一档 */
+export type ConfigMode = ConfigLevel | "auto";
 
 /**
  * 三级预设配置
@@ -277,3 +227,15 @@ export const PresetConfigs: Record<ConfigLevel, ReaderConfig> = {
  * 默认阅读器配置（中档）
  */
 export const DefaultReaderConfig: ReaderConfig = PresetConfigs.medium;
+
+/**
+ * 组合当前生效配置：视觉与排版参数固定取中档，只有 performance 组随档位变化。
+ * 否则换档会连带改变目录行高、虚拟块高度等观感——设备不同、观感不该不同。
+ */
+export function composeReaderConfig(level: ConfigLevel): ReaderConfig {
+  const base = PresetConfigs.medium;
+  return {
+    ...base,
+    performance: PresetConfigs[level].performance,
+  };
+}

@@ -1,4 +1,4 @@
-import { ConfigLevelSelector } from "@/components/settings/ConfigLevelSelector";
+import type { ConfigMode } from "@/config/readerConfig";
 import { DEFAULT_READING_SETTINGS, useSettingsStore } from "@/stores/settingsStore";
 import type { MindmapLayout, MindmapStyle, ThemeMode } from "@/types";
 import { getThemePreviewColors } from "@/utils/themePreview";
@@ -79,6 +79,9 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
       (s) => s.updateReadingSettings,
     );
     const setTheme = useSettingsStore((s) => s.setTheme);
+    const configLevel = useSettingsStore((s) => s.configLevel);
+    const autoEffectiveLevel = useSettingsStore((s) => s.autoEffectiveLevel);
+    const setConfigLevel = useSettingsStore((s) => s.setConfigLevel);
 
     const [systemFonts, setSystemFonts] = useState<FontCategory[]>([]);
     const [fontSearchOpen, setFontSearchOpen] = useState(false);
@@ -631,7 +634,48 @@ const ReadingOptions: React.FC<ReadingOptionsProps> = memo(
             <span>{t("settings.advanced")}</span>
             <span aria-hidden="true">{advancedOpen ? "▾" : "▸"}</span>
           </button>
-          {advancedOpen && <ConfigLevelSelector />}
+          {advancedOpen && (
+            <div>
+              <label htmlFor="reading-config-level" className="block" style={labelStyle}>
+                {t("settings.autoConfig.label")}
+              </label>
+              <select
+                id="reading-config-level"
+                value={configLevel}
+                onChange={(e) =>
+                  setConfigLevel(e.target.value as ConfigMode)
+                }
+                data-hint={t("settings.autoConfig.hint")}
+                style={{
+                  width: "100%",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  background: "var(--bg-code)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--divider)",
+                  outline: "none",
+                }}
+              >
+                <option value="auto">{t("settings.autoConfig.auto")}</option>
+                <option value="low">{t("settings.autoConfig.low")}</option>
+                <option value="medium">{t("settings.autoConfig.medium")}</option>
+                <option value="high">{t("settings.autoConfig.high")}</option>
+              </select>
+              <p
+                style={{
+                  margin: "6px 0 0",
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  color: "var(--text-muted)",
+                }}
+              >
+                {t("settings.autoConfig.effective", {
+                  name: t(`settings.autoConfig.${autoEffectiveLevel}`),
+                })}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* 分隔线 */}
