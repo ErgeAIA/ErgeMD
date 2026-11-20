@@ -4,7 +4,7 @@
  * 值源：ThemeVault themes/erge/dark（ErgeAIA #151）按语义组映射：
  *   背景/文本/边框 → canvas/ink；强调色 → brand / headingHues / link
  *   状态色 → accent 各槽（-on-dark 派生值预计算为 hex：parseHex 不接受 color-mix()）
- *   语法高亮 → code（浅底原值在代码底 #2C2620 上 ≤2.2:1 不可读，
+ *   语法高亮 → code（浅底原值在代码底 #1F1B16 上 ≤2.2:1 不可读，
  *     沿用状态色同款「白混 on-dark」模式派生，配比见各注释）
  * 注意：dark.css 中的 --accent-cyan-dim/--accent-cyan-glow 为派生层
  * （theme-derived.css:121-122）的重复定义，此处不收录，由派生层继续提供。
@@ -13,7 +13,7 @@ export default {
   name: "dark",
   canvas: {
     reader: "#241F1B", // bg-surface
-    code: "#2C2620", // bg-surface-2
+    code: "#1F1B16", // 比 reader 更暗一档：代码块沉于画布，与其余 13 套一致（原 #2C2620 比 reader 亮，与主题脱节）
     sidebar: "#1A1714", // bg
     page: "#1A1714", // bg
     secondary: "#2E2823", // bg-elevated

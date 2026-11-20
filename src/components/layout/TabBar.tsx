@@ -251,8 +251,9 @@ const TabBar: React.FC = memo(() => {
                   setHoveredTabId(null);
                 }}
                 onPointerDown={(e) => handlePointerDown(e, tab.id, index)}
-                className="hover-tab-item flex items-center gap-2 px-3 h-full cursor-pointer text-xs min-w-0 max-w-[180px]"
+                className="hover-tab-item flex items-center gap-2 px-3 h-full cursor-pointer min-w-0 max-w-[180px]"
                 style={{
+                  fontSize: "13px",
                   color: isActive
                     ? "var(--accent-cyan, #00FFFF)"
                     : "var(--text-secondary, #787882)",
