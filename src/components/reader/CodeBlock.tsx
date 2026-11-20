@@ -199,14 +199,20 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code }) => {
         }}
         onContextMenu={handleContextMenu}
       >
-        {/* 语言标签 — 左上角 */}
+        {/* 语言标签 — 左上角（内缩浮动，非贴边） */}
         {!isEditing && (
           <div
-            className="absolute top-0 left-0 px-3 py-1 text-[11px] z-[1] select-none rounded-br-md"
+            className="absolute z-[1] select-none"
             style={{
+              top: "6px",
+              left: "8px",
+              padding: "2px 10px",
+              fontSize: "12px",
+              lineHeight: 1.5,
+              borderRadius: "6px",
               color: "var(--accent-orange, #FF8000)",
               background: "var(--code-label-bg)",
-              borderBottom: "1px solid var(--border-subtle)",
+              border: "1px solid var(--border-subtle)",
             }}
           >
             {language}

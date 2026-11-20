@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-11-19
+updated: 2026-11-20
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -409,3 +409,12 @@ description: >
 - **验证**：tsc / eslint / vitest 376 / build 全绿；F 版在无头 Edge 760px 视口内不裁切、二维码展开不溢出。**实机观感待用户验收**。
 - **已知取舍**：关于页采用宋体，与阅读区默认无衬线不同——这是"纸页"这一单面的刻意材质，不扩散到其他界面；EasterEgg 仍保留两个含 emoji 的 about 键。
 - **修订（2026-11-19 同日）**：小字号宋体在 1× 屏上发虚，正文改为系统无衬线并统一 14px（标题 24 / 副标题与正文 14 / 元数据 12）；版式、文案与交互不变，"纸页"材质由底色与分隔线承担。
+
+## DEC-051: 夜灯代码块底色沉到画布之下；外壳两处字号按五档阶梯上提
+
+- **日期**：2026-11-20（用户反馈：顶栏文件名偏小；代码块语法名小且贴边；夜灯代码块底色「与主题差太远」，其它主题尚可）
+- **背景**：① 标签文件名用 `text-xs`(12px)，而 DEC-049 把 12px 定为 Label 下限，文件名是标签栏主标识；② 语言标签 `text-[11px]` 属 Micro 档且贴 `top-0 left-0`（仅右下圆角），视觉上塞进角里；③ **量化取证**：14 套主题实测 `--bg-reader` 与 `--bg-code` 的 Lab 明度关系，其余 13 套代码块一律**暗于**阅读画布（如暗色族 reader L*19.3 / code L*15.5、晨光 95.6 / 92.1、森林 17.7 / 15.8），唯夜灯相反——reader `#241F1B`(L*12.2) 而 code `#2C2620`(L*15.6)，代码块浮在画布上方，正是「与主题脱节」的来源。
+- **决策**：① `TabBar.tsx` 标签名 12→13px（内联 `fontSize`，避开长驻 dev 会话 Tailwind 新类不生成）；② `CodeBlock.tsx` 语言标签 11→12px、`top/left` 内缩 6/8px、6px 全圆角、1px `--border-subtle` 细边（位置/字号/内距全走内联）；③ `scripts/theme/sources/dark.js` 的 `canvas.code` `#2C2620` → `#1F1B16`，取值落在 sidebar(L*8.0) 与 reader(L*12.2) 之间并保持暖棕（非中性灰），dE 对两端各 2.7/2.3 均衡；`canvas.tertiary` 保持 `#2C2620` 不动。生成物 `dark.css` 仅 `--bg-code` 一行变化（`--bg-reader`/`--bg-tertiary` 不变）。
+- **验证**：`pnpm theme:generate` 重生成 + `theme:generate:check` 14 套一致；语法高亮 7 色在新底 5.13–14.74:1、语言标签色 #F2570F 对新底 5.01:1（旧底 4.37，改善）全部 ≥4.5；lint 0 error(47 存量) / vitest 376/376 / build 通过；Playwright（暗主题，真实构建 CSS）实测：标签 12px、行高 18px、内缩 7/9px（含 1px 边框）、圆角 6px、代码底 rgb(31,27,22)、标签对比 5.01:1、与右上复制键无横向重叠。**实机观感待用户验收**。
+- **已知取舍**：`--bg-code` 是共享「代码表面」令牌（短路径/更新卡/slider 轨/QuickEdit 等），夜灯下会随之变暗——与其余主题同口径，一致性收益；旧标签「角落贴边 + 底边线」改为「内缩浮动细边框」属观感调整，若用户偏好原角落样式可回退（仅 `CodeBlock.tsx` 一处）。
+- **验收（2026-11-20）**：用户实机验收通过；变更日志已记入 CHANGELOG 中英两版 Unreleased（分类「优化/Changed」），按用户决定暂不发版、版本号与 tag 不动。

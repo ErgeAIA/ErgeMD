@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Larger file names in the tab bar**: tab labels go from 12px to 13px to sit more naturally in the type scale
+- **The code block language tag no longer hugs the corner**: up from 11px to 12px, with padding and a rounded hairline border
+- **Darker code block background in Night Lamp**: now slightly deeper than the reading canvas like the other themes, instead of a lighter slab
+
 ## [0.7.0] - 2026-11-19
 
 ### Added
