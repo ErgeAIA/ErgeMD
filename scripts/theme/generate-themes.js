@@ -39,13 +39,14 @@ const DIVIDER_RATIO = 0.08;
 const BORDER_SUBTLE_RATIO = 0.05;
 
 /**
- * 浮层表面（--bg-secondary / --bg-primary）的品牌染色彩度上限。
- * 11 套暗色主题的该 token 在源色表里是「继承 dark-base」的中性 #2E2E38（C*≈0.018，
- * 色相统一卡在 285°），与各自品牌色相完全脱节 → 弹窗/浮层看着是「一块无主题的灰」。
- * 这里保持明度不变（不引入小字对比度风险），只把色相换成品牌色相、彩度提到下表值。
+ * 浮层表面（--bg-secondary / --bg-primary）以代码块底色为基准派生。
+ * 源色表里 11 套暗色主题的该 token 是「继承 dark-base」的中性 #2E2E38，恰好等于画布，
+ * 弹窗因此没有任何层次。以 code 为基准：代码块本身已按主题校准为「沉于画布一档」，
+ * 浮层在它之上再提亮一档，既保持中性（不额外染色，避免夜灯被染成橙棕），
+ * 又与画布拉开层次。若与画布明度差不足 MIN_SEP，则朝远离画布的方向补齐。
  */
-const SURFACE_CHROMA_DARK = 0.028;
-const SURFACE_CHROMA_LIGHT = 0.012;
+const SURFACE_STEP = 0.03;
+const SURFACE_MIN_SEP = 0.02;
 
 /** 代码高亮源字段 → CSS token 名（copySuccess 的现行 token 无 code- 前缀，显式映射） */
 const CODE_TOKENS = {
@@ -76,21 +77,16 @@ function buildTokens(s) {
   set("bg-code", s.canvas.code);
   set("bg-sidebar", s.canvas.sidebar);
   set("bg-page", s.canvas.page);
-  // 浮层表面：保留源色表的明度，色相改用品牌色相、彩度提到受控值。
-  // 源色表里 11 套暗色主题的 canvas.secondary 是「继承 dark-base」的中性灰
-  // （#2E2E38，C*≈0.018，色相全卡 285°），与各自品牌色相脱节，浮层因此显得
-  // 「无主题的灰」。只换色相/彩度、不动明度，可保证弹窗内小字对比度不退化。
-  // monochrome 品牌色本身无彩度 → 保持纯灰（尊重「纯灰度」这一主题存在理由）。
+  // 浮层表面：以代码块底色为基准提亮一档（保持 code 自身的色相/彩度，不额外染色），
+  // 并保证始终**高于**画布至少 SURFACE_MIN_SEP——浮层要浮起来，不能沉到画布下方。
   const surface = (() => {
-    const src = cs.rgbToOklch(cs.parseHex(s.canvas.secondary));
-    const brand = cs.rgbToOklch(cs.parseHex(s.brand.primary));
-    const isLight = cs.rgbToOklch(cs.parseHex(s.canvas.reader)).l > 0.5;
-    const neutral = brand.c < 0.01;
-    const l = isLight ? Math.min(src.l, 0.985) : src.l;
-    const c = neutral ? 0 : isLight ? SURFACE_CHROMA_LIGHT : SURFACE_CHROMA_DARK;
-    return cs.toHex(
-      cs.oklchToRgb({ l, c, h: neutral ? src.h : brand.h }),
-    );
+    const code = cs.rgbToOklch(cs.parseHex(s.canvas.code));
+    const reader = cs.rgbToOklch(cs.parseHex(s.canvas.reader));
+    let l = Math.min(0.985, code.l + SURFACE_STEP);
+    // 浮层须比画布亮至少 SURFACE_MIN_SEP（暗色族「浮起」、亮色族「更接近白」同理）
+    const minL = reader.l + SURFACE_MIN_SEP;
+    if (l < minL) l = Math.min(0.985, minL);
+    return cs.toHex(cs.oklchToRgb({ l, c: code.c, h: code.h }));
   })();
   set("bg-secondary", surface);
   set("bg-tertiary", s.canvas.tertiary);
