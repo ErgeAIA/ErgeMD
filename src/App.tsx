@@ -52,10 +52,19 @@ async function scanRootEntries(dirPath: string): Promise<FileNode[]> {
   return listing.entries;
 }
 
+/** 导出 Word 的默认文件名：取当前文档同名、同目录、改 .docx 后缀 */
+function currentDocxDefaultPath(): string {
+  const p = useFileStore.getState().currentFilePath;
+  if (!p) return "export.docx";
+  return p.replace(/\.(md|markdown|mdx)$/i, "") + ".docx";
+}
+
 function App() {
   const { t } = useTranslation();
   /** 同一条编码提醒每个会话只提示一次，避免恢复多标签时刷屏 */
   const notifiedEncodingRef = useRef(new Set<string>());
+  /** 启动恢复（持久化标签）完成信号：关联文件必须等它完成后再打开，否则会被恢复逻辑覆盖 */
+  const startupRestoreRef = useRef<Promise<void> | null>(null);
   /** 每个已打开文件的 mtime 基线，用于窗口重新聚焦时判断外部改动 */
   const fileMtimeRef = useRef(new Map<string, number>());
 
@@ -250,6 +259,10 @@ function App() {
   // 启动时恢复持久化的 tab 内容
   useEffect(() => {
     let cancelled = false;
+    let resolveRestore!: () => void;
+    startupRestoreRef.current = new Promise<void>((resolve) => {
+      resolveRestore = resolve;
+    });
     (async () => {
       try {
         const state = useFileStore.getState();
@@ -310,11 +323,14 @@ function App() {
         if (!cancelled) {
           setIsRestoring(false);
         }
+        // 恢复结束（含无标签提前退出）后放行关联文件打开
+        resolveRestore();
       }
     })();
 
     return () => {
       cancelled = true;
+      resolveRestore();
     };
   }, []);
 
@@ -447,20 +463,33 @@ function App() {
       }
     };
 
+    // 等启动恢复（持久化标签）完成后再打开关联文件，否则刚打开的文件会被恢复逻辑整表覆盖
+    const waitStartupRestore = () =>
+      startupRestoreRef.current ?? Promise.resolve();
+
     // 冷启动：前端就绪后从 Rust 端获取 pending 文件路径
-    invoke<string | null>("get_pending_file")
-      .then((filePath) => {
+    void (async () => {
+      await waitStartupRestore();
+      if (cancelled) return;
+      try {
+        const filePath = await invoke<string | null>("get_pending_file");
         if (!cancelled && filePath) {
-          openFilePath(filePath);
+          await openFilePath(filePath);
         }
-      })
-      .catch(() => {});
+      } catch {
+        // 读不到 pending 视为无关联文件
+      }
+    })();
 
     // 热启动：监听 Rust 端 emit 的 file-opened 事件
     const unlisten = listen<string>("file-opened", (event) => {
-      if (!cancelled && event.payload) {
-        openFilePath(event.payload);
-      }
+      if (cancelled || !event.payload) return;
+      void (async () => {
+        await waitStartupRestore();
+        if (!cancelled) {
+          await openFilePath(event.payload);
+        }
+      })();
     });
 
     return () => {
@@ -565,7 +594,7 @@ function App() {
         },
         onExportDocx: () => {
           const content = useFileStore.getState().currentContent;
-          exportDocx(content || "").catch(() => {
+          exportDocx(content || "", currentDocxDefaultPath()).catch(() => {
             useReaderStore
               .getState()
               .addToast({ type: "error", message: i18n.t("reader.exportFailed") });
@@ -804,7 +833,7 @@ function App() {
     onExportHtml: () => exportHtml().catch(() => {}),
     onExportDocx: () => {
       const currentContent = useFileStore.getState().currentContent;
-      exportDocx(currentContent || "").catch(() => {});
+      exportDocx(currentContent || "", currentDocxDefaultPath()).catch(() => {});
     },
     onExportPdf: () => {
       exportPdf().catch(() => {});
