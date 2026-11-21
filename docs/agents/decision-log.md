@@ -2,7 +2,7 @@
 title: Decision Log
 type: decision-log
 project: ErgeMD
-updated: 2026-11-20
+updated: 2026-11-21
 priority: higher-than-prd
 description: >
   开发过程决策日志，优先级高于 PRD；冲突时以本文件最新条目为准并回写 PRD/ADR。
@@ -15,6 +15,18 @@ description: >
 > **优先级高于 PRD**：冲突时以本文件最新决策为准，并回写 PRD/ADR。
 > 格式：`## DEC-NNN: 标题`，新条目置顶，NNN 三位递增。
 > 字段：`- **日期**：` / `- **背景**：` / `- **决策**：` / `- **验证**：`
+
+---
+
+## DEC-052: 浮层表面（`--bg-secondary` / `--bg-primary`）改为品牌色相派生，一次收口 14 套
+
+- **日期**：2026-11-21（用户反馈快捷键弹窗底色「太灰、与主题差太远」，与上一轮夜灯代码块同源）
+- **背景**：弹窗类浮层（`ShortcutsDialog` / `HoverHint` / `ImagePreview` / `LinkEditModal` / `ImageEditModal` / `SVGPreview` / `LazyMermaidBlock` / `LazyPlantUMLBlock` / `MermaidDiagram` 右键菜单 / `EasterEgg` / `ErrorBoundary`，共 15 处）统一消费 `--bg-secondary`。实测 14 套：**13 套的该值是中性灰**（C\*≤0.020、色相全卡 285°/90°），与各自品牌色相（aurora 231° 青、樱花 348° 粉、赛博 195° 青、夜灯 40° 橙）完全脱节；ThemeVault 里 11 套标着 `fallback: true`「继承 dark-base」——从未被设计过。契约文档 §11 本已规定「surface 归入推导规则（画布阶的机械派生）」，实际是手抄。
+- **决策一（保持明度、只换色相与彩度）**：生成器新增派生——取源色表 `canvas.secondary` 的 OKLCH 明度，色相改用 `brand.primary`，彩度提到 `SURFACE_CHROMA_DARK=0.028` / `SURFACE_CHROMA_LIGHT=0.012`；`--bg-primary` 同步别名到该值。**monochrome 品牌色无彩度 → 保持纯灰**（尊重「纯灰度」这一主题存在理由，与 F10 同口径）。
+- **为什么不提亮/压暗**：实测两条路都会撞破小字对比度——提亮使弹窗内 12px `--text-muted` 掉到 3.3–3.8；向侧栏下沉使 solarized-light 掉到 3.5、且与 `--bg-sidebar` 的 dE 只剩 1.5–2.3。只动色相不动明度，WCAG 亮度变化 ≤5%，小字对比不退化。
+- **决策二（`--text-muted` 调校基准改为「画布与浮层中更不利者」）**：此前只按画布调校至 4.5，浮层底与画布不同后，夜灯 4.03 / Solarized Light 4.40 在弹窗内本就破线（既有缺陷）。改为两处都校验，不足则对浮层再调一次并取两者较小值作报告口径。
+- **验证**：`theme:generate` 14 套重生成、`theme:generate:check` 一致；新增门禁 `theme-contrast.test.ts`「浮层表面上的小字 ≥4.5」（`text-muted` / `text-secondary` × `bg-secondary`，14 条），并注入回归实测能抓红（dark 改成 `#3A3530` → 1.20:1 报错）后还原；vitest **390/390**、lint 0 error（47 存量）、build 通过；无头 Edge 读真实构建 CSS 实测 9 套主题：浮层 vs 遮罩背景 1.27–3.48、`text-muted` on 浮层 4.54–4.85、WCAG 亮度较改前变化 −5.1%…+5.3%。**实机观感待用户验收**。
+- **已知取舍**：亮色族晨光浮层由纯白 `#FFFFFF` 变为 `#fff8f4`（亮度 −5.1%，仍远亮于画布）；暗色族浮层带上了各自色相，同一弹窗在不同主题下颜色不同——这是刻意的主题身份，而非不一致。
 
 ---
 

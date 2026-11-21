@@ -38,6 +38,15 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DIVIDER_RATIO = 0.08;
 const BORDER_SUBTLE_RATIO = 0.05;
 
+/**
+ * 浮层表面（--bg-secondary / --bg-primary）的品牌染色彩度上限。
+ * 11 套暗色主题的该 token 在源色表里是「继承 dark-base」的中性 #2E2E38（C*≈0.018，
+ * 色相统一卡在 285°），与各自品牌色相完全脱节 → 弹窗/浮层看着是「一块无主题的灰」。
+ * 这里保持明度不变（不引入小字对比度风险），只把色相换成品牌色相、彩度提到下表值。
+ */
+const SURFACE_CHROMA_DARK = 0.028;
+const SURFACE_CHROMA_LIGHT = 0.012;
+
 /** 代码高亮源字段 → CSS token 名（copySuccess 的现行 token 无 code- 前缀，显式映射） */
 const CODE_TOKENS = {
   keyword: "code-keyword",
@@ -67,11 +76,27 @@ function buildTokens(s) {
   set("bg-code", s.canvas.code);
   set("bg-sidebar", s.canvas.sidebar);
   set("bg-page", s.canvas.page);
-  set("bg-secondary", s.canvas.secondary);
+  // 浮层表面：保留源色表的明度，色相改用品牌色相、彩度提到受控值。
+  // 源色表里 11 套暗色主题的 canvas.secondary 是「继承 dark-base」的中性灰
+  // （#2E2E38，C*≈0.018，色相全卡 285°），与各自品牌色相脱节，浮层因此显得
+  // 「无主题的灰」。只换色相/彩度、不动明度，可保证弹窗内小字对比度不退化。
+  // monochrome 品牌色本身无彩度 → 保持纯灰（尊重「纯灰度」这一主题存在理由）。
+  const surface = (() => {
+    const src = cs.rgbToOklch(cs.parseHex(s.canvas.secondary));
+    const brand = cs.rgbToOklch(cs.parseHex(s.brand.primary));
+    const isLight = cs.rgbToOklch(cs.parseHex(s.canvas.reader)).l > 0.5;
+    const neutral = brand.c < 0.01;
+    const l = isLight ? Math.min(src.l, 0.985) : src.l;
+    const c = neutral ? 0 : isLight ? SURFACE_CHROMA_LIGHT : SURFACE_CHROMA_DARK;
+    return cs.toHex(
+      cs.oklchToRgb({ l, c, h: neutral ? src.h : brand.h }),
+    );
+  })();
+  set("bg-secondary", surface);
   set("bg-tertiary", s.canvas.tertiary);
   // bg-primary：历史消费方（LinkEditModal/ImageEditModal/ReadingOptions，7 处无兜底）
-  // 从未被任何主题定义（BUG-067）；按「次级/elevated 表面」语义别名到 canvas.secondary
-  set("bg-primary", s.canvas.secondary);
+  // 从未被任何主题定义（BUG-067）；按「次级/elevated 表面」语义别名到浮层表面
+  set("bg-primary", surface);
   // bg-page 的 rgb 三元组：供「画布色 + alpha」机械合成引用（toc-hover-bg，
   // BUG-074 浮动目录面板底色须随主题画布；与 accent/brand-rgb 同为源色 hex 机械转换）
   {
@@ -81,18 +106,27 @@ function buildTokens(s) {
   set("text-heading", s.ink.heading);
   set("text-primary", s.ink.primary);
   set("text-secondary", s.ink.secondary);
-  // text-muted（对应 ThemeVault 的 text-dim，最弱化层级）同样按画布调校至 ≥4.5:1，
-  // 色相不变、只让明度。源色表里 13 套主题的 text-dim 落在 2.93–4.15（主题仓库
-  // 预览红标），过去直接透传；ErgeMD 门禁未卡此项但主题仓库按 4.5 判，统一抬到
-  // 达标线，13 套一次收口（dark/light/亮色本就达标，调校为恒等变换不影响观感）
+  // text-muted（对应 ThemeVault 的 text-dim，最弱化层级）按**画布与浮层中更不利者**
+  // 调校至 ≥4.5:1，色相不变、只让明度。此前只按画布调校，浮层底色与画布不同后
+  // 夜灯 4.03 / Solarized Light 4.40 会在弹窗内破线（既有缺陷，本轮一并收口）。
   {
     const dim = cs.tuneForContrast(s.ink.muted, s.canvas.reader, 4.5);
-    if (!dim.met) {
-      console.warn(
-        `[theme:generate] ${s.name}: text-muted 未达标（${dim.ratio.toFixed(2)}:1），已取明度边界值`,
+    let hex = dim.hex;
+    let ratio = dim.ratio;
+    if (cs.contrastRatio(cs.parseHex(hex), cs.parseHex(surface)) < 4.5) {
+      const d2 = cs.tuneForContrast(hex, surface, 4.5);
+      hex = d2.hex;
+      ratio = Math.min(
+        cs.contrastRatio(cs.parseHex(hex), cs.parseHex(s.canvas.reader)),
+        cs.contrastRatio(cs.parseHex(hex), cs.parseHex(surface)),
       );
     }
-    set("text-muted", dim.hex);
+    if (ratio < 4.5) {
+      console.warn(
+        `[theme:generate] ${s.name}: text-muted 未达标（${ratio.toFixed(2)}:1），已取明度边界值`,
+      );
+    }
+    set("text-muted", hex);
   }
 
   // ---- 标题色阶：色相种子按画布调校至 ≥4.5:1（彩度保、明度让位、色相不变）----

@@ -101,6 +101,17 @@ describe("主题对比度门禁", () => {
       ).toBeGreaterThanOrEqual(BODY);
     });
 
+    // 浮层表面（弹窗/悬停提示/预览工具栏）承载 12px 的 text-muted 与 text-secondary，
+    // 其底色与画布不同，必须单独校验（此前只按画布校验，夜灯/ Solarized 在弹窗内破线）
+    it(`${theme}: 浮层表面上的小字 ≥ ${BODY}:1`, () => {
+      for (const ink of ["text-muted", "text-secondary"]) {
+        expect(
+          contrastRatio(parseHex(t[ink]), parseHex(t["bg-secondary"])),
+          `${theme}.${ink}=${t[ink]} × bg-secondary=${t["bg-secondary"]}`,
+        ).toBeGreaterThanOrEqual(BODY);
+      }
+    });
+
     it(`${theme}: 实心强调按钮文字 ≥ ${BODY}:1`, () => {
       expect(
         contrastRatio(
