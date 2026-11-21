@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **"Open with ErgeMD" opens the file on a cold start**: startup tab restore no longer overrides the passed-in file, so the associated document opens the first time
 - **Word exports use the document's name instead of a fixed export.docx**: the save dialog defaults to the source file's name and folder with a .docx extension
+- **The full changelog now scrolls inside the update card**: the list caps at 340px (or 46% of the viewport) and scrolls instead of being cut by the window edge; "show less" stays pinned under the list
 
 ## [0.7.0] - 2026-11-19
 
@@ -49,7 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **The full changelog now scrolls inside the update card**: the list caps at 340px (or 46% of the viewport) and scrolls instead of being cut by the window edge; "show less" stays pinned under the list
 - **Deleted files in the recent list**: opening one now removes it from the list with a "file no longer exists" notice instead of a misleading read error
 - **An unreadable subfolder no longer shows as empty**: it shows an error row with a retry, and the rest of the folder keeps working
 - **Notes added, renamed, or deleted outside the app show up promptly**: return to the window or reopen the sidebar to see the latest list — no restart needed

@@ -17,10 +17,11 @@ description: >
 
 ## 当前状态
 
-- **当前分支**：main（更新卡滚动修复已合入，随下一版本发布）
-- **阶段**：v0.7.0 为当前线上版本；修复已进 Unreleased，不开 0.7.1
-- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.7.0；codegraph 索引 112 文件）
+- **当前分支**：main（v0.7.1 已发布）
+- **阶段**：v0.7.1 为当前线上版本（2026-11-21 发布）
+- **代码**：已有完整可运行代码（Tauri 2 + React 19，v0.7.1；codegraph 索引 112 文件）
 - **工具链**：pnpm@11.16.0 / Node 22（CI）/ Rust stable（CI）/ vitest 3.2.7
+- 2026-11-21 发布 v0.7.1 并验证（`40aff98` + tag `v0.7.1`，双平台已推）：本轮内容 = 外壳三处观感微调（顶栏文件名 13px、代码块语言标签 12px 内缩圆角、夜灯代码块底色下沉）+ 两处修复（文件关联冷启动竞态 BUG-084、Word 导出文件名）。CI run 44895715958 全绿（purge / lint+test / 三平台 build / publish-updater / cleanup-caches）；GitHub Release `ErgeMD v0.7.1` 9 产物齐全（portable.zip / setup.exe + zip / dmg + zip / AppImage + zip / deb + zip）；updates-dist 镜像 `ergemd-v0.7.1` 9 文件（3 更新包 + 各自 .sig + portable / dmg / deb）；`ergemd/updates.json` 顶层 `version: 0.7.1`，三平台（windows-x86_64 / darwin-aarch64 / linux-x86_64）URL 与签名齐全。已装客户端下次启动检查即可收到更新。发版决策（不询问用户）：CHANGELOG 必记（用户可见修复），版本取 patch 0.7.1
 - 2026-11-21 文件关联冷启动竞态 + Word 导出文件名修复（分支 main，**未提交、待真机复测**）：① 「用 ErgeMD 打开」冷启动大概率不打开该文件、窗口开着再打开才成功——定位为挂载期两个 effect 并发：持久化标签恢复对每个旧标签 `readMarkdown` 后 `setState({ tabs: validTabs, activeTabId: 旧tab })` **整表替换**，「打开关联文件」effect 调 `get_pending_file` 后 `openFile`；恢复慢于打开完成时会把刚打开的标签冲掉、active 切回旧标签（热启动走单实例 emit 无恢复逻辑故必成功；无持久标签时恢复提前 return 故偶发成功）。路径本身已由 Rust `setup` 解析 `args_os` 存入 pending 并被取到，非「没获取到」。修复见 BUG-084：新增 `startupRestoreRef` Promise 完成信号，冷/热打开都先 `await` 恢复完成再 `openFile`。② Word 导出文件名恒为 `export.docx`：`exportDocx` 增可选 `defaultPath`，新增 `currentDocxDefaultPath()` 取当前文档同名同目录 `.docx`，右键菜单与 `Ctrl+Shift+E` 两处传入。tsc / lint 0 error(47 存量) / vitest 376 / build 全绿；**冷启动文件关联需你 Windows 右键实测**
 - 2026-11-20 外壳三处观感微调（分支 `fix/ui-polish-tweaks`，提交 `085f465`/`af5e218`；已 `--no-ff` 合入 main `1f298fc` 并双推 origin+gitee，子分支已删；**暂不发版，随下一版本发布**）：① 顶栏标签文件名 `text-xs`(12px) → 13px（`TabBar.tsx` 内联 `fontSize`，DEC-049 Compact 档；移除 `text-xs` 避免其 1rem 行高干扰）；② 代码块语言标签 `text-[11px]` 贴 `top-0 left-0`（仅右下圆角）→ 12px + 内缩 6/8px + 6px 全圆角 + 1px `--border-subtle` 细边，改为浮动标签（`CodeBlock.tsx`，位置/字号/内距全走内联，规避长驻 dev 会话 Tailwind 新类不生成）；③ 夜灯 `canvas.code` `#2C2620`(L*15.6，比 reader 亮) → `#1F1B16`(L*10.1)，落到 sidebar(L*8.0) 与 reader(`#241F1B` L*12.2) 之间——实测 14 套主题里其余 13 套代码块均**暗于** reader，唯夜灯反了。改源色表 `scripts/theme/sources/dark.js` 后 `pnpm theme:generate`，生成物仅 `--bg-code` 一行变化（tertiary/reader 不动）。语法高亮 7 色在新底 5.13–14.74:1、标签色 #F2570F 对比 5.01:1（旧底 4.37）全部 ≥4.5。门禁：theme:generate:check 14 套一致 / lint 0 error(47 存量) / vitest 376/376 / build 通过；无头 Playwright 实测标签 12px·行高 18px·内缩 7/9px（含 1px 边框）·圆角 6px·代码底 rgb(31,27,22)·标签对比 5.01:1·与复制键无横向重叠。**已验收通过（2026-11-20）**；变更日志已记入 Unreleased，按用户决定暂不发版、版本号不动
 - 2026-11-20 更新卡日志滚动（分支 `fix/update-notes-scroll`，已合入 main）：用户反馈「查看全部」展开后卡片超出窗口、无法滚动。条目区改为独立滚动容器（`max-height: min(46vh, 340px)`、`overflow-y:auto`、`overscroll-behavior:contain`、thin 滚动条），「收起明细 / 查看全部」按钮固定在列表下方；折叠态与安装进度、错误提示布局不变。tsc / eslint / vitest 376 / build 全绿；无头 Edge 探针确认列表在 340px 处截断并进入滚动。**按用户决定：不单独发 0.7.1，随下一版本发布**
