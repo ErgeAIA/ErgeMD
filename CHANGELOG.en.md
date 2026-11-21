@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The code block language tag no longer hugs the corner**: up from 11px to 12px, with padding and a rounded hairline border
 - **Darker code block background in Night Lamp**: now slightly deeper than the reading canvas like the other themes, instead of a lighter slab
 
+### Fixed
+
+- **"Open with ErgeMD" opens the file on a cold start**: startup tab restore no longer overrides the passed-in file, so the associated document opens the first time
+- **Word exports use the document's name instead of a fixed export.docx**: the save dialog defaults to the source file's name and folder with a .docx extension
+
 ## [0.7.0] - 2026-11-19
 
 ### Added

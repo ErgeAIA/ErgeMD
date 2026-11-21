@@ -1,14 +1,17 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 
-export async function exportDocx(markdownContent: string): Promise<void> {
+export async function exportDocx(
+  markdownContent: string,
+  defaultPath?: string,
+): Promise<void> {
   if (!markdownContent) {
     throw new Error("No markdown content found");
   }
 
   const filePath = await save({
     filters: [{ name: "Word", extensions: ["docx"] }],
-    defaultPath: "export.docx",
+    defaultPath: defaultPath || "export.docx",
   });
 
   if (!filePath) return;

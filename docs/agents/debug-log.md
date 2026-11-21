@@ -2,7 +2,7 @@
 title: Debug Log
 type: debug-log
 project: ErgeMD
-updated: 2026-11-19
+updated: 2026-11-21
 description: >
   反复调试的 bug 追加记录，优先级与实现事实对齐。只追加，不删除或改写历史。
   AI 在本文件新增或修改任何条目后，必须同步更新 frontmatter 的 updated 字段为当日日期（YYYY-MM-DD）。
@@ -718,3 +718,12 @@ description: >
 - **修复**：见 DEC-045——单层 `scan_directory`（≤1000/次）+ 文件名搜索 + 自然排序；前端懒加载 + 回焦/开面板/手动刷新增量重扫；目录级错误行 + 重试；非模态面板；真 roving + `aria-level/setsize/posinset` + ← 回父 + 首字母跳转；右键接通 `reveal_in_explorer`。
 - **验证**：`tests/sidebar_scan.rs`（含 Windows 权限目录：父层照常列出、展开该目录报错）；5k 根层 0.88 ms / 7.0 KiB、搜索 6.6 ms；vitest 366 / cargo test 全绿。**未实机走查**，待用户 UI 验收。
 - **教训**：① 「先取证再下结论」同样适用于自己的假设——动手前我判断权限目录会让整树扫描失败，实测是更隐蔽的静默丢失，靠注释/读码都会判错，必须造语料跑；② 把可变数据源做成一次性快照，规模、错误、新鲜度三类问题会一起出现，修一个不够；③ 注释里的无障碍承诺要有可执行断言兜底，否则会和实现长期分叉。
+
+## BUG-084: 文件关联冷启动打开被持久化标签恢复覆盖（启动期两 effect 竞态）
+
+- **日期**：2026-11-21（用户报「右键用 ErgeMD 打开文件，冷启动大概率打不开；窗口开着再打开同一文件才成功」）
+- **现象**：通过 Windows「使用 ErgeMD 打开」冷启动应用时，大多数情况下目标文件没有被打开（或切回了上次的标签），而应用已运行后再次右键打开同一文件就正常。
+- **根因**：冷启动挂载期有两个 `useEffect` 并发写全局 tab 状态——(A)「启动时恢复持久化的 tab 内容」逐标签 `readMarkdown` 后 `useFileStore.setState({ tabs: validTabs, activeTabId: 旧活动 tab, ... })` **整表替换**；(B)「文件关联打开」`get_pending_file` 取到路径后 `openFile`。持久标签越多 / 文件越大，(A) 越慢，越可能晚于 (B) 完成，(A) 的整表替换把 (B) 刚新增的标签**整条冲掉**并切回旧标签；热启动走单实例插件 `emit file-opened`，此时无恢复逻辑，故必成功；(A) 在无持久标签时提前 `return` 不 `setState`，故偶发成功——与「大概率失败、再来一次就好」完全吻合。路径本身没问题：Rust `setup` 已用 `args_os` 解析并存入 `pending_file`，前端也取到了。
+- **修复**：新增 `startupRestoreRef`（`Promise<void>` 完成信号）；恢复 effect 在 `finally`（含无标签提前退出）与 cleanup 中 resolve；冷启动取 pending、热启动监听 `file-opened` 两条路径都先 `await` 该信号再 `openFile`，确保关联文件严格在恢复之后生效、成为最后一个 active。
+- **验证限制**：tsc / lint 0 error / vitest 376 / build 全绿；竞态结论为读码 + 与现象吻合的静态推演，**未在真机用文件关联冷启动复测**，需用户 Windows 右键「使用 ErgeMD 打开」验证。
+- **教训**：启动期多个会写同一份全局状态的 effect 并发时，任何「整表替换」式恢复都必须与「外部驱动打开」（命令行参数 / 事件）排序，否则后完成者覆盖先完成者，表现为概率性失败；用 Promise 作完成信号让等待方精确串行，比布尔 flag / 轮询可靠。
