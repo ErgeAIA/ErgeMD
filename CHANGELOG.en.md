@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Dialog and tooltip surfaces follow the theme**: the shortcuts dialog, hover hints, image preview toolbar and other overlays are no longer a neutral gray matching the page; they derive from the code block background and sit one step lighter than the reading canvas
+
+### Fixed
+
+- **Small captions inside dialogs are more legible in Night Lamp and Solarized Light**: explanatory text on overlay surfaces now clears 4.5:1
+
 ## [0.7.1] - 2026-11-21
 
 ### Changed
